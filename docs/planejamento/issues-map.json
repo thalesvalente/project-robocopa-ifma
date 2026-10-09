@@ -1,0 +1,16 @@
+{
+  "repository": "thalesvalente/project-robocopa-ifma",
+  "scope": "Uma issue por sprint, com seis tarefas macro em cada uma. O backlog JSON permanece canônico.",
+  "sprints": [
+    {"id": "S00", "issue": 1},
+    {"id": "S01", "issue": 2},
+    {"id": "S02", "issue": 3},
+    {"id": "S03", "issue": 4},
+    {"id": "S04", "issue": 5},
+    {"id": "S05", "issue": 6},
+    {"id": "S06", "issue": 7},
+    {"id": "S07", "issue": 8},
+    {"id": "S08", "issue": 9},
+    {"id": "S09", "issue": 10}
+  ]
+}

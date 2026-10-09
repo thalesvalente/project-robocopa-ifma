@@ -1,31 +1,225 @@
 #!/usr/bin/env python3
-"""Read basic host facts locally. No network, installation or privileged action."""
+"""Inventário técnico local para a hospedagem da RoboCopa IFMA.
+
+Somente leitura, sem privilégios administrativos, sem acesso externo.
+Não registra identificadores do computador, contas, IPs ou credenciais.
+"""
 from __future__ import annotations
+
 from datetime import datetime, timezone
 import json
 import os
 from pathlib import Path
 import platform
+import re
 import shutil
+import subprocess
+
+
+SCHEMA_VERSION = 2
+OUTPUT_NAME = 'inventory-v2.json'
+COMMANDS = ('git', 'uv', 'docker', 'wsl', 'node', 'npm', 'java', 'nvidia-smi')
+
+
+# Seleção explícita de propriedades: não se exportam objetos CIM completos.
+WINDOWS_PROBE = r'''
+$ErrorActionPreference = 'Stop'
+$cpu = @(Get-CimInstance Win32_Processor | ForEach-Object {
+    [ordered]@{
+        model = [string]$_.Name
+        physical_cores = [int]$_.NumberOfCores
+        logical_processors = [int]$_.NumberOfLogicalProcessors
+        virtualization_firmware_enabled = [bool]$_.VirtualizationFirmwareEnabled
+    }
+})
+$machine = Get-CimInstance Win32_ComputerSystem
+$osinfo = Get-CimInstance Win32_OperatingSystem
+$gpus = @(Get-CimInstance Win32_VideoController | ForEach-Object {
+    [ordered]@{ model = [string]$_.Name; driver_version = [string]$_.DriverVersion }
+})
+$memory = @(Get-CimInstance Win32_PhysicalMemory | ForEach-Object {
+    [ordered]@{ capacity_bytes = [int64]$_.Capacity; speed_mhz = [int]$_.Speed }
+})
+$volumes = @(Get-CimInstance Win32_LogicalDisk -Filter 'DriveType=3' | ForEach-Object {
+    [ordered]@{ drive = [string]$_.DeviceID; capacity_bytes = [int64]$_.Size; free_bytes = [int64]$_.FreeSpace }
+})
+$disks = @()
+try {
+    $disks = @(Get-PhysicalDisk -ErrorAction Stop | ForEach-Object {
+        [ordered]@{ model = [string]$_.FriendlyName; media_type = [string]$_.MediaType; bus_type = [string]$_.BusType; capacity_bytes = [int64]$_.Size }
+    })
+} catch {}
+$network = @()
+try {
+    $network = @(Get-NetAdapter -Physical -ErrorAction Stop | Where-Object { $_.Status -eq 'Up' } | ForEach-Object {
+        [ordered]@{ link_speed_bits_per_second = [int64]$_.TransmitLinkSpeed }
+    })
+} catch {}
+$firewall = @()
+try {
+    $firewall = @(Get-NetFirewallProfile -ErrorAction Stop | ForEach-Object {
+        [ordered]@{ profile = [string]$_.Name; enabled = [bool]$_.Enabled }
+    })
+} catch {}
+$ports = @()
+try {
+    $wanted = @(80, 443, 3000, 5432, 8080, 8765)
+    $ports = @(Get-NetTCPConnection -State Listen -ErrorAction Stop |
+        Where-Object { $wanted -contains [int]$_.LocalPort } |
+        Select-Object -ExpandProperty LocalPort -Unique)
+} catch {}
+$result = [ordered]@{
+    cpu = $cpu
+    ram = [ordered]@{
+        installed_bytes = [int64]$machine.TotalPhysicalMemory
+        available_bytes = [int64]$osinfo.FreePhysicalMemory * 1024
+        modules = $memory
+    }
+    os = [ordered]@{
+        edition = [string]$osinfo.Caption
+        build = [string]$osinfo.BuildNumber
+        uptime_hours = [Math]::Round(((Get-Date) - $osinfo.LastBootUpTime).TotalHours, 1)
+        hypervisor_present = [bool]$machine.HypervisorPresent
+    }
+    gpu = $gpus
+    volumes = $volumes
+    physical_disks = $disks
+    network_link_only = $network
+    firewall_profiles = $firewall
+    checked_ports = @($wanted | ForEach-Object {
+        [ordered]@{ port = [int]$_; listening = [bool]($ports -contains $_) }
+    })
+}
+$result | ConvertTo-Json -Depth 8 -Compress
+'''
+
+
+def _decode_stdout(raw: bytes) -> str:
+    if not raw:
+        return ''
+    if b'\x00' in raw[:160]:
+        # A saída do wsl.exe pode usar UTF-16 LE mesmo quando redirecionada.
+        return raw.decode('utf-16-le', errors='replace').lstrip('\ufeff')
+    try:
+        return raw.decode('utf-8-sig')
+    except UnicodeDecodeError:
+        return raw.decode('cp1252', errors='replace')
+
+
+def _run(args: list[str], timeout: int = 8) -> str | None:
+    """Não usa shell; stderr e erros nunca entram no relatório."""
+    try:
+        result = subprocess.run(args, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
+                                check=False, timeout=timeout, stdin=subprocess.DEVNULL)
+    except (OSError, subprocess.TimeoutExpired):
+        return None
+    if result.returncode:
+        return None
+    return _decode_stdout(result.stdout).strip()
+
+
+def _windows_details() -> dict:
+    powershell = shutil.which('powershell.exe') or shutil.which('powershell')
+    if not powershell:
+        return {'status': 'powershell_unavailable'}
+    payload = _run([powershell, '-NoLogo', '-NoProfile', '-NonInteractive',
+                    '-Command', WINDOWS_PROBE], timeout=25)
+    if payload is None:
+        return {'status': 'windows_probe_failed'}
+    try:
+        result = json.loads(payload)
+    except (ValueError, TypeError):
+        return {'status': 'windows_probe_unreadable'}
+    if not isinstance(result, dict) or not isinstance(result.get('cpu'), list):
+        return {'status': 'windows_probe_invalid'}
+    return {'status': 'ok', **result}
+
+
+def _docker_details() -> dict:
+    docker = shutil.which('docker')
+    if not docker:
+        return {'cli_available': False, 'daemon_accessible': False}
+    result = {'cli_available': True, 'daemon_accessible': False}
+    output = _run([docker, 'info', '--format',
+                   '{{.ServerVersion}}|{{.OSType}}|{{.NCPU}}|{{.MemTotal}}'], timeout=10)
+    if output:
+        parts = output.split('|')
+        if len(parts) == 4 and parts[2].strip().isdigit() and parts[3].strip().isdigit():
+            result.update({'daemon_accessible': True, 'server_version': parts[0].strip(),
+                           'os_type': parts[1].strip(), 'allocated_cpus': int(parts[2]),
+                           'allocated_memory_bytes': int(parts[3])})
+    compose = _run([docker, 'compose', 'version', '--short'], timeout=7)
+    if compose and re.fullmatch(r'[vV]?[0-9][0-9A-Za-z.+-]*', compose):
+        result['compose_version'] = compose
+    return result
+
+
+def _wsl_details() -> dict:
+    executable = shutil.which('wsl') or shutil.which('wsl.exe')
+    if not executable:
+        return {'cli_available': False}
+    result = {'cli_available': True}
+    output = _run([executable, '--list', '--verbose'], timeout=9)
+    if output is None:
+        result['distros_query_ok'] = False
+    else:
+        # Não armazenar os nomes das distribuições: podem ser personalizados.
+        versions = [int(match.group(1)) for line in output.splitlines()
+                    if (match := re.search(r'\s([12])\s*$', line))]
+        result.update({'distros_query_ok': True, 'distribution_count': len(versions),
+                       'wsl2_distribution_count': versions.count(2)})
+    return result
+
+
+def _nvidia_details() -> list[dict]:
+    executable = shutil.which('nvidia-smi')
+    if not executable:
+        return []
+    output = _run([executable, '--query-gpu=name,memory.total,driver_version',
+                   '--format=csv,noheader,nounits'], timeout=8)
+    if output is None:
+        return []
+    result = []
+    for line in output.splitlines():
+        parts = [value.strip() for value in line.split(',')]
+        if (len(parts) == 3 and re.fullmatch(r'[0-9]+', parts[1])
+                and len(parts[0]) <= 120 and len(parts[2]) <= 30):
+            result.append({'model': parts[0], 'vram_mib': int(parts[1]),
+                           'driver_version': parts[2]})
+    return result
 
 
 def collect(root: Path) -> dict:
-    disk = shutil.disk_usage(root)
-    return {
-        'schema_version': 1,
-        'collected_at': datetime.now(timezone.utc).isoformat(),
-        'scope': 'Dados técnicos básicos; requer revisão humana antes de compartilhar.',
-        'os': platform.system(),
-        'os_release': platform.release(),
-        'architecture': platform.machine(),
-        'logical_cpu_count': os.cpu_count(),
-        'python': platform.python_version(),
-        'project_disk_total_bytes': disk.total,
-        'project_disk_free_bytes': disk.free,
-        'commands_available': {name: shutil.which(name) is not None for name in ('git', 'uv', 'docker', 'wsl')},
-        'not_collected': ['hostname', 'username', 'IP', 'MAC', 'credentials', 'personal_files'],
-        'pending_manual_checks': ['RAM disponível', 'virtualização', 'isolamento', 'upload', 'backup', 'disponibilidade'],
+    usage = shutil.disk_usage(root)
+    result = {
+        'schema_version': SCHEMA_VERSION,
+        'collected_at_utc': datetime.now(timezone.utc).isoformat(),
+        'purpose': 'Planejamento da hospedagem local do MVP RoboCopa IFMA',
+        'system': {'os': platform.system(), 'release': platform.release(),
+                   'architecture': platform.machine(), 'python': platform.python_version(),
+                   'logical_cpu_count': os.cpu_count()},
+        'project_volume': {'capacity_bytes': usage.total, 'free_bytes': usage.free},
+        'tools_installed': {name: shutil.which(name) is not None for name in COMMANDS},
+        'windows_hardware': (_windows_details() if platform.system() == 'Windows'
+                             else {'status': 'not_windows'}),
+        'nvidia_gpu': _nvidia_details(),
+        'docker': _docker_details(),
+        'wsl': (_wsl_details() if platform.system() == 'Windows'
+                else {'cli_available': False, 'status': 'not_windows'}),
+        'not_collected': ['username', 'hostname', 'ip_addresses', 'mac_addresses',
+                          'serial_numbers', 'wifi_ssid', 'credentials', 'personal_files',
+                          'process_names', 'container_names'],
+        'manual_validation_required': [
+            'Velocidade de upload (teste voluntário)',
+            'CGNAT / IPv4 público / IPv6 e política do provedor',
+            'Estabilidade e disponibilidade da conexão e energia',
+            'Estratégia de backup externo e restauração testada',
+            'Isolamento efetivo de códigos de robôs não confiáveis',
+            'Política de suspensão e reinícios do Windows',
+            'Capacidade de armazenamento após instalação e logs',
+        ],
     }
+    return result
 
 
 def main() -> None:
@@ -34,13 +228,13 @@ def main() -> None:
     if directory.is_symlink():
         raise SystemExit('Recusado: .local é um link simbólico.')
     directory.mkdir(exist_ok=True)
-    target = directory / 'inventory.json'
+    target = directory / OUTPUT_NAME
     if target.exists() or target.is_symlink():
-        raise SystemExit('O inventário já existe; revise/mova o arquivo antes de coletar novamente.')
+        raise SystemExit(f'{OUTPUT_NAME} já existe. Revise ou renomeie antes de uma nova coleta.')
     with target.open('x', encoding='utf-8') as handle:
         json.dump(collect(root), handle, ensure_ascii=False, indent=2)
         handle.write('\n')
-    print('Inventário básico salvo em .local/inventory.json. Revise antes de compartilhar; não faça commit.')
+    print(f'Inventário v2 salvo em .local/{OUTPUT_NAME}. Revise antes de compartilhar; não faça commit.')
 
 
 if __name__ == '__main__':

@@ -91,9 +91,11 @@
           "executor": "Responsável no host; apoio ChatGPT Pro",
           "complexity": "P",
           "dependencies": [],
-          "status": "BLOQUEADA",
+          "status": "CONCLUIDA",
           "evidence": [
-            "Inventário e coletor preparados; não há sessão de execução na máquina alvo."
+            "Inventários v1, v2 e v3 executados pelo responsável na máquina Windows e compartilhados na conversa; Docker Linux e Compose confirmados; container hello-world executado com sucesso; as informações técnicas foram analisadas, mas não houve implantação RoboCopa.",
+            "docs/operacao/inventario-sanitizado.md",
+            "docs/planejamento/INVENTARIO-HOST.md"
           ]
         },
         {
@@ -112,7 +114,7 @@
           ],
           "status": "BLOQUEADA",
           "evidence": [
-            "Execução autorizada pelo responsável; ratificação integral e inventário local ainda pendentes."
+            "Inventário S00-T05 concluído e sanitizado; ratificação humana da constituição, escopo, riscos e gates ainda pendente."
           ]
         }
       ]

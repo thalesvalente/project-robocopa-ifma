@@ -63,5 +63,5 @@ Antes de acesso externo de alunos: avaliar upload, estabilidade, CGNAT/IPv6, dis
 
 - Configuração do Compose e isolamento verificados estaticamente.
 - Subida dos serviços, health checks e persistência após recriar contêiner comprovadas **em runner do CI**.
-- Validação **na máquina alvo** será separada e dependerá de execução pelo responsável.
+- Validação **na máquina alvo** realizada pelo responsável em 2026-10-09: PostgreSQL e sonda `healthy`, redes e volume criados, porta publicada somente no loopback e `/health` retornou `status=ok`. Ver `docs/qualidade/evidencias/INFRA-LOCAL-HOST.md`. Não houve teste de backup/restauração, segurança de bots ou acesso remoto.
 - Não declarar S04-T05, implantação ou segurança de código não confiável concluídas por um teste com PostgreSQL e sonda.

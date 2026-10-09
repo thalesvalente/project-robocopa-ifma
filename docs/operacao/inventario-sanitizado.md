@@ -23,7 +23,7 @@ Identificadores da máquina, IPs, MACs, hostname, nome de usuário, SSID, caminh
 |---|---|
 | Máquina compatível com Docker e WSL 2 | Confirmado por saídas fornecidas |
 | Contêiner de referência executado | Confirmado pelo responsável |
-| Deploy real deste Compose na máquina | Pendente |
+| Laboratório Compose (PostgreSQL e sonda) no host | Confirmado por saídas de PowerShell; não é aplicação MVP |
 | Local físico do disco virtual do Docker Desktop | Pendente |
 | Teste de backup/restauração externo | Pendente |
 | Upload, CGNAT e estabilidade da conexão | Pendente |
@@ -33,4 +33,4 @@ Identificadores da máquina, IPs, MACs, hostname, nome de usuário, SSID, caminh
 
 ## Próximo passo
 
-Consultar `docs/operacao/COMPOSE-LOCAL.md`, executar os comandos voluntariamente na máquina e retornar **somente os resultados não sensíveis** de saúde e status. Nenhum comando deve abrir porta no roteador nem alterar firewall.
+O responsável já executou o laboratório local e compartilhou as saídas sanitizadas, registradas em `docs/qualidade/evidencias/INFRA-LOCAL-HOST.md`. Preservar os volumes e outros projetos. Próximas verificações: local do VHDX Docker Desktop, backup/restauração e isolamento antes do desenvolvimento de execução de robôs. Nenhuma porta do roteador deve ser aberta nesta etapa. Nenhum comando deve abrir porta no roteador nem alterar firewall.

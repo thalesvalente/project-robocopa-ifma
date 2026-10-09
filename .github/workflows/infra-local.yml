@@ -26,6 +26,13 @@ jobs:
       - name: Obter código
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
+      - name: Verificar backlog canônico e projeções do planejamento
+        run: |
+          python3 scripts/render_planning.py
+          git diff --exit-code -- docs/planejamento/PLANO-MESTRE.md docs/planejamento/sprints
+          python3 scripts/verify_planning.py
+          python3 -m unittest discover -s tests/planning -v
+
       - name: Testar contrato do ambiente
         run: python3 -m unittest discover -s tests/infra -v
 

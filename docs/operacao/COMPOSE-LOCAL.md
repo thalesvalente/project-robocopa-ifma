@@ -30,9 +30,10 @@ O script cria **somente se não existir** um `.env` na raiz do projeto, com senh
 ```powershell
 docker compose -f compose.local.yaml config --quiet
 python scripts/validate_local_compose.py
+python scripts/preflight_local.py
 ```
 
-O validador exige banco sem portas publicadas, nome exclusivo do projeto, rede interna, sonda publicada só no loopback, limites de recursos e ausência do socket do Docker.
+O validador verifica o contrato de isolamento. O **preflight**, sem mudanças no host, detecta o projeto Compose já existente, a ocupação da porta local, acesso ao daemon e espaço básico na unidade do repositório. Ele **não identifica a unidade onde está o VHDX do Docker**. Se alguma verificação informar BLOCKED, não execute o próximo passo antes de revisar.
 
 ## 4. Iniciar — somente quando desejar executar o laboratório
 
@@ -73,4 +74,4 @@ O Docker mantém os volumes no local do disco virtual gerenciado pelo Desktop; a
 - Realizar spikes de Tank Royale, editor de programação no celular e isolamento de código não confiável.
 - Validar execução local no computador do responsável; testes no CI são evidência de outro ambiente.
 
-**Inspeção importante:** o arquivo Compose possui o projeto nomeado `robocopa-ifma-local`. Se já existir um projeto Compose com exatamente esse nome, **não inicialize** até resolver o conflito.
+**Inspeção importante:** o arquivo Compose possui o projeto nomeado `robocopa-ifma-local`. O preflight **bloqueia** se encontrar um projeto existente com esse nome. Depois da primeira inicialização, não rode o preflight como condição obrigatória para reiniciar o mesmo projeto: inspecione o Compose existente e opere-o conscientemente. Não faça `up` em um projeto desconhecido com o mesmo nome.

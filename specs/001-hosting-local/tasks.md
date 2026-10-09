@@ -8,7 +8,7 @@
 - [x] INF-004 [US2] Declarar volume e healthcheck PostgreSQL com limites; não realizar migração de dados do host. Referência: S04-T05.
 - [x] INF-005 [US3] Escrever testes de contrato e workflow CI para exercício do Compose. Referência: S04-T05.
 - [x] INF-006 [US3] Escrever instruções PowerShell e política de parada sem `down -v`. Referência: S04-T05.
-- [ ] INF-007 [US1/US2] Verificar CI **real**: Compose config, subida, saúde e persistência. Evidência: link do run após execução.
+- [x] INF-007 [US1/US2] Verificar CI **real**: Compose config, subida, saúde e persistência. Evidência: https://github.com/thalesvalente/project-robocopa-ifma/actions/runs/38001010665 — 7 testes unitários aprovados; configuração validada, serviços saudáveis, HTTP 200/404 e persistência SQL após recriação do banco em runner Linux do GitHub. Versão anterior ao preflight adicional.
 - [ ] INF-008 [US1/US3] Validar no computador hospedeiro: `docker compose ... up --wait`, health e `ps`. Usuário precisa executar explicitamente.
 - [ ] INF-009 [US3] Ratificar a topologia final após os gates S03/S04, backup e avaliações de acesso externo; **não** declarar concluída por uma sonda.
 

@@ -1,4 +1,5 @@
 """Synthetic unit fixtures only; real-engine evidence is a separate CI stage."""
+import base64
 import gzip
 import hashlib
 import importlib.util
@@ -22,7 +23,7 @@ prepare = load('prepare', ROOT / 'spikes/tank-royale/prepare.py')
 def fixture():
     return {'completed': True, 'source': 'BattleResults', 'engine_version': '1.4.0',
             'numberOfRounds': 5, 'observedTicks': 100, 'duration_ms': 1000,
-            'results': [dict(name=name, rank=rank, totalScore=100, survival=10,
+            'results': [dict(name=name, version='1.0', rank=rank, totalScore=100, survival=10,
                              bulletDamage=90, ramDamage=0, firstPlaces=2, secondPlaces=3)
                         for name,rank in [('Walls',1), ('Spin Bot',2)]]}
 
@@ -98,6 +99,27 @@ class SpikeTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             path=Path(tmp)/'test.battle.gz'; path.write_bytes(b'not gzip')
             with self.assertRaises(OSError): runner.verify_replay(path)
+    def test_stream_preserves_exact_bytes(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            out=Path(tmp); stream=out/'runtime.stream'
+            replay=gzip.compress(b'fixture-only '*200)
+            stream.write_bytes(b'LOG\nROBOCOPA_ARTIFACT results.json ' + base64.b64encode(b'{"unit":true}') + b'\nROBOCOPA_ARTIFACT recordings/game-test.battle.gz '+base64.b64encode(replay)+b'\n')
+            runner.extract_stream(stream,out)
+            self.assertEqual((out/'recordings/game-test.battle.gz').read_bytes(),replay)
+            self.assertEqual((out/'engine.log').read_bytes(),b'LOG\n')
+            self.assertFalse(stream.exists())
+    def test_stream_traversal_rejected(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            out=Path(tmp); stream=out/'runtime.stream'
+            stream.write_bytes(b'ROBOCOPA_ARTIFACT ../escape Zm9v\n')
+            with self.assertRaises(ValueError): runner.extract_stream(stream,out)
+    def test_stream_partial_rejected(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            out=Path(tmp); stream=out/'runtime.stream'; stream.write_bytes(b'engine failed\n')
+            with self.assertRaises(ValueError): runner.extract_stream(stream,out)
+    def test_wrong_bot_version_rejected(self):
+        data=fixture(); data['results'][0]['version']='unverified'
+        with self.assertRaises(ValueError): runner.verify_results(data)
     def test_pinned_lock(self):
         lock=json.loads((ROOT/'spikes/tank-royale/upstream.lock.json').read_text())
         self.assertEqual(lock['engine_version'],'1.4.0')

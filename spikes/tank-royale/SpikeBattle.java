@@ -65,7 +65,15 @@ public class SpikeBattle {
                     + ",\"duration_ms\":" + Duration.between(start, Instant.now()).toMillis()
                     + ",\"results\":[" + String.join(",", rows) + "]}\n";
             Files.writeString(OUT.resolve("results.json"), json, StandardOpenOption.CREATE_NEW);
-            System.out.println("BATTLE_COMPLETED: results and official replay written");
+            // Export before tmpfs disappears on container stop; stdout is the only output channel.
+            try (var paths = Files.walk(OUT)) {
+                for (var file : paths.filter(Files::isRegularFile).sorted().toList()) {
+                    String relative = OUT.relativize(file).toString().replace('\\', '/');
+                    String payload = Base64.getEncoder().encodeToString(Files.readAllBytes(file));
+                    System.out.printf("ROBOCOPA_ARTIFACT %s %s%n", relative, payload);
+                }
+            }
+            System.out.println("BATTLE_COMPLETED: results and official replay exported");
         } finally {
             watchdog.shutdownNow();
         }

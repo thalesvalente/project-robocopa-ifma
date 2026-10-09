@@ -14,7 +14,7 @@ O manifesto em `docs/qualidade/evidencias/SPECKIT-CI.json` registra 36 arquivos 
 
 10 sprints e 60 tarefas macro estão publicadas, com dependências, artefatos, executores e critérios de aceite. Foram criadas as issues #1 a #10, uma por sprint e seis tarefas por issue; correspondência em `issues-map.json`.
 
-S00-T01 a S00-T05 estão concluídas tecnicamente com evidência. Inventários v1/v2/v3 e verificações Docker/WSL fornecidos pelo responsável confirmaram hardware e execução de contêineres, registrados de forma sanitizada em `docs/operacao/inventario-sanitizado.md`. S00-T06 continua **BLOQUEADA**, aguardando a ratificação detalhada da constituição, plano e riscos pelo responsável. A sprint S00 não está homologada. A sprint S00, como um todo, não está homologada.
+S00-T01 a S00-T05 estão concluídas tecnicamente com evidência. Inventários v1/v2/v3 e verificações Docker/WSL fornecidos pelo responsável confirmaram hardware e execução de contêineres, registrados de forma sanitizada em `docs/operacao/inventario-sanitizado.md`. S00-T06 continua **BLOQUEADA**, aguardando a ratificação detalhada da constituição, plano e riscos pelo responsável. A sprint S00 não está homologada.
 
 ## Entregas de conteúdo preparadas
 
@@ -34,8 +34,8 @@ A tentativa inicial de bootstrap no ambiente desta conversa falhou por DNS. A al
 
 ## Experimento de infraestrutura em branch empilhada
 
-PR #12 (`feat/infra-local-compose`, base PR #11) contém ADRs candidatos, Compose privado e sonda HTTP, PostgreSQL 17 persistente, scripts de credenciais e preflight, testes, manual Windows e specs da feature 001. Execução confirmada no CI: https://github.com/thalesvalente/project-robocopa-ifma/actions/runs/38001273168 (**13 testes OK**, Compose, sonda, persistência após recriação). Evidência: `docs/qualidade/evidencias/INFRA-LOCAL-CI.md`. **Não** equivale a implantação no Windows, segurança de execução de bots, aceite de arquitetura ou conclusão de S04/S08. O laboratório não inicia um jogo.
+PR #12 (`feat/infra-local-compose`, base PR #11) contém ADRs candidatos, Compose privado e sonda HTTP, PostgreSQL 17 persistente, scripts de credenciais e preflight, testes, manual Windows e specs da feature 001. Execução confirmada no CI: https://github.com/thalesvalente/project-robocopa-ifma/actions/runs/38001273168 (**13 testes OK**, Compose, sonda, persistência após recriação). Evidência: `docs/qualidade/evidencias/INFRA-LOCAL-CI.md`. O laboratório **também foi iniciado e verificado na máquina Windows pelo responsável**, com contêineres PostgreSQL e sonda saudáveis e resposta local `/health` correta: `docs/qualidade/evidencias/INFRA-LOCAL-HOST.md`. Isso **não** equivale a implantação do MVP, segurança de bots, backup, aceite arquitetural ou conclusão de S04/S08. O laboratório não inicia um jogo.
 
 ## Próxima dependência
 
-Revisar e ratificar constituição/escopo e executar voluntariamente o laboratório local após conferir `docs/operacao/COMPOSE-LOCAL.md`. O coletor `scripts/collect_host_inventory.py` já produziu inventário v3 no host, com JSON mantido fora do Git. Nenhuma alteração de rede no host foi feita pelo ChatGPT. A execução do novo Compose **no Windows** permanece pendente.
+Revisar e ratificar constituição/escopo e evoluir do laboratório de infraestrutura verificado para as provas técnicas de motor, autoria móvel e isolamento previstas em S04. O coletor `scripts/collect_host_inventory.py` já produziu inventário v3 no host, com JSON mantido fora do Git. Nenhuma alteração do roteador/firewall foi feita pelo ChatGPT. O responsável executou o Compose no Windows e confirmou rede Docker local, volume e health checks; segurança para execução de robôs e exposição externa seguem pendentes.

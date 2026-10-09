@@ -16,8 +16,8 @@ import shutil
 import subprocess
 
 
-SCHEMA_VERSION = 2
-OUTPUT_NAME = 'inventory-v2.json'
+SCHEMA_VERSION = 3
+OUTPUT_NAME = 'inventory-v3.json'
 COMMANDS = ('git', 'uv', 'docker', 'wsl', 'node', 'npm', 'java', 'nvidia-smi')
 
 
@@ -148,9 +148,80 @@ def _docker_details() -> dict:
             result.update({'daemon_accessible': True, 'server_version': parts[0].strip(),
                            'os_type': parts[1].strip(), 'allocated_cpus': int(parts[2]),
                            'allocated_memory_bytes': int(parts[3])})
+    if result['daemon_accessible']:
+        docker_root = _run([docker, 'info', '--format', '{{.DockerRootDir}}'], timeout=8)
+        if docker_root is not None:
+            result['docker_root_dir'] = ('/var/lib/docker' if docker_root == '/var/lib/docker'
+                                         else '[custom_path_redacted]')
+        result['storage_usage'] = _docker_storage_usage(docker)
+        result['windows_disk_image_location'] = 'not_identified_from_linux_docker_root'
     compose = _run([docker, 'compose', 'version', '--short'], timeout=7)
     if compose and re.fullmatch(r'[vV]?[0-9][0-9A-Za-z.+-]*', compose):
         result['compose_version'] = compose
+    return result
+
+
+def _docker_storage_usage(docker: str) -> dict:
+    """Docker system df em JSON por linha, sem nomes de recursos."""
+    raw = _run([docker, 'system', 'df', '--format', 'json'], timeout=35)
+    if raw is None:
+        return {'status': 'unavailable'}
+    allowed_types = {'Images', 'Containers', 'Local Volumes', 'Build Cache'}
+    rows: list[dict] = []
+    for line in raw.splitlines():
+        try:
+            value = json.loads(line)
+        except ValueError:
+            return {'status': 'unreadable'}
+        if not isinstance(value, dict) or value.get('Type') not in allowed_types:
+            continue
+        try:
+            total = int(value['TotalCount'])
+            active = int(value['Active'])
+            if not (0 <= active <= total):
+                return {'status': 'unreadable'}
+        except (KeyError, TypeError, ValueError):
+            return {'status': 'unreadable'}
+        size = str(value.get('Size', ''))
+        reclaimable = str(value.get('Reclaimable', ''))
+        # Whitelist: numeros, unidades e percentuais, sem IDs ou nomes.
+        pattern = r'[0-9]+(?:[.,][0-9]+)?\s*[A-Za-z]{0,4}'
+        if not re.fullmatch(pattern, size):
+            return {'status': 'unreadable'}
+        if not re.fullmatch(pattern + r'(?:\s*\([0-9]+%\))?', reclaimable):
+            return {'status': 'unreadable'}
+        rows.append({'type': value['Type'], 'total': total, 'active': active,
+                     'size': size, 'reclaimable': reclaimable})
+    return {'status': 'ok', 'categories': rows} if rows else {'status': 'empty'}
+
+
+def _safe_wsl_name(name: str) -> str:
+    """Nomes comuns autorizados; nomes personalizados sao mascarados."""
+    if name == 'docker-desktop':
+        return name
+    if name in ('Ubuntu', 'Debian', 'openSUSE', 'kali-linux'):
+        return name
+    if re.fullmatch(r'Ubuntu-\d{2}\.\d{2}', name):
+        return name
+    return '[custom_name_redacted]'
+
+
+def _wsl_status(executable: str) -> dict:
+    raw = _run([executable, '--status'], timeout=9)
+    if raw is None:
+        return {'status': 'unavailable'}
+    result = {'status': 'ok'}
+    for line in raw.splitlines():
+        if ':' not in line:
+            continue
+        key, value = (part.strip() for part in line.split(':', 1))
+        normalized = key.casefold()
+        if normalized in ('default distribution', 'distribuição padrão',
+                          'distribuicao padrao'):
+            result['default_distribution'] = _safe_wsl_name(value)
+        elif normalized in ('default version', 'versão padrão', 'versao padrao'):
+            if value in ('1', '2'):
+                result['default_version'] = int(value)
     return result
 
 
@@ -158,16 +229,30 @@ def _wsl_details() -> dict:
     executable = shutil.which('wsl') or shutil.which('wsl.exe')
     if not executable:
         return {'cli_available': False}
-    result = {'cli_available': True}
+    result = {'cli_available': True, 'status': _wsl_status(executable)}
     output = _run([executable, '--list', '--verbose'], timeout=9)
     if output is None:
         result['distros_query_ok'] = False
     else:
-        # Não armazenar os nomes das distribuições: podem ser personalizados.
-        versions = [int(match.group(1)) for line in output.splitlines()
-                    if (match := re.search(r'\s([12])\s*$', line))]
-        result.update({'distros_query_ok': True, 'distribution_count': len(versions),
-                       'wsl2_distribution_count': versions.count(2)})
+        distros = []
+        for line in output.splitlines():
+            match = re.match(r'^\s*\*?\s*(.+?)\s{2,}(.+?)\s{2,}([12])\s*$', line)
+            if not match:
+                continue
+            name, state, version_text = match.groups()
+            normalized_state = state.strip().casefold()
+            if normalized_state in ('running', 'em execução', 'em execucao'):
+                status = 'running'
+            elif normalized_state in ('stopped', 'parado'):
+                status = 'stopped'
+            else:
+                status = 'other'
+            distros.append({'distribution': _safe_wsl_name(name.strip()),
+                            'state': status, 'version': int(version_text)})
+        result.update({'distros_query_ok': True,
+                       'distribution_count': len(distros),
+                       'wsl2_distribution_count': sum(d['version'] == 2 for d in distros),
+                       'distributions': distros})
     return result
 
 
@@ -217,6 +302,7 @@ def collect(root: Path) -> dict:
             'Isolamento efetivo de códigos de robôs não confiáveis',
             'Política de suspensão e reinícios do Windows',
             'Capacidade de armazenamento após instalação e logs',
+            'Verificar local do disco virtual: Docker Desktop > Settings > Resources > Advanced',
         ],
     }
     return result
@@ -234,7 +320,7 @@ def main() -> None:
     with target.open('x', encoding='utf-8') as handle:
         json.dump(collect(root), handle, ensure_ascii=False, indent=2)
         handle.write('\n')
-    print(f'Inventário v2 salvo em .local/{OUTPUT_NAME}. Revise antes de compartilhar; não faça commit.')
+    print(f'Inventário v3 salvo em .local/{OUTPUT_NAME}. Revise antes de compartilhar; não faça commit.')
 
 
 if __name__ == '__main__':

@@ -1,6 +1,6 @@
 # Como executar o laboratório de infraestrutura local (Windows 11)
 
-**Escopo:** PostgreSQL e sonda de saúde, somente `localhost`. **Não é o MVP**: ainda não há UI, API de domínio, Tank Royale, autenticação de alunos ou sandbox de bots.
+**Escopo:** PostgreSQL e sonda de saúde, somente `localhost`. **Primeira execução na máquina hospedeira confirmada em 2026-10-09**, com evidência em `docs/qualidade/evidencias/INFRA-LOCAL-HOST.md`. **Não é o MVP**: ainda não há UI, API de domínio, Tank Royale, autenticação de alunos ou sandbox de bots.
 
 ## 1. Preparar — sem alterar seus outros contêineres
 
@@ -72,6 +72,6 @@ O Docker mantém os volumes no local do disco virtual gerenciado pelo Desktop; a
 - Medir upload/CGNAT e definir acesso remoto com TLS, autorização e autenticação; **não abrir portas agora**.
 - Definir backup independente e testar restauração.
 - Realizar spikes de Tank Royale, editor de programação no celular e isolamento de código não confiável.
-- Validar execução local no computador do responsável; testes no CI são evidência de outro ambiente.
+- Execução local inicial confirmada pelo responsável; falta testar backup/restauração e recuperação de estado após reinício no Windows. Os testes do CI são evidência de outro ambiente.
 
 **Inspeção importante:** o arquivo Compose possui o projeto nomeado `robocopa-ifma-local`. O preflight **bloqueia** se encontrar um projeto existente com esse nome. Depois da primeira inicialização, não rode o preflight como condição obrigatória para reiniciar o mesmo projeto: inspecione o Compose existente e opere-o conscientemente. Não faça `up` em um projeto desconhecido com o mesmo nome.

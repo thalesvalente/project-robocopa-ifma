@@ -7,7 +7,9 @@
   "source": "git+https://github.com/github/spec-kit.git@959e866caa3618bf3dc290d5dca33394365af9c6",
   "integration": "generic",
   "commands_directory": ".agents/commands",
-  "native_cli_initialized": false,
+  "native_cli_initialized": true,
   "native_mcp_connected": false,
-  "notes": "Estado inicial; somente o registro de uma execução real pode alterar native_cli_initialized. Não descreve a instalação na máquina do responsável."
+  "notes": "CLI inicializada e arquivos presentes no ambiente de CI. MCP nesta conversa e instalação local continuam não estabelecidos.",
+  "validated_environment": "GitHub-hosted runner; não é a máquina do responsável",
+  "evidence": "docs/qualidade/evidencias/SPECKIT-CI.json"
 }

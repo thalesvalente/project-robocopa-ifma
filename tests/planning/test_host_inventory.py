@@ -55,10 +55,67 @@ class HostInventoryTest(unittest.TestCase):
     def test_output_schema_does_not_collect_identity(self):
         with patch.object(module, '_windows_details', return_value={'status': 'mock'}), patch.object(module, '_nvidia_details', return_value=[]), patch.object(module, '_docker_details', return_value={}), patch.object(module, '_wsl_details', return_value={}):
             result = module.collect(SCRIPT.parent)
-        self.assertEqual(result['schema_version'], 2)
+        self.assertEqual(result['schema_version'], 3)
         for sensitive in ('hostname', 'username', 'mac_addresses', 'ip_addresses'):
             self.assertNotIn(f'"{sensitive}":', json.dumps(result))
             self.assertIn(sensitive, result['not_collected'])
+
+
+    def test_docker_df_selects_numbers_without_names(self):
+        raw = '\n'.join([
+            json.dumps({'Type': 'Images', 'TotalCount': '6', 'Active': '4',
+                        'Size': '20.51GB', 'Reclaimable': '15.42MB (0%)',
+                        'UnexpectedSecret': 'container-secret'}),
+            json.dumps({'Type': 'Local Volumes', 'TotalCount': '6', 'Active': '6',
+                        'Size': '342.3MB', 'Reclaimable': '0B (0%)'}),
+        ])
+        with patch.object(module, '_run', return_value=raw):
+            data = module._docker_storage_usage('docker')
+        self.assertEqual(data['status'], 'ok')
+        self.assertEqual(data['categories'][0]['active'], 4)
+        self.assertEqual(data['categories'][1]['size'], '342.3MB')
+        self.assertNotIn('container-secret', json.dumps(data))
+
+    def test_docker_df_rejects_unexpected_text(self):
+        raw = json.dumps({'Type': 'Images', 'TotalCount': 1, 'Active': 1,
+                          'Size': '1GB /home/username', 'Reclaimable': '0B (0%)'})
+        with patch.object(module, '_run', return_value=raw):
+            self.assertEqual(module._docker_storage_usage('docker')['status'], 'unreadable')
+
+    def test_wsl_includes_known_distro_state_and_redacts_custom_names(self):
+        raw = ('  NAME               STATE           VERSION\n'
+               '* docker-desktop     Running         2\n'
+               '  Ubuntu             Running         2\n'
+               '  Private-Lab        Stopped         2\n')
+        status = 'Distribuição Padrão: docker-desktop\nVersão Padrão: 2\n'
+        def fake(args, timeout=8):
+            return status if '--status' in args else raw
+        with patch.object(module.shutil, 'which', return_value='wsl.exe'), patch.object(module, '_run', side_effect=fake):
+            data = module._wsl_details()
+        self.assertEqual(data['status']['default_distribution'], 'docker-desktop')
+        self.assertEqual(data['status']['default_version'], 2)
+        self.assertEqual(data['distribution_count'], 3)
+        self.assertEqual(data['wsl2_distribution_count'], 3)
+        self.assertEqual(data['distributions'][1]['distribution'], 'Ubuntu')
+        self.assertNotIn('Private-Lab', json.dumps(data))
+
+    def test_docker_root_path_is_sanitized(self):
+        def fake(args, timeout=8):
+            joined = ' '.join(args)
+            if 'compose' in args:
+                return 'v2.35.1'
+            if 'DockerRootDir' in joined:
+                return '/home/private-user/docker'
+            if 'system' in args:
+                return json.dumps({'Type': 'Images', 'TotalCount': '0', 'Active': '0',
+                                   'Size': '0B', 'Reclaimable': '0B'})
+            return '28.1.1|linux|32|67253637120'
+        with patch.object(module.shutil, 'which', return_value='docker'), patch.object(module, '_run', side_effect=fake):
+            data = module._docker_details()
+        self.assertEqual(data['docker_root_dir'], '[custom_path_redacted]')
+        self.assertNotIn('private-user', json.dumps(data))
+        self.assertEqual(data['storage_usage']['status'], 'ok')
+
 
 
 if __name__ == '__main__':

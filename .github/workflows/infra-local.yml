@@ -1,0 +1,56 @@
+name: Infraestrutura local (Docker Compose)
+
+on:
+  push:
+    branches:
+      - feat/infra-local-compose
+  pull_request:
+    paths:
+      - compose.local.yaml
+      - infra/**
+      - scripts/init_local_env.py
+      - scripts/validate_local_compose.py
+      - tests/infra/**
+      - .github/workflows/infra-local.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validar-compose:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 18
+    steps:
+      - name: Obter código
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Testar contrato do ambiente
+        run: python3 -m unittest discover -s tests/infra -v
+
+      - name: Gerar senha apenas no runner
+        run: python3 scripts/init_local_env.py
+
+      - name: Validar sintaxe e isolamento
+        run: |
+          docker compose -f compose.local.yaml config --quiet
+          python3 scripts/validate_local_compose.py
+
+      - name: Inicializar ambiente isolado do runner
+        run: docker compose -f compose.local.yaml up -d --wait --wait-timeout 150
+
+      - name: Testar sonda HTTP somente no loopback
+        run: |
+          curl --fail --silent --show-error --retry 5 --retry-delay 2 http://127.0.0.1:18080/health |
+            python3 -c 'import json,sys; r=json.load(sys.stdin); assert r["status"]=="ok" and r["scope"]=="local-development-only"'
+          test "$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:18080/nao-existe)" = "404"
+
+      - name: Verificar persistência do PostgreSQL após recriar o contêiner
+        run: |
+          docker compose -f compose.local.yaml exec -T database             psql -v ON_ERROR_STOP=1 -U robocopa -d robocopa             -c 'CREATE TABLE IF NOT EXISTS teste_persistencia (id integer PRIMARY KEY); INSERT INTO teste_persistencia VALUES (1) ON CONFLICT DO NOTHING;'
+          docker compose -f compose.local.yaml up -d --force-recreate --wait --wait-timeout 150 database
+          docker compose -f compose.local.yaml exec -T database             psql -tA -U robocopa -d robocopa -c 'SELECT COUNT(*) FROM teste_persistencia;' | grep -Fx '1'
+
+      - name: Limpar SOMENTE os recursos do runner efêmero
+        if: always()
+        run: docker compose -f compose.local.yaml down -v --remove-orphans

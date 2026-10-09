@@ -1,0 +1,13 @@
+{
+  "upstream": "https://github.com/github/spec-kit",
+  "release": "v1.1.2",
+  "commit": "959e866caa3618bf3dc290d5dca33394365af9c6",
+  "release_published_at": "2026-10-07T22:27:43Z",
+  "verified_on": "2026-10-09",
+  "source": "git+https://github.com/github/spec-kit.git@959e866caa3618bf3dc290d5dca33394365af9c6",
+  "integration": "generic",
+  "commands_directory": ".agents/commands",
+  "native_cli_initialized": false,
+  "native_mcp_connected": false,
+  "notes": "Estado inicial; somente o registro de uma execução real pode alterar native_cli_initialized. Não descreve a instalação na máquina do responsável."
+}

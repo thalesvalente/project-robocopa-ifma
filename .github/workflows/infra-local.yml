@@ -9,6 +9,7 @@ on:
       - compose.local.yaml
       - infra/**
       - scripts/init_local_env.py
+      - scripts/preflight_local.py
       - scripts/validate_local_compose.py
       - tests/infra/**
       - .github/workflows/infra-local.yml
@@ -35,6 +36,9 @@ jobs:
         run: |
           docker compose -f compose.local.yaml config --quiet
           python3 scripts/validate_local_compose.py
+
+      - name: Validar disponibilidade de nome, porta e recursos
+        run: python3 scripts/preflight_local.py
 
       - name: Inicializar ambiente isolado do runner
         run: docker compose -f compose.local.yaml up -d --wait --wait-timeout 150

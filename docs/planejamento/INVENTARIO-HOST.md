@@ -11,7 +11,7 @@ git fetch origin
 git switch chore/s00-fundacao-speckit
 git pull --ff-only
 python scripts/collect_host_inventory.py
-Get-Content .local/inventory-v2.json
+Get-Content .local/inventory-v3.json
 ```
 
 Se o comando `python` não estiver disponível, utilize `py`. Não é necessário ativar um ambiente virtual. O script usa apenas a biblioteca padrão do Python.
@@ -23,8 +23,9 @@ Se o comando `python` não estiver disponível, utilize `py`. Não é necessári
 - GPU: modelo e versão do driver; VRAM de GPUs NVIDIA se `nvidia-smi` estiver acessível.
 - Armazenamento: volumes locais, espaço disponível, modelos/tipo/capacidade dos discos quando o Windows disponibilizar.
 - Windows: edição, build, tempo desde a inicialização e presença de hipervisor.
-- Docker: distingue CLI instalada de daemon realmente acessível; reporta versão, CPU/RAM alocados e versão do Compose quando disponíveis.
-- WSL: quantidade de distribuições e quantas usam WSL 2, **sem salvar nomes**.
+- Docker: distingue CLI instalada de daemon acessível; coleta versão, CPU/RAM disponíveis, versão do Compose, caminho interno do daemon (sanitizado) e uso por imagens, contêineres, volumes e cache via `docker system df --format json`.
+- O levantamento de uso Docker é apenas leitura, mas pode ser mais lento em hosts com muitas imagens/volumes; há limite de tempo e retorno parcial se falhar.
+- WSL: distribuição padrão, versão padrão, versões e estado (ativa/parada) das distribuições via `wsl --status` e `wsl --list --verbose`. Apenas nomes comuns (Ubuntu, docker-desktop etc.) são mantidos; nomes personalizados são substituídos por `[custom_name_redacted]`.
 - Rede local: velocidade negociada do adaptador físico ativo, estados dos perfis do firewall e se algumas portas comuns estão ocupadas. **Isso não equivale à velocidade de upload nem à confirmação de acesso público.**
 - Ferramentas: disponibilidade de comandos para Git, Docker, WSL, Node, Java e outras.
 
@@ -32,9 +33,9 @@ Se alguma sondagem falhar ou não estiver disponível, o resultado registra stat
 
 ## Privacidade e segurança
 
-O arquivo é salvo em **`.local/inventory-v2.json`**, mantido fora do versionamento. O arquivo anterior `.local/inventory.json` é preservado. O programa recusa substituir o inventário v2 já existente: renomeie-o ou mova-o após revisar para uma nova coleta.
+O arquivo é salvo em **`.local/inventory-v3.json`**, mantido fora do versionamento. Os arquivos anteriores `.local/inventory.json` e `.local/inventory-v2.json` são preservados. O programa recusa substituir o inventário v3 já existente: renomeie-o ou mova-o após revisar para uma nova coleta.
 
-**Não coletamos:** hostname, nome de usuário, IP público/privado, endereço MAC, identificadores de hardware, SSID Wi-Fi, credenciais, nomes de processos ou contêineres e arquivos pessoais. A execução de sondas de Docker e WSL também não armazena mensagens brutas de erro.
+**Não coletamos:** hostname, nome de usuário, IP público/privado, endereço MAC, identificadores de hardware, SSID Wi-Fi, credenciais, nomes de processos ou contêineres, nomes personalizados de distribuições WSL, caminhos personalizados do daemon e arquivos pessoais. A execução de sondas de Docker e WSL também não armazena mensagens brutas de erro.
 
 Revise o JSON antes de anexá-lo à conversa e **não faça commit do inventário**.
 
@@ -46,5 +47,6 @@ Revise o JSON antes de anexá-lo à conversa e **não faça commit do inventári
 4. Política de isolamento/limites para código submetido pelos alunos.
 5. Backup e teste de restauração, inclusive em unidade externa.
 6. Capacidade aceitável de armazenamento considerando crescimento de banco, imagens, logs e resultados.
+7. **Local físico do arquivo de disco virtual do Docker Desktop no Windows**: `Docker Desktop > Settings > Resources > Advanced > Disk image location`. O caminho Linux `/var/lib/docker` não informa a unidade Windows onde o VHDX está armazenado. Não mova o disco nem execute `docker system prune` durante o inventário.
 
 Não abra portas do roteador nem desative o firewall com base apenas neste relatório. A topologia e o controle de acesso remoto serão decididos na S04 após análise de risco.

@@ -9,7 +9,7 @@
 - [x] INF-005 [US3] Escrever testes de contrato e workflow CI para exercício do Compose. Referência: S04-T05.
 - [x] INF-006 [US3] Escrever instruções PowerShell e política de parada sem `down -v`. Referência: S04-T05.
 - [x] INF-007 [US1/US2] CI real verificado: 13 testes de infraestrutura OK, Compose config e validador PASS, preflight PASS, serviços saudáveis, HTTP 200/404 e persistência PostgreSQL após recriação. Evidência: https://github.com/thalesvalente/project-robocopa-ifma/actions/runs/38001273168 e `docs/qualidade/evidencias/INFRA-LOCAL-CI.md`. Executado em GitHub-hosted runner, não no host pessoal.
-- [ ] INF-008 [US1/US3] Validar no computador hospedeiro: `docker compose ... up --wait`, health e `ps`. Usuário precisa executar explicitamente.
+- [x] INF-008 [US1/US3] Validado pelo responsável no Windows: preflight 6/6 PASS, `docker compose ... up -d --wait` criou redes/volume, PostgreSQL e sonda ficaram `healthy`; `docker compose ps` confirmou só `127.0.0.1:18080` publicado; `/health` retornou `status=ok`. Evidência: `docs/qualidade/evidencias/INFRA-LOCAL-HOST.md`. Não comprova persistência após reinício/backup no host.
 - [ ] INF-009 [US3] Ratificar a topologia final após os gates S03/S04, backup e avaliações de acesso externo; **não** declarar concluída por uma sonda.
 
 **Nota:** checkboxes INF-001–006 registram apenas elaboração de arquivos. As tarefas macro de S04 exigem especificação aprovada, spikes, execução local e decisão humana antes da conclusão.

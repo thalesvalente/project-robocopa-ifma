@@ -17,6 +17,10 @@
     }
   },
   "bots": ["Walls", "SpinBot"],
+  "bot_identities": {
+    "Walls": {"name": "Walls", "version": "1.0"},
+    "SpinBot": {"name": "Spin Bot", "version": "1.0"}
+  },
   "rounds": 5,
   "preset": "classic"
 }

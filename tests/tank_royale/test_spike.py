@@ -24,7 +24,7 @@ def fixture():
             'numberOfRounds': 5, 'observedTicks': 100, 'duration_ms': 1000,
             'results': [dict(name=name, rank=rank, totalScore=100, survival=10,
                              bulletDamage=90, ramDamage=0, firstPlaces=2, secondPlaces=3)
-                        for name,rank in [('Walls',1), ('SpinBot',2)]]}
+                        for name,rank in [('Walls',1), ('Spin Bot',2)]]}
 
 def contract():
     return {'Config': {'User':'10001:10001'}, 'HostConfig': {

@@ -56,7 +56,7 @@ def main() -> None:
     bots = walls[0].parent.parent
     for name in lock['bots']:
         config = json.loads((bots / name / (name + '.json')).read_text())
-        if config.get('name') != name:
+        if any(config.get(key) != value for key, value in lock['bot_identities'][name].items()):
             raise ValueError('Unexpected official bot identity')
     (out / 'bots-root.txt').write_text(str(bots.relative_to(out)), encoding='utf-8')
     shutil.copyfile(base / 'upstream.lock.json', out / 'upstream.lock.json')

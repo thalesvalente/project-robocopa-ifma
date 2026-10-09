@@ -53,7 +53,7 @@ def verify_results(data: dict) -> None:
             or data.get('engine_version') != '1.4.0' or data.get('numberOfRounds') != 5):
         raise ValueError('A completed five-round official battle is required')
     rows = data.get('results', [])
-    if len(rows) != 2 or {r.get('name') for r in rows} != {'Walls', 'SpinBot'}:
+    if len(rows) != 2 or {r.get('name') for r in rows} != {'Walls', 'Spin Bot'}:
         raise ValueError('Unexpected reference bot identities')
     for row in rows:
         for field in ('rank','totalScore','survival','bulletDamage','ramDamage','firstPlaces','secondPlaces'):

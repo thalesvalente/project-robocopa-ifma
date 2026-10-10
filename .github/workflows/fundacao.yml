@@ -1,0 +1,60 @@
+name: Fundação e Spec Kit
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [chore/s00-fundacao-speckit]
+    paths: [tools/EXECUTAR-S00]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: fundacao-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  fundacao:
+    if: github.ref == 'refs/heads/chore/s00-fundacao-speckit'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - name: Obter a branch de trabalho
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ github.ref_name }}
+          fetch-depth: 1
+      - name: Validar planejamento e testes locais
+        run: |
+          python3 scripts/render_planning.py
+          python3 scripts/verify_planning.py
+          python3 -m unittest discover -s tests/planning -v
+          sha256sum .specify/memory/constitution.md > "$RUNNER_TEMP/constitution.sha256"
+      - name: Preparar uv em ambiente isolado
+        run: |
+          python3 -m venv "$RUNNER_TEMP/uv-env"
+          "$RUNNER_TEMP/uv-env/bin/python" -m pip install 'uv==0.8.22'
+          echo "$RUNNER_TEMP/uv-env/bin" >> "$GITHUB_PATH"
+      - name: Inicializar Spec Kit fixado, preservando a constituição
+        run: |
+          python3 scripts/bootstrap_speckit.py --apply --script py
+          sha256sum -c "$RUNNER_TEMP/constitution.sha256"
+      - name: Registrar e verificar os artefatos efetivamente gerados
+        env:
+          RUN_URL: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          python3 scripts/record_speckit.py
+          python3 scripts/render_planning.py
+          python3 scripts/verify_planning.py
+          python3 -m unittest discover -s tests/planning -v
+      - name: Versionar somente os arquivos permitidos na branch de trabalho
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- .specify .agents docs/planejamento/backlog.json docs/planejamento/PLANO-MESTRE.md docs/planejamento/sprints docs/qualidade/evidencias/SPECKIT-CI.json tools/speckit.lock.json specs/000-governanca/tasks.md
+          if git diff --cached --quiet; then
+            echo 'Nenhuma alteração gerada.'
+          else
+            git commit -m 'chore: inicializa Spec Kit e registra evidência da execução'
+            git push origin HEAD:refs/heads/chore/s00-fundacao-speckit
+          fi

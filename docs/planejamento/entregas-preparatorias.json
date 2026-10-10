@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-09",
+  "scope": "Documentos produzidos em paralelo; não substituem o backlog nem encerram dependências ou homologação.",
+  "fieldwork_executed": false,
+  "human_approved": false,
+  "deliverables": [
+    {"task": "S01-T01", "path": "docs/descoberta/problema-publico.md", "state": "MINUTA_PARA_REVISAO"},
+    {"task": "S01-T02", "path": "docs/descoberta/jornadas.md", "state": "MINUTA_PARA_REVISAO"},
+    {"task": "S01-T03", "path": "docs/descoberta/benchmark.md", "state": "MINUTA_PARA_REVISAO"},
+    {"task": "S01-T04", "path": "docs/descoberta/ideacao-priorizacao.md", "state": "MINUTA_PARA_REVISAO"},
+    {"task": "S01-T05", "path": "docs/negocio/bmc-v1.md", "state": "MINUTA_PARA_REVISAO"},
+    {"task": "S01-T06", "path": "docs/descoberta/hipoteses-validacao.md", "state": "MINUTA_PARA_REVISAO"},
+    {"task": "S02-T01", "path": "docs/projeto/projeto-v1.md", "state": "MINUTA_PARA_REVISAO"},
+    {"task": "S02-T02", "path": "docs/projeto/entregas-recursos-custos.md", "state": "MINUTA_PARA_REVISAO"},
+    {"task": "S02-T03", "path": "docs/projeto/plano-pedagogico.md", "state": "MINUTA_PARA_REVISAO"},
+    {"task": "S02-T04", "path": "docs/projeto/governanca-riscos.md", "state": "MINUTA_PARA_REVISAO"},
+    {"task": "S02-T05", "path": "docs/pitch/pitch-v1.md", "state": "MINUTA_PARA_REVISAO"},
+    {"task": "S02-T06", "path": "docs/projeto/revisao-v1.md", "state": "MINUTA_PARA_REVISAO"}
+  ]
+}

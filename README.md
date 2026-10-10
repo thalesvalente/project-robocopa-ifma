@@ -1,15 +1,41 @@
 # RoboCopa IFMA
 
-Plataforma educacional de competição de robôs virtuais, com participação por computador e celular. Iniciativa em desenvolvimento para o IFMA Campus Itapecuru-Mirim.
+Plataforma educacional em desenvolvimento para aprender programação por meio de uma competição de robôs virtuais. O ponto de partida é o IFMA Campus Itapecuru-Mirim; participação de outras escolas é uma evolução a validar.
 
-## Diretrizes do MVP
+**Direção do MVP:** o estudante acessa pelo computador ou celular, aprende o básico, programa uma estratégia, salva uma versão, testa seu robô, inscreve-o na competição e consulta os resultados. A execução dos robôs ocorrerá no servidor hospedado na máquina do responsável, não no aparelho do aluno.
 
-- Hospedagem na máquina do responsável pelo projeto, sem exposição de dados pessoais ou credenciais neste repositório público.
-- Participação móvel completa: aprender, programar, salvar, testar e inscrever um robô; não apenas acompanhar resultados.
-- ChatGPT Pro como ambiente principal de planejamento e execução. Codex reservado a implementações pesadas e, quando justificado, ao R4.
-- Spec Kit versionado no projeto para apoiar especificações, planos e tarefas.
-- Desenvolvimento incremental em branches de trabalho, com evidências de testes e revisão.
+> Esta base contém planejamento e ferramentas de execução. Não é uma aplicação pronta e não comprova implantação na máquina alvo.
 
-## Estado
+## Navegação
 
-Repositório inicializado em 9 de outubro de 2026. A base de planejamento e a integração do Spec Kit serão adicionadas em uma branch de trabalho. Este commit não contém uma aplicação executável nem indica implantação na máquina do responsável.
+| Área | Entrada |
+|---|---|
+| Estado e bloqueios | [Estado atual](docs/planejamento/ESTADO-ATUAL.md) |
+| 10 sprints e 60 tarefas | [Plano mestre](docs/planejamento/PLANO-MESTRE.md) · [Backlog canônico](docs/planejamento/backlog.json) |
+| Regras de trabalho | [AGENTS.md](AGENTS.md) · [Processo](docs/processo/EXECUCAO.md) |
+| Princípios | [Constituição proposta](.specify/memory/constitution.md) |
+| Spec Kit | [Integração e limites](docs/processo/SPECKIT.md) · [Lock](tools/speckit.lock.json) |
+| Hospedagem própria | [Inventário sanitizado](docs/operacao/inventario-sanitizado.md) |
+| Especificações | [Índice](specs/README.md) |
+| Descoberta, BMC e projeto | [Índice de minutas](docs/descoberta/README.md) |
+
+## Verificação do planejamento
+
+Requer Python 3.11 ou superior. Não exige credenciais nem instala a aplicação.
+
+```sh
+python scripts/render_planning.py
+python scripts/verify_planning.py
+python -m unittest discover -s tests/planning -v
+```
+
+## Spec Kit
+
+```sh
+python scripts/bootstrap_speckit.py
+python scripts/bootstrap_speckit.py --apply --script py
+```
+
+A primeira chamada simula; a segunda requer uv/uvx, Git e rede, inicializa o upstream fixado em staging e preserva os documentos. Evidência de CI, quando produzida, não significa que a CLI esteja instalada na máquina do responsável nem que exista conexão MCP nesta conversa.
+
+ChatGPT Pro conduz o projeto. Codex fica reservado ao trabalho pesado; R4 somente quando justificado. Não publicar dados pessoais de alunos, credenciais, IP residencial ou backups. Não abrir o host à internet sem uma etapa específica de segurança e autorização.

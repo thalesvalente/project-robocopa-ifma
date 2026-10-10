@@ -1,0 +1,967 @@
+{
+  "schema_version": 1,
+  "plan_version": "0.1.1",
+  "source_baseline": "0.1.0",
+  "date": "2026-10-09",
+  "status": "EXECUCAO_AUTORIZADA_GATES_PENDENTES",
+  "repository": "thalesvalente/project-robocopa-ifma",
+  "canonical_scope": "60 tarefas macro. Descrições normalizadas para publicação; IDs, dependências, saídas e critérios preservados. Minutas paralelas não encerram gates. Tarefas técnicas em specs/<feature>/tasks.md.",
+  "sprints": [
+    {
+      "id": "S00",
+      "title": "Fundação, governança e Spec Kit",
+      "objective": "Preparar o repositório, o método de trabalho e a ferramenta, sem antecipar a implementação do produto.",
+      "gate": "Pacote publicado em branch de trabalho, acesso efetivo verificado, CLI inicializada sem sobrescrever documentos e constituição ratificada.",
+      "tasks": [
+        {
+          "id": "S00-T01",
+          "title": "Verificar acesso e publicar a base",
+          "description": "Testar leitura e escrita reais; publicar a base em branch e registrar commit/PR.",
+          "artifact": "README.md; docs/planejamento/ESTADO-ATUAL.md",
+          "acceptance": "Leitura e publicação verificadas por retorno do GitHub; nenhuma credencial ou dado real no diff.",
+          "executor": "ChatGPT Pro",
+          "complexity": "P",
+          "dependencies": [],
+          "status": "CONCLUIDA",
+          "evidence": [
+            "Base publicada na branch de trabalho; checkout e validação do commit de entrada executados.",
+            "https://github.com/thalesvalente/project-robocopa-ifma/actions/runs/37884957842",
+            "docs/qualidade/evidencias/SPECKIT-CI.json"
+          ]
+        },
+        {
+          "id": "S00-T02",
+          "title": "Preparar e ativar o Spec Kit",
+          "description": "Fixar upstream e commit; inicializar generic em staging e preservar documentos existentes.",
+          "artifact": "tools/speckit.lock.json; .specify/; .agents/commands/",
+          "acceptance": "CLI da versão fixada executada no ambiente autorizado; templates e comandos presentes; sem sobrescrita silenciosa.",
+          "executor": "ChatGPT Pro e CI; host local pelo responsável",
+          "complexity": "M",
+          "dependencies": [
+            "S00-T01"
+          ],
+          "status": "CONCLUIDA",
+          "evidence": [
+            "CLI oficial fixada executada; templates/comandos conferidos e constituição preservada. Ambiente: GitHub-hosted, não host do MVP.",
+            "https://github.com/thalesvalente/project-robocopa-ifma/actions/runs/37884957842",
+            "docs/qualidade/evidencias/SPECKIT-CI.json"
+          ]
+        },
+        {
+          "id": "S00-T03",
+          "title": "Estabelecer a constituição e o processo",
+          "description": "Documentar inclusão, finalidade pedagógica, segurança, rastreabilidade e uso de ChatGPT/Codex/R4.",
+          "artifact": "AGENTS.md; .specify/memory/constitution.md; docs/processo/EXECUCAO.md",
+          "acceptance": "Minuta consistente e versionada; a ratificação humana fica explicitamente para T06.",
+          "executor": "ChatGPT Pro",
+          "complexity": "P",
+          "dependencies": [],
+          "status": "CONCLUIDA",
+          "evidence": [
+            "Minuta de constituição e processo versionada; ratificação humana continua em S00-T06.",
+            "https://github.com/thalesvalente/project-robocopa-ifma/actions/runs/37884957842",
+            "docs/qualidade/evidencias/SPECKIT-CI.json"
+          ]
+        },
+        {
+          "id": "S00-T04",
+          "title": "Publicar backlog e modelos de acompanhamento",
+          "description": "Publicar 10 sprints/60 tarefas, dependências, modelos de issues/PR e evidências.",
+          "artifact": "docs/planejamento/backlog.json; docs/planejamento/PLANO-MESTRE.md; .github/",
+          "acceptance": "IDs únicos; dependências sem ciclos; tarefas com saída e aceite; publicação efetivamente confirmada.",
+          "executor": "ChatGPT Pro",
+          "complexity": "M",
+          "dependencies": [
+            "S00-T01",
+            "S00-T03"
+          ],
+          "status": "CONCLUIDA",
+          "evidence": [
+            "Backlog 10/60, modelos e visões publicados e verificados; acompanhamento adicional por issues não altera os contratos.",
+            "https://github.com/thalesvalente/project-robocopa-ifma/actions/runs/37884957842",
+            "docs/qualidade/evidencias/SPECKIT-CI.json"
+          ]
+        },
+        {
+          "id": "S00-T05",
+          "title": "Levantar o ambiente de hospedagem",
+          "description": "Coletar somente inventário técnico sanitizado; não alterar a máquina ou publicar dados residenciais.",
+          "artifact": "docs/operacao/inventario-sanitizado.md",
+          "acceptance": "Informações verificadas pelo responsável e lacunas registradas; nenhuma configuração de rede alterada nesta tarefa.",
+          "executor": "Responsável no host; apoio ChatGPT Pro",
+          "complexity": "P",
+          "dependencies": [],
+          "status": "BLOQUEADA",
+          "evidence": [
+            "Inventário e coletor preparados; não há sessão de execução na máquina alvo."
+          ]
+        },
+        {
+          "id": "S00-T06",
+          "title": "Ratificar a base de trabalho",
+          "description": "Revisar constituição, plano, riscos e critérios de avanço; registrar aceite e ressalvas.",
+          "artifact": "docs/planejamento/decisoes/D-001-governanca.md",
+          "acceptance": "Aceite explícito; nada marcado aprovado apenas por ter sido gerado por IA.",
+          "executor": "Responsável; apoio ChatGPT Pro",
+          "complexity": "P",
+          "dependencies": [
+            "S00-T02",
+            "S00-T03",
+            "S00-T04",
+            "S00-T05"
+          ],
+          "status": "BLOQUEADA",
+          "evidence": [
+            "Execução autorizada pelo responsável; ratificação integral e inventário local ainda pendentes."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "S01",
+      "title": "Ideação e Business Model Canvas",
+      "objective": "Definir o problema, o público e a proposta de valor antes de escolher a solução completa.",
+      "gate": "Problema e proposta de valor coerentes; BMC v1 revisado; hipóteses separadas de evidências reais.",
+      "tasks": [
+        {
+          "id": "S01-T01",
+          "title": "Delimitar problema e público",
+          "description": "Caracterizar barreiras de custo, equipamentos, deslocamento e formação; distinguir relatos e hipóteses.",
+          "artifact": "docs/descoberta/problema-publico.md",
+          "acceptance": "Problema delimitado, beneficiários identificados e fontes/hipóteses explícitas.",
+          "executor": "ChatGPT Pro; revisão do responsável",
+          "complexity": "P",
+          "dependencies": [
+            "S00-T06"
+          ],
+          "status": "A_FAZER",
+          "evidence": []
+        },
+        {
+          "id": "S01-T02",
+          "title": "Mapear jornadas e proto-personas",
+          "description": "Modelar aluno com celular, aluno com computador, professor e organizador sem pressupor web/mobile.",
+          "artifact": "docs/descoberta/jornadas.md",
+          "acceptance": "Jornada inclui aprender, programar, testar e competir; proto-personas não são apresentadas como pesquisa de campo.",
+          "executor": "ChatGPT Pro; revisão do responsável",
+          "complexity": "M",
+          "dependencies": [
+            "S01-T01"
+          ],
+          "status": "A_FAZER",
+          "evidence": []
+        },
+        {
+          "id": "S01-T03",
+          "title": "Pesquisar referências e alternativas",
+          "description": "Comparar competição física, motores virtuais e plataformas educacionais com fontes e limitações.",
+          "artifact": "docs/descoberta/benchmark.md",
+          "acceptance": "Comparação citada e datada, com critérios e limitações; Robocode permanece hipótese técnica até o spike.",
+          "executor": "ChatGPT Pro; revisão do responsável",
+          "complexity": "M",
+          "dependencies": [
+            "S01-T01"
+          ],
+          "status": "A_FAZER",
+          "evidence": []
+        },
+        {
+          "id": "S01-T04",
+          "title": "Convergir a ideação e o corte do MVP",
+          "description": "Priorizar valor pedagógico, inclusão, esforço e risco; escolher um recorte e registrar exclusões.",
+          "artifact": "docs/descoberta/ideacao-priorizacao.md",
+          "acceptance": "Uma proposta de MVP e lista explícita do que ficará para depois.",
+          "executor": "ChatGPT Pro; revisão do responsável",
+          "complexity": "M",
+          "dependencies": [
+            "S01-T02",
+            "S01-T03"
+          ],
+          "status": "A_FAZER",
+          "evidence": []
+        },
+        {
+          "id": "S01-T05",
+          "title": "Construir o BMC v1",
+          "description": "Preencher nove blocos; distinguir estudante beneficiário, instituição apoiadora e sustentabilidade.",
+          "artifact": "docs/negocio/bmc-v1.md",
+          "acceptance": "Nove blocos coerentes; apoio institucional e financiamento são hipóteses, não compromissos; sem receita fictícia.",
+          "executor": "ChatGPT Pro; revisão do responsável",
+          "complexity": "M",
+          "dependencies": [
+            "S01-T04"
+          ],
+          "status": "A_FAZER",
+          "evidence": []
+        },
+        {
+          "id": "S01-T06",
+          "title": "Planejar e registrar validação inicial",
+          "description": "Definir hipóteses, perguntas e critérios; incorporar entrevistas somente após realização real.",
+          "artifact": "docs/descoberta/hipoteses-validacao.md",
+          "acceptance": "Registro de validado, refutado ou não testado; decisão de prosseguir consciente das incertezas.",
+          "executor": "ChatGPT Pro e responsável",
+          "complexity": "M",
+          "dependencies": [
+            "S01-T05"
+          ],
+          "status": "A_FAZER",
+          "evidence": []
+        }
+      ]
+    },
+    {
+      "id": "S02",
+      "title": "Projeto, desenho pedagógico e pitch",
+      "objective": "Transformar a ideia em um projeto institucional executável e comunicável.",
+      "gate": "Projeto v1 e pitch v1 alinhados ao BMC, ao público e ao recorte do MVP; sem resultados ou parcerias inventados.",
+      "tasks": [
+        {
+          "id": "S02-T01",
+          "title": "Redigir o termo de abertura e o projeto",
+          "description": "Consolidar justificativa, objetivos, beneficiários, entregas, escopo e sucesso; não presumir enquadramento institucional.",
+          "artifact": "docs/projeto/projeto-v1.md",
+          "acceptance": "Objetivos verificáveis e limites claros; projeto não se confunde com especificação técnica.",
+          "executor": "ChatGPT Pro; revisão do responsável",
+          "complexity": "M",
+          "dependencies": [
+            "S01-T06"
+          ],
+          "status": "A_FAZER",
+          "evidence": []
+        },
+        {
+          "id": "S02-T02",
+          "title": "Planejar entregas, recursos e custos",
+          "description": "Organizar EAP e categorias de custo; não confundir hospedagem própria com custo zero.",
+          "artifact": "docs/projeto/entregas-recursos-custos.md",
+          "acceptance": "Custos distinguem valores levantados e estimativas; capacidade da máquina ainda não é promessa.",
+          "executor": "ChatGPT Pro; revisão do responsável",
+          "complexity": "M",
+          "dependencies": [
+            "S02-T01",
+            "S00-T05"
+          ],
+          "status": "A_FAZER",
+          "evidence": []
+        },
+        {
+          "id": "S02-T03",
+          "title": "Definir a trilha pedagógica",
+          "description": "Planejar lógica, exemplos, prática, competição e avaliação além do ranking.",
+          "artifact": "docs/projeto/plano-pedagogico.md",
+          "acceptance": "Participação não depende de o aluno já ter cursado desenvolvimento web/mobile; avaliação não se limita ao ranking.",
+          "executor": "ChatGPT Pro; revisão do responsável",
+          "complexity": "M",
+          "dependencies": [
+            "S02-T01"
+          ],
+          "status": "A_FAZER",
+          "evidence": []
+        },
+        {
+          "id": "S02-T04",
+          "title": "Definir governança e proteção dos participantes",
+          "description": "Estabelecer papéis, decisões, riscos, dados mínimos e revisões institucionais necessárias.",
+          "artifact": "docs/projeto/governanca-riscos.md",
+          "acceptance": "Responsáveis e aprovações identificados; dados reais não entram no repositório público.",
+          "executor": "ChatGPT Pro; revisão do responsável",
+          "complexity": "M",
+          "dependencies": [
+            "S02-T01"
+          ],
+          "status": "A_FAZER",
+          "evidence": []
+        },
+        {
+          "id": "S02-T05",
+          "title": "Criar o pitch v1",
+          "description": "Produzir narrativa de 60 segundos, roteiro de 3 minutos e estrutura de 8–10 slides.",
+          "artifact": "docs/pitch/pitch-v1.md",
+          "acceptance": "Narrativa consistente; promessas técnicas e impacto ainda não medido identificados como proposta.",
+          "executor": "ChatGPT Pro; revisão do responsável",
+          "complexity": "M",
+          "dependencies": [
+            "S02-T02",
+            "S02-T03",
+            "S02-T04"
+          ],
+          "status": "A_FAZER",
+          "evidence": []
+        },
+        {
+          "id": "S02-T06",
+          "title": "Revisar a coerência do conjunto",
+          "description": "Conferir BMC, projeto, pitch e prioridades; registrar briefing para requisitos.",
+          "artifact": "docs/projeto/revisao-v1.md",
+          "acceptance": "Nenhuma funcionalidade prometida no pitch fora do MVP sem indicação de evolução futura.",
+          "executor": "ChatGPT Pro; revisão do responsável",
+          "complexity": "P",
+          "dependencies": [
+            "S02-T05"
+          ],
+          "status": "A_FAZER",
+          "evidence": []
+        }
+      ]
+    },
+    {
+      "id": "S03",
+      "title": "Requisitos, regras e experiência de uso",
+      "objective": "Definir o que o MVP deve fazer e como será aceito.",
+      "gate": "RF, RNF, restrições, regras e histórias rastreáveis; jornadas móveis revisadas; ausência de ambiguidades críticas.",
+      "tasks": [
+        {
+          "id": "S03-T01",
+          "title": "Especificar requisitos funcionais",
+          "description": "Especificar acesso, robôs, versões, treino, inscrições, competição, resultados e administração.",
+          "artifact": "docs/requisitos/RF.md",
+          "acceptance": "Cada RF tem ID, ator, comportamento, condições e critério de aceite.",
+          "executor": "ChatGPT Pro; revisão do responsável",
+          "complexity": "M",
+          "dependencies": [
+            "S02-T06"
+          ],
+          "status": "A_FAZER",
+          "evidence": []
+        },
+        {
+          "id": "S03-T02",
+          "title": "Especificar RNF e restrições",
+          "description": "Definir metas e métodos de segurança, acessibilidade, desempenho, operação e limites do piloto.",
+          "artifact": "docs/requisitos/RNF-RES.md",
+          "acceptance": "Metas têm método de medição; valores ainda não acordados aparecem como pendentes, não como garantias.",
+          "executor": "ChatGPT Pro; revisão do responsável",
+          "complexity": "M",
+          "dependencies": [
+            "S03-T01"
+          ],
+          "status": "A_FAZER",
+          "evidence": []
+        },
+        {
+          "id": "S03-T03",
+          "title": "Especificar regras da competição",
+          "description": "Definir formato, pontuação, desempates, prazos, congelamento de versões, falhas e reexecuções.",
+          "artifact": "docs/requisitos/RN.md",
+          "acceptance": "Regras testáveis, sem ambiguidade de pontuação e sem permitir trocar código após o fechamento.",
+          "executor": "ChatGPT Pro; revisão do responsável",
+          "complexity": "M",
+          "dependencies": [
+            "S03-T01"
+          ],
+          "status": "A_FAZER",
+          "evidence": []
+        },
+        {
+          "id": "S03-T04",
+          "title": "Validar os fluxos móveis",
+          "description": "Projetar e validar onboarding, autoria, salvar, testar, inscrever, assistir e consultar resultados.",
+          "artifact": "docs/ux/fluxos-mobile.md",
+          "acceptance": "Estudante consegue percorrer a jornada completa; espectador não é confundido com participante.",
+          "executor": "ChatGPT Pro e responsável",
+          "complexity": "M",
+          "dependencies": [
+            "S03-T01",
+            "S03-T03"
+          ],
+          "status": "A_FAZER",
+          "evidence": []
+        },
+        {
+          "id": "S03-T05",
+          "title": "Consolidar especificações com Spec Kit",
+          "description": "Criar histórias e aceites por feature; R4 somente com justificativa e reconciliação.",
+          "artifact": "specs/<feature>/spec.md; docs/requisitos/matriz-rastreabilidade.md",
+          "acceptance": "Uma única baseline; R4, se usado, tem entrada/versão/saída registradas e não cria catálogo concorrente.",
+          "executor": "ChatGPT Pro; Codex/R4 somente com escalada",
+          "complexity": "G",
+          "dependencies": [
+            "S03-T02",
+            "S03-T03",
+            "S03-T04"
+          ],
+          "status": "A_FAZER",
+          "evidence": []
+        },
+        {
+          "id": "S03-T06",
+          "title": "Auditar e aprovar a baseline",
+          "description": "Aplicar checklist/analyze, eliminar conflitos críticos e revisar rastreabilidade e escopo.",
+          "artifact": "docs/requisitos/revisao-baseline-v1.md",
+          "acceptance": "RF/RNF/RN → história → aceite; bloqueios críticos resolvidos antes da arquitetura final.",
+          "executor": "ChatGPT Pro; aceite do responsável",
+          "complexity": "M",
+          "dependencies": [
+            "S03-T05"
+          ],
+          "status": "A_FAZER",
+          "evidence": []
+        }
+      ]
+    },
+    {
+      "id": "S04",
+      "title": "Arquitetura e provas de viabilidade",
+      "objective": "Reduzir os riscos de motor, autoria móvel, isolamento e hospedagem antes da construção principal.",
+      "gate": "Batalha real de referência executada, autoria móvel escolhida, isolamento validado no limite do experimento e arquitetura registrada em ADRs.",
+      "tasks": [
+        {
+          "id": "S04-T01",
+          "title": "Comparar e escolher a arquitetura candidata",
+          "description": "Comparar interface, API, banco, fila, adaptador e executor antes de fixar tecnologias.",
+          "artifact": "docs/arquitetura/ADR-001-stack.md",
+          "acceptance": "Decisões justificadas; uma única máquina física não significa um único processo com todos os privilégios.",
+          "executor": "ChatGPT Pro",
+          "complexity": "M",
+          "dependencies": [
+            "S03-T06"
+          ],
+          "status": "A_FAZER",
+          "evidence": []
+        },
+        {
+          "id": "S04-T02",
+          "title": "Executar spike do Tank Royale",
+          "description": "Executar batalha real de referência e capturar resultado usando interface e versão verificadas.",
+          "artifact": "spikes/tank-royale/; docs/arquitetura/spike-motor.md",
+          "acceptance": "Log e resultado reais; mocks isolados; licenças e interface efetiva verificadas.",
+          "executor": "ChatGPT Pro; Codex se pesado",
+          "complexity": "G",
+          "dependencies": [
+            "S04-T01"
+          ],
+          "status": "A_FAZER",
+          "evidence": []
+        },
+        {
+          "id": "S04-T03",
+          "title": "Executar spike de autoria pelo celular",
+          "description": "Comparar autoria textual orientada, blocos ou linguagem restrita e escolher uma abordagem.",
+          "artifact": "spikes/autoria-mobile/; docs/arquitetura/ADR-002-autoria.md",
+          "acceptance": "Teste em celular; alteração do comportamento do robô demonstrada; parametrizar aparência não conta como programar.",
+          "executor": "ChatGPT Pro; Codex se pesado; responsável no celular",
+          "complexity": "G",
+          "dependencies": [
+            "S04-T01"
+          ],
+          "status": "A_FAZER",
+          "evidence": []
+        },
+        {
+          "id": "S04-T04",
+          "title": "Validar a estratégia de isolamento",
+          "description": "Modelar ameaças e testar limites de CPU, memória, rede, arquivos e controle de execução.",
+          "artifact": "docs/arquitetura/ameacas-sandbox.md; spikes/isolamento/",
+          "acceptance": "Tentativas controladas de exceder recursos/acessar ativos proibidos registradas; limitações conhecidas; sem exposição pública nesta fase.",
+          "executor": "ChatGPT Pro; Codex se pesado",
+          "complexity": "G",
+          "dependencies": [
+            "S04-T02",
+            "S04-T03"
+          ],
+          "status": "A_FAZER",
+          "evidence": []
+        },
+        {
+          "id": "S04-T05",
+          "title": "Definir a topologia de hospedagem própria",
+          "description": "Definir ambiente segregado, serviços privados, acesso, backup e implantação reversível.",
+          "artifact": "docs/arquitetura/ADR-003-hospedagem.md",
+          "acceptance": "Plano executável e sanitizado; acesso remoto ainda condicionado aos testes e aprovação.",
+          "executor": "ChatGPT Pro e responsável",
+          "complexity": "M",
+          "dependencies": [
+            "S04-T01",
+            "S00-T05"
+          ],
+          "status": "A_FAZER",
+          "evidence": []
+        },
+        {
+          "id": "S04-T06",
+          "title": "Fechar arquitetura e plano técnico",
+          "description": "Consolidar decisões sustentadas pelos spikes e detalhar contratos, dados e tarefas.",
+          "artifact": "specs/<feature>/plan.md; specs/<feature>/tasks.md; docs/arquitetura/visao.md",
+          "acceptance": "Spikes sustentam decisões; tarefas técnicas mapeadas ao backlog; riscos bloqueantes tratados.",
+          "executor": "ChatGPT Pro; revisão do responsável",
+          "complexity": "G",
+          "dependencies": [
+            "S04-T02",
+            "S04-T03",
+            "S04-T04",
+            "S04-T05"
+          ],
+          "status": "A_FAZER",
+          "evidence": []
+        }
+      ]
+    },
+    {
+      "id": "S05",
+      "title": "Fundação da plataforma e jornada do participante",
+      "objective": "Entregar um incremento navegável com acesso, autoria persistida e foco móvel.",
+      "gate": "Participante convidado entra pelo celular, recebe orientação, cria um projeto de robô e salva versões; regras de acesso cobertas por testes.",
+      "tasks": [
+        {
+          "id": "S05-T01",
+          "title": "Criar a base de código e testes",
+          "description": "Estruturar aplicação, dependências, padrões, migrações, testes e CI.",
+          "artifact": "apps/; packages/; tests/; .github/workflows/",
+          "acceptance": "Build/lint/testes executados e evidências anexadas; CI sem segredos desnecessários.",
+          "executor": "ChatGPT Pro; Codex se pesado",
+          "complexity": "M",
+          "dependencies": [
+            "S04-T06"
+          ],
+          "status": "A_FAZER",
+          "evidence": []
+        },
+        {
+          "id": "S05-T02",
+          "title": "Implementar acesso e papéis",
+          "description": "Implementar participante, professor e administrador com privilégio mínimo.",
+          "artifact": "apps/api/; tests/auth/",
+          "acceptance": "Testes positivos e negativos de autorização; participante não acessa dados de outro.",
+          "executor": "ChatGPT Pro; Codex se pesado",
+          "complexity": "M",
+          "dependencies": [
+            "S05-T01"
+          ],
+          "status": "A_FAZER",
+          "evidence": []
+        },
+        {
+          "id": "S05-T03",
+          "title": "Implementar a interface responsiva",
+          "description": "Entregar navegação e telas-base acessíveis em computador e celular.",
+          "artifact": "apps/web/; tests/ui/",
+          "acceptance": "Navegação usável por toque e teclado, inclusive em tela pequena; conteúdo essencial legível.",
+          "executor": "ChatGPT Pro; Codex se pesado",
+          "complexity": "M",
+          "dependencies": [
+            "S05-T01"
+          ],
+          "status": "A_FAZER",
+          "evidence": []
+        },
+        {
+          "id": "S05-T04",
+          "title": "Implementar projetos e versões de robôs",
+          "description": "Criar, editar, salvar e recuperar projetos com histórico e propriedade verificáveis.",
+          "artifact": "apps/api/robots/; tests/robots/",
+          "acceptance": "Dados persistem após nova sessão; dono/permissões corretos; histórico de versão verificável.",
+          "executor": "ChatGPT Pro; Codex se pesado",
+          "complexity": "M",
+          "dependencies": [
+            "S05-T02",
+            "S05-T03"
+          ],
+          "status": "A_FAZER",
+          "evidence": []
+        },
+        {
+          "id": "S05-T05",
+          "title": "Implementar onboarding e exemplos",
+          "description": "Orientar primeiro robô e primeiras alterações sem pressupor formação em web/mobile.",
+          "artifact": "apps/web/onboarding/; docs/pedagogia/exemplos.md",
+          "acceptance": "Aluno acompanha um exemplo, modifica estratégia e salva; telas indicam limites atuais de treino.",
+          "executor": "ChatGPT Pro; revisão pedagógica do responsável",
+          "complexity": "M",
+          "dependencies": [
+            "S05-T04"
+          ],
+          "status": "A_FAZER",
+          "evidence": []
+        },
+        {
+          "id": "S05-T06",
+          "title": "Testar o incremento da sprint",
+          "description": "Verificar acesso, persistência, mensagens, navegação e acessibilidade do incremento.",
+          "artifact": "docs/qualidade/evidencias/S05.md",
+          "acceptance": "Caminho feliz e erros críticos testados; ainda não apresentar este incremento como competição funcional.",
+          "executor": "ChatGPT Pro; responsável nos testes reais",
+          "complexity": "M",
+          "dependencies": [
+            "S05-T05"
+          ],
+          "status": "A_FAZER",
+          "evidence": []
+        }
+      ]
+    },
+    {
+      "id": "S06",
+      "title": "Programação, treino e integração real",
+      "objective": "Completar a primeira fatia vertical: programar no celular, executar no servidor e observar resultado real.",
+      "gate": "Jornada ponta a ponta demonstrada com dois robôs e evidência do motor real, sem depender do processamento do celular.",
+      "tasks": [
+        {
+          "id": "S06-T01",
+          "title": "Implementar o editor escolhido",
+          "description": "Implementar autoria de lógica, exemplos, validação e erros recuperáveis.",
+          "artifact": "apps/web/editor/; tests/editor/",
+          "acceptance": "Lógica editável por toque/teclado; erros recuperáveis; formato de autoria documentado.",
+          "executor": "ChatGPT Pro; Codex se pesado",
+          "complexity": "G",
+          "dependencies": [
+            "S05-T06"
+          ],
+          "status": "A_FAZER",
+          "evidence": []
+        },
+        {
+          "id": "S06-T02",
+          "title": "Implementar validação e limites de submissão",
+          "description": "Validar propriedade, formato, tamanho, integridade e política antes da execução.",
+          "artifact": "apps/api/submissions/; tests/submissions/",
+          "acceptance": "Casos malformados e não autorizados rejeitados; nenhum caminho de bypass conhecido.",
+          "executor": "ChatGPT Pro; Codex se pesado",
+          "complexity": "G",
+          "dependencies": [
+            "S06-T01"
+          ],
+          "status": "A_FAZER",
+          "evidence": []
+        },
+        {
+          "id": "S06-T03",
+          "title": "Implementar fila e executor isolado",
+          "description": "Implementar jobs persistentes, limites de recursos, timeout, cancelamento e recuperação.",
+          "artifact": "services/runner/; tests/runner/",
+          "acceptance": "Bot travado não bloqueia indefinidamente a fila; acesso a ativos proibidos negado; jobs têm identidade e versão.",
+          "executor": "ChatGPT Pro; Codex indicado para implementação pesada",
+          "complexity": "G",
+          "dependencies": [
+            "S06-T02",
+            "S04-T04"
+          ],
+          "status": "A_FAZER",
+          "evidence": []
+        },
+        {
+          "id": "S06-T04",
+          "title": "Integrar o motor e capturar resultados",
+          "description": "Controlar batalhas reais e vincular resultados às versões e jobs corretos.",
+          "artifact": "services/engine-adapter/; tests/engine/",
+          "acceptance": "Resultado é do motor fixado e corresponde às versões submetidas; mensagens não confiáveis não alteram placar.",
+          "executor": "ChatGPT Pro; Codex indicado para implementação pesada",
+          "complexity": "G",
+          "dependencies": [
+            "S06-T03"
+          ],
+          "status": "A_FAZER",
+          "evidence": []
+        },
+        {
+          "id": "S06-T05",
+          "title": "Implementar treino e observação",
+          "description": "Solicitar treino, acompanhar estado, tratar falhas e recuperar resultados após desconexão.",
+          "artifact": "apps/web/training/; tests/training/",
+          "acceptance": "Participante solicita treino, acompanha e consulta resultado após reconectar; sem prometer renderizador próprio completo.",
+          "executor": "ChatGPT Pro; Codex se pesado",
+          "complexity": "M",
+          "dependencies": [
+            "S06-T04"
+          ],
+          "status": "A_FAZER",
+          "evidence": []
+        },
+        {
+          "id": "S06-T06",
+          "title": "Demonstrar a fatia vertical no celular",
+          "description": "Demonstrar criação, alteração de lógica, salvamento e treino com motor real no servidor.",
+          "artifact": "docs/qualidade/evidencias/S06.md",
+          "acceptance": "Vídeo/logs sanitizados ou evidência equivalente; mudança de código afeta a estratégia; falha de bot testada.",
+          "executor": "ChatGPT Pro e responsável no dispositivo real",
+          "complexity": "G",
+          "dependencies": [
+            "S06-T05"
+          ],
+          "status": "A_FAZER",
+          "evidence": []
+        }
+      ]
+    },
+    {
+      "id": "S07",
+      "title": "Competição, pontuação e administração",
+      "objective": "Converter o ambiente de treino em uma RoboCopa administrável e auditável.",
+      "gate": "Mini-competição completa com inscrições, versões congeladas, partidas, pontuação e ranking correto, incluindo tratamento de falhas.",
+      "tasks": [
+        {
+          "id": "S07-T01",
+          "title": "Implementar competição e inscrições",
+          "description": "Implementar evento, elegibilidade, inscrições, prazos e estados.",
+          "artifact": "apps/api/competitions/; tests/competitions/",
+          "acceptance": "Estados e prazos respeitados; inscrições inválidas negadas.",
+          "executor": "ChatGPT Pro; Codex se pesado",
+          "complexity": "M",
+          "dependencies": [
+            "S06-T06"
+          ],
+          "status": "A_FAZER",
+          "evidence": []
+        },
+        {
+          "id": "S07-T02",
+          "title": "Congelar as versões inscritas",
+          "description": "Vincular cada inscrição a versão imutável e regulamento aplicável.",
+          "artifact": "apps/api/entries/; tests/entries/",
+          "acceptance": "Edição posterior do projeto não altera robô já congelado; autoria e hash/ID auditáveis.",
+          "executor": "ChatGPT Pro; Codex se pesado",
+          "complexity": "M",
+          "dependencies": [
+            "S07-T01"
+          ],
+          "status": "A_FAZER",
+          "evidence": []
+        },
+        {
+          "id": "S07-T03",
+          "title": "Implementar agendamento de partidas",
+          "description": "Gerar confrontos e controlar fila, pausas, falhas e reexecuções autorizadas.",
+          "artifact": "apps/api/scheduling/; tests/scheduling/",
+          "acceptance": "Partidas previstas executadas uma vez em termos de efeito; retries não duplicam pontuação.",
+          "executor": "ChatGPT Pro; Codex se pesado",
+          "complexity": "G",
+          "dependencies": [
+            "S07-T02"
+          ],
+          "status": "A_FAZER",
+          "evidence": []
+        },
+        {
+          "id": "S07-T04",
+          "title": "Implementar pontuação e desempates",
+          "description": "Calcular classificação a partir de resultados e regras versionadas.",
+          "artifact": "packages/scoring/; tests/scoring/",
+          "acceptance": "Pontuação e desempates reproduzem fixtures; falhas/desclassificações seguem regulamento.",
+          "executor": "ChatGPT Pro; Codex se pesado",
+          "complexity": "M",
+          "dependencies": [
+            "S07-T03"
+          ],
+          "status": "A_FAZER",
+          "evidence": []
+        },
+        {
+          "id": "S07-T05",
+          "title": "Implementar painel e resultados",
+          "description": "Entregar ranking, histórico, painel do organizador e trilha de ações administrativas.",
+          "artifact": "apps/web/competition/; apps/web/admin/; tests/admin/",
+          "acceptance": "Permissões e trilha auditável; estudante vê resultado compreensível e não ganha acesso administrativo.",
+          "executor": "ChatGPT Pro; Codex se pesado",
+          "complexity": "M",
+          "dependencies": [
+            "S07-T04"
+          ],
+          "status": "A_FAZER",
+          "evidence": []
+        },
+        {
+          "id": "S07-T06",
+          "title": "Ensaiar uma competição completa",
+          "description": "Executar evento de teste incluindo empate, timeout, falha e retomada.",
+          "artifact": "docs/qualidade/evidencias/S07.md",
+          "acceptance": "Do cadastro ao ranking final com evidência real; conjunto de regressão preservado.",
+          "executor": "ChatGPT Pro e responsável",
+          "complexity": "G",
+          "dependencies": [
+            "S07-T05"
+          ],
+          "status": "A_FAZER",
+          "evidence": []
+        }
+      ]
+    },
+    {
+      "id": "S08",
+      "title": "Qualidade, segurança e implantação local",
+      "objective": "Preparar a release candidata no ambiente de hospedagem real, com acesso controlado.",
+      "gate": "Release candidata instalada e recuperável; limites medidos; sem defeitos críticos conhecidos; nenhuma execução pública de código arbitrário antes do gate de segurança.",
+      "tasks": [
+        {
+          "id": "S08-T01",
+          "title": "Executar a regressão completa",
+          "description": "Executar testes unitários, integração, contratos e ponta a ponta no commit candidato.",
+          "artifact": "tests/; docs/qualidade/evidencias/S08-regressao.md",
+          "acceptance": "Resultados realmente executados, ambiente e commit registrados; testes não executados ficam pendentes.",
+          "executor": "ChatGPT Pro; Codex para suítes pesadas",
+          "complexity": "G",
+          "dependencies": [
+            "S07-T06"
+          ],
+          "status": "A_FAZER",
+          "evidence": []
+        },
+        {
+          "id": "S08-T02",
+          "title": "Testar segurança e abuso",
+          "description": "Testar autorização, sandbox, entradas malformadas, abuso de fila e limites de recursos.",
+          "artifact": "tests/security/; docs/qualidade/evidencias/S08-seguranca.md",
+          "acceptance": "Sem falha crítica/alta conhecida no escopo liberado; controles de isolamento testados além do caminho feliz.",
+          "executor": "ChatGPT Pro; Codex para suítes pesadas",
+          "complexity": "G",
+          "dependencies": [
+            "S08-T01"
+          ],
+          "status": "A_FAZER",
+          "evidence": []
+        },
+        {
+          "id": "S08-T03",
+          "title": "Medir carga e usabilidade móvel",
+          "description": "Medir capacidade, recursos, latência e comportamento em condições móveis definidas.",
+          "artifact": "tests/load/; docs/qualidade/evidencias/S08-carga-mobile.md",
+          "acceptance": "Limites publicados correspondem à medição; logs distinguem latência web, espera em fila e tempo da partida.",
+          "executor": "ChatGPT Pro, responsável; Codex se pesado",
+          "complexity": "G",
+          "dependencies": [
+            "S08-T01"
+          ],
+          "status": "A_FAZER",
+          "evidence": []
+        },
+        {
+          "id": "S08-T04",
+          "title": "Implantar na máquina de hospedagem",
+          "description": "Instalar serviços segregados, configurar acesso autorizado e identificar versão implantada.",
+          "artifact": "infra/; docs/operacao/implantacao.md",
+          "acceptance": "Acesso aprovado validado; nenhum segredo no Git; versão implantada identificável; rollback definido.",
+          "executor": "Responsável no host; apoio ChatGPT Pro/Codex",
+          "complexity": "G",
+          "dependencies": [
+            "S08-T02",
+            "S08-T03",
+            "S04-T05"
+          ],
+          "status": "A_FAZER",
+          "evidence": []
+        },
+        {
+          "id": "S08-T05",
+          "title": "Testar recuperação e operação",
+          "description": "Testar backup, restauração, reinício, retomada/cancelamento de jobs e rollback.",
+          "artifact": "docs/operacao/runbook.md; docs/qualidade/evidencias/S08-recuperacao.md",
+          "acceptance": "Restauração e rollback demonstrados em teste; limites de disponibilidade explícitos, não promessa de SLA.",
+          "executor": "Responsável no host; apoio ChatGPT Pro",
+          "complexity": "M",
+          "dependencies": [
+            "S08-T04"
+          ],
+          "status": "A_FAZER",
+          "evidence": []
+        },
+        {
+          "id": "S08-T06",
+          "title": "Aprovar a release candidata",
+          "description": "Revisar resultados e riscos residuais; decidir liberar ou bloquear piloto.",
+          "artifact": "docs/qualidade/RC-aceite.md",
+          "acceptance": "Responsável aceita os riscos residuais; falhas bloqueantes impedem liberação; toda ressalva tem dono e tratamento.",
+          "executor": "Responsável; apoio ChatGPT Pro",
+          "complexity": "M",
+          "dependencies": [
+            "S08-T05"
+          ],
+          "status": "A_FAZER",
+          "evidence": []
+        }
+      ]
+    },
+    {
+      "id": "S09",
+      "title": "Piloto, homologação e entrega do MVP",
+      "objective": "Validar o produto com participantes reais e consolidar a entrega e a comunicação do projeto.",
+      "gate": "Piloto documentado, aceite do responsável e release v0.1.0 rastreável, sem confundir entrega técnica com impacto educacional já comprovado.",
+      "tasks": [
+        {
+          "id": "S09-T01",
+          "title": "Preparar e realizar o piloto",
+          "description": "Realizar experiência com convidados reais, orientação, suporte e registro sanitizado.",
+          "artifact": "docs/piloto/plano-piloto.md; docs/piloto/registro-sanitizado.md",
+          "acceptance": "Participantes reais completam jornada; dados identificáveis permanecem fora do repositório público.",
+          "executor": "Responsável e participantes; apoio ChatGPT Pro",
+          "complexity": "G",
+          "dependencies": [
+            "S08-T06"
+          ],
+          "status": "A_FAZER",
+          "evidence": []
+        },
+        {
+          "id": "S09-T02",
+          "title": "Medir experiência e indícios de aprendizagem",
+          "description": "Analisar participação móvel, dificuldades e avaliação pedagógica exploratória sem inferir causalidade.",
+          "artifact": "docs/piloto/avaliacao.md",
+          "acceptance": "Indicadores têm denominador e método; observação, opinião e evidência técnica são distinguidas.",
+          "executor": "ChatGPT Pro e responsável",
+          "complexity": "M",
+          "dependencies": [
+            "S09-T01"
+          ],
+          "status": "A_FAZER",
+          "evidence": []
+        },
+        {
+          "id": "S09-T03",
+          "title": "Corrigir problemas prioritários",
+          "description": "Corrigir bloqueios e regressões; encaminhar melhorias não essenciais ao pós-MVP.",
+          "artifact": "docs/piloto/triagem.md; tests/regression/",
+          "acceptance": "Defeitos críticos corrigidos e retestados; escopo não cresce silenciosamente.",
+          "executor": "ChatGPT Pro; Codex se pesado",
+          "complexity": "G",
+          "dependencies": [
+            "S09-T02"
+          ],
+          "status": "A_FAZER",
+          "evidence": []
+        },
+        {
+          "id": "S09-T04",
+          "title": "Homologar requisitos e aceite do MVP",
+          "description": "Conferir requisitos, testes, evidências e aceite do responsável.",
+          "artifact": "docs/qualidade/HOMOLOGACAO-MVP.md",
+          "acceptance": "Todos os critérios obrigatórios atendidos ou entrega bloqueada; exceções não escondem requisitos centrais.",
+          "executor": "Responsável; apoio ChatGPT Pro",
+          "complexity": "M",
+          "dependencies": [
+            "S09-T03"
+          ],
+          "status": "A_FAZER",
+          "evidence": []
+        },
+        {
+          "id": "S09-T05",
+          "title": "Atualizar BMC, projeto e pitch final",
+          "description": "Incorporar aprendizados e resultados observados, distinguindo limitações e próximos passos.",
+          "artifact": "docs/negocio/bmc-v2.md; docs/projeto/projeto-v2.md; docs/pitch/pitch-final.md",
+          "acceptance": "Pitch distingue resultados obtidos, limitações e próximos passos; nenhuma métrica inventada.",
+          "executor": "ChatGPT Pro; revisão do responsável",
+          "complexity": "M",
+          "dependencies": [
+            "S09-T02",
+            "S09-T04"
+          ],
+          "status": "A_FAZER",
+          "evidence": []
+        },
+        {
+          "id": "S09-T06",
+          "title": "Publicar a entrega e o próximo backlog",
+          "description": "Publicar release v0.1.0, notas, guias e prioridades pós-MVP após homologação.",
+          "artifact": "CHANGELOG.md; docs/operacao/; docs/pedagogia/; docs/planejamento/pos-mvp.md",
+          "acceptance": "Commit/tag identificáveis, restauração documentada e backlog priorizado; publicação autorizada e sem dados pessoais.",
+          "executor": "ChatGPT Pro; autorização do responsável",
+          "complexity": "M",
+          "dependencies": [
+            "S09-T04",
+            "S09-T05"
+          ],
+          "status": "A_FAZER",
+          "evidence": []
+        }
+      ]
+    }
+  ]
+}

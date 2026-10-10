@@ -1,0 +1,1 @@
+specify-cli @ git+https://github.com/github/spec-kit.git@959e866caa3618bf3dc290d5dca33394365af9c6

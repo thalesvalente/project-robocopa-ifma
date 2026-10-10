@@ -47,6 +47,7 @@ def referee(cfg):
            '--controller-secrets',admin,'--bot-secrets',engine_bot,'--tps','-1',
            '--no-debug-mode','--no-breakpoint-mode'],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
     ctrl=None
+    stage='engine_start'
     try:
         end=time.monotonic()+20
         while time.monotonic()<end:
@@ -71,6 +72,7 @@ def referee(cfg):
                 except ConnectionClosed as e:denied=e.rcvd is not None and e.rcvd.code==1008
                 upstream_negatives[kind]=denied
         if not all(upstream_negatives.values()):raise RuntimeError('ROLE_SECRET_NEGATIVE_FAILED')
+        stage='gateway_ready'
         gateway.start()
         Path('/tmp/ready').touch()
         # Orchestrator performs negative tests then authorizes this known reference battle.
@@ -80,6 +82,7 @@ def referee(cfg):
             time.sleep(.05)
         # All blocked gateway messages were TPS=23; verify none reached the engine.
         blocked_control_unchanged=True
+        stage='await_reference_bots'
         bots=[];until=time.monotonic()+45
         while time.monotonic()<until:
             event=message(ctrl,max(.1,until-time.monotonic()))
@@ -98,8 +101,10 @@ def referee(cfg):
         for field in ('ArenaWidth','ArenaHeight','MinNumberOfParticipants','MaxNumberOfParticipants',
                       'NumberOfRounds','GunCoolingRate','MaxInactivityTurns','TurnTimeout','ReadyTimeout'):
             setup['is'+field+'Locked']=False
+        stage='start_game'
         ctrl.send(json.dumps({'type':'StartGame','gameSetup':setup,'botAddresses':[
             {'host':b['host'],'port':b['port']} for b in bots]}))
+        stage='observe_game'
         events=[];rounds=[];ticks=0;start=time.monotonic();total_bytes=0
         final=None
         while time.monotonic()-start<120:
@@ -139,7 +144,10 @@ def referee(cfg):
             if any(v.encode() in data for v in [admin,engine_bot,*identities]):
                 raise RuntimeError('SECRET_IN_EVIDENCE')
             export(name,data)
+        stage='completed'
     finally:
+        # Fixed stage names and enumerated counters only; never log a frame/token.
+        print('I2_DIAGNOSTIC '+json.dumps({'stage':stage,'gateway':gateway.report()}),flush=True)
         gateway.close()
         if ctrl:ctrl.close()
         process.terminate()

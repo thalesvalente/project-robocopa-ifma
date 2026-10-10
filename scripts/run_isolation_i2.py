@@ -252,8 +252,17 @@ def main() -> int:
             ['-cp', '/opt/bots/classes:/opt/bots/lib/*', 'SpinBot'],
             env=['SERVER_URL=ws://gateway:7660', 'SERVER_SECRET=' + bot_secret],
             wd='/opt/bots/SpinBot', memory='512m', pids='64')
+        docker(['start', referee]); docker(['start', gateway])
+        ip_text = owned_container(referee, run)['NetworkSettings']['Networks'][network_trusted]['IPAddress']
+        import ipaddress
+        try:
+            if ipaddress.ip_address(ip_text).version != 4 or not ipaddress.ip_address(ip_text).is_private:
+                raise ValueError('TRUSTED_REFEREE_ADDRESS_INVALID')
+        except ValueError as exc:
+            raise RuntimeError('TRUSTED_REFEREE_ADDRESS_INVALID') from exc
         probe = create('probe', 'controller', network_bot, ['/app/probe.py'],
-            env=['GATEWAY_URL=ws://gateway:7660', 'BOT_SECRET=' + bot_secret], memory='256m', pids='32')
+            env=['GATEWAY_URL=ws://gateway:7660', 'BOT_SECRET=' + bot_secret,
+                 'REFEREE_IP=' + ip_text], memory='256m', pids='32')
 
         statuses = {'referee': referee, 'gateway': gateway, 'controller': controller,
                     'Walls': walls, 'SpinBot': spin, 'probe': probe}
@@ -263,7 +272,6 @@ def main() -> int:
         status['images_by_role'] = {role: images[t] for role, t in
             (('referee','referee'),('bot','bot'),('gateway','gateway'),('controller','controller'))}
 
-        docker(['start', referee]); docker(['start', gateway])
         import time
         time.sleep(2)  # bounded readiness margin before negative probe; never probes LAN
         # Fixed negative probe runs before official bots join, must be denied by gateway.

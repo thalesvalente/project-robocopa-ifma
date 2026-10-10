@@ -24,8 +24,12 @@ import psycopg
 from services.worker_agent.control_client import Command,WorkerControlClient,WorkerClientError
 from services.execution_control import admission_bridge as admission
 from services.worker_agent import contracts
-from test_control import sql,lit,command,NAME,RUN,OWNER,OTHER,W1,W2,DatabaseError
+from test_control import sql as base_sql,lit,command,NAME,RUN,OWNER,OTHER,W1,W2,DatabaseError
 MIGRATIONS=[ROOT/'services/execution_control/postgres'/n for n in ('001_control.sql','002_admission.sql','003_worker_api.sql')]
+
+def sql(body, role='rc_broker', *, wrap=True):
+    # The legacy helper requires each SQL body to end in a terminator.
+    return base_sql(body.rstrip()+';' if wrap else body, role, wrap=wrap)
 
 def openssl(*args):
     r=command(['openssl',*args],timeout=30)
@@ -55,6 +59,7 @@ class WorkerApiTests(unittest.TestCase):
         cls.key.chmod(0o600);(cls.temp/'ca.key').chmod(0o600)
         cls.source=contracts.DSL.EXAMPLES['explorador'];cls.compiled=contracts.DSL.compile_program(cls.source)
         cls.server=cls.start_server(True)
+        cls.https_ready=True
 
     @classmethod
     def start_server(cls,enabled):
@@ -62,7 +67,7 @@ class WorkerApiTests(unittest.TestCase):
         config.write_text(json.dumps(dict(socket=str(cls.socket),password=cls.password,cert=str(cls.cert),key=str(cls.key),enabled=enabled,portFile=str(portfile))))
         config.chmod(0o600)
         log=(cls.temp/('server-'+identifier+'.log')).open('wb')
-        proc=subprocess.Popen(['deno','run','--no-config','--lock='+str(ROOT/'supabase/functions/worker-control/deno.lock'),'--allow-net=127.0.0.1','--allow-env','--allow-read','--allow-write','--allow-sys',str(ROOT/'tests/worker_api/server.mjs'),str(config)],stdout=log,stderr=log,cwd=ROOT)
+        proc=subprocess.Popen(['deno','run','--no-config','--frozen','--lock='+str(ROOT/'supabase/functions/worker-control/deno.lock'),'--allow-net=127.0.0.1','--allow-env','--allow-read','--allow-write','--allow-sys',str(ROOT/'tests/worker_api/server.mjs'),str(config)],stdout=log,stderr=log,cwd=ROOT)
         cls.addClassCleanup(cls.stop_server,proc,log)
         for _ in range(100):
             if portfile.exists():return (proc,log,json.loads(portfile.read_text())['port'])
@@ -224,6 +229,6 @@ class WorkerApiTests(unittest.TestCase):
 
 if __name__=='__main__':
     result=unittest.TextTestRunner(verbosity=2).run(unittest.defaultTestLoader.loadTestsFromTestCase(WorkerApiTests))
-    report=dict(schema_version=1,status='PASS' if result.wasSuccessful() and result.testsRun else 'FAIL',tests_run=result.testsRun,failures=len(result.failures),errors=len(result.errors),source_commit=os.environ.get('RC_SOURCE_COMMIT'),workflow_run_id=RUN,postgres_version=getattr(WorkerApiTests,'pg',None),real_https=True,real_deno=True,real_postgres=True,cloud_deployed=False,worker_vm=False,student_data=False,cleanup='PENDING',migration_sha256={p.name:hashlib.sha256(p.read_bytes()).hexdigest() for p in MIGRATIONS})
+    report=dict(schema_version=1,status='PASS' if result.wasSuccessful() and result.testsRun else 'FAIL',tests_run=result.testsRun,failures=len(result.failures),errors=len(result.errors),source_commit=os.environ.get('RC_SOURCE_COMMIT'),workflow_run_id=RUN,postgres_version=getattr(WorkerApiTests,'pg',None),real_https=bool(getattr(WorkerApiTests,'https_ready',False)),real_deno=bool(getattr(WorkerApiTests,'https_ready',False)),real_postgres=bool(getattr(WorkerApiTests,'pg',None)),cloud_deployed=False,worker_vm=False,student_data=False,cleanup='PENDING',migration_sha256={p.name:hashlib.sha256(p.read_bytes()).hexdigest() for p in MIGRATIONS})
     p=ROOT/'.local/i3-worker-api/report.json';p.parent.mkdir(parents=True,exist_ok=True);p.write_text(json.dumps(report,indent=2)+'\n')
     raise SystemExit(0 if report['status']=='PASS' else 1)

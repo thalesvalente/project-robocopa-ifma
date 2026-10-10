@@ -2,23 +2,17 @@
 
 | Feature | Escopo | Estado |
 |---|---|---|
-| [000-governanca](000-governanca/spec.md) | Fundação, rastreabilidade e bootstrap | Base técnica entregue; ratificação pendente |
-| [001-hosting-local](001-hosting-local/spec.md) | Laboratório PostgreSQL/sonda e [evolução híbrida](001-hosting-local/hybrid-mvp.md) | Experimento local demonstrado; implantação híbrida pendente |
-| [002-tank-royale](002-tank-royale/spec.md) | Batalha de referência | CI aprovado; reprodução Windows informada pelo responsável |
-| [003-autoria-mobile](003-autoria-mobile/spec.md) | RoboDSL e editor | CI/PC demonstrados; telefone físico e ratificação pendentes |
-| [004-isolamento-execucao](004-isolamento-execucao/spec.md) | Contratos, isolamento e controle | I1/I2 e recortes I3 demonstrados; cloud/VM/produção pendentes |
-| [005-identidade-academica](005-identidade-academica/spec.md) | Google OAuth da conta acadêmica IFMA, autorização por vínculo, RLS, proteção de menores | Planejado em D-010; domínio real/conta Workspace e autorização do admin pendentes |
+| [000-governanca](000-governanca/spec.md) | Fundação/Spec Kit | Base técnica; ratificação pendente |
+| [001-hosting-local](001-hosting-local/spec.md) | Laboratório e [MVP híbrido](001-hosting-local/hybrid-mvp.md) | Local demonstrado; cloud/VM reais pendentes |
+| [002-tank-royale](002-tank-royale/spec.md) | Motor de batalha | CI e provas históricas de host |
+| [003-autoria-mobile](003-autoria-mobile/spec.md) | Editor/RoboDSL básica | CI/PC; telefone e revisão pendentes |
+| [004-isolamento-execucao](004-isolamento-execucao/spec.md) | Isolamento e controle | I1/I2/recortes I3 validados; I3 integral aberto |
+| [005-identidade-academica](005-identidade-academica/spec.md) | Google Workspace/Gmail pessoal | ID-010 offline; login/vínculos/RLS para o piloto |
 
-A feature004 mantém o catálogo amplo [T001–T039](004-isolamento-execucao/tasks.md), [I1](004-isolamento-execucao/iteration-1.md), [I2](004-isolamento-execucao/iteration-2.md), [guarda de protocolo](004-isolamento-execucao/i2-protocol-guard.md) e [reconciliação](004-isolamento-execucao/i2-reconciliation-plan.md). Só encerrar recorte com evidência, não gates amplos por documento ou CI verde.
+**Prioridade D-012:** [trilha DEMO](004-isolamento-execucao/demo-diretoria-mvp.md): I3-03C antes de I3-04, seguido de I3-05/06/07, I4, PWA/Supabase e I5. ID-011/multiescola e OAuth estudantil não bloqueiam a demonstração privada, mas proteção da API/VM e dados permanece obrigatória.
 
-**I3:** [plano por subincrementos](004-isolamento-execucao/iteration-3.md) e [decisões](004-isolamento-execucao/i3-design-decisions.md). I3-01 SQLite é laboratório; I3-02 é [probe TLS](004-isolamento-execucao/i3-02-auth-plan.md), não serviço cloud.
+**I3-03:** [núcleo PG](004-isolamento-execucao/i3-03-postgres-plan.md), [admissão AD](004-isolamento-execucao/i3-03-admission-plan.md), [CW-01..06](004-isolamento-execucao/i3-03c-worker-api-plan.md) e [contrato worker](004-isolamento-execucao/contracts/worker-api.md). PG/AD possuem evidências; I3-03C em preparação pré-código, não Supabase já implantado. [Evidência AD](../docs/qualidade/evidencias/S04-T04-I3-03B.md).
 
-**I3-03:** [plano PG-01..06](004-isolamento-execucao/i3-03-postgres-plan.md), [contrato SQL privado atualizado após002](004-isolamento-execucao/contracts/postgres-control.md) e [evidências do núcleo](../docs/qualidade/evidencias/S04-T04-I3-03.md). Núcleo PostgreSQL validado, I3-03 integral em execução. [F01](004-isolamento-execucao/i3-03-ci-audit-plan.md), [F02](004-isolamento-execucao/i3-03-reap-fix-plan.md) e [C02](004-isolamento-execucao/i3-03-cleanup-plan.md) foram planejados antes dos patches.
+**Feature005:** [D-011](../docs/planejamento/decisoes/D-011-google-pessoal-multiescolas.md), [ADR-008](../docs/arquitetura/ADR-008-google-multiescolas.md), [spec](005-identidade-academica/spec.md), [plan](005-identidade-academica/plan.md), [tasks](005-identidade-academica/tasks.md), [contrato](005-identidade-academica/contracts/google-eligibility.md) e [evidência ID-010](../docs/qualidade/evidencias/S03-ID-010.md). Gmail verificado e Workspace entram apenas PENDING na política; não é OAuth real.
 
-**I3-03B:** [plano AD-01..06](004-isolamento-execucao/i3-03-admission-plan.md), [contrato admissão/Psycopg](004-isolamento-execucao/contracts/admission-postgres.md), [relatório](../docs/qualidade/evidencias/S04-T04-I3-03B.md) e [JSON](../docs/qualidade/evidencias/S04-T04-I3-03B.json). Admissão I1 ligada à fila PostgreSQL: 22 integrações reais e 25 unidades novas incluídas em407 regressões. Não verifica JWT/worker operacional e não implanta Supabase. Após002, rc_broker não chama enqueue bruto; rc_admission é a entrada restrita.
-
-**Direção vigente:** [D-009](../docs/planejamento/decisoes/D-009-carater-voluntario-vercel-hobby.md) mantém Vercel Hobby preferida para a PWA voluntária, Supabase com persistência remota e VM local só para computação; Cloudflare é contingência. [D-007](../docs/planejamento/decisoes/D-007-execucao-pos-revisao-mvp.md) e [ADR-006](../docs/arquitetura/ADR-006-demo-gratuita-plano-controle.md) conservam os demais trade-offs. Nada homologa implantação cloud/VM ou piloto estudantil.
-
-`spec.md` descreve problema/histórias/aceites; `plan.md`, decisões/interfaces/testes; `tasks.md`, execução. Requisitos ratificados na S03 serão baseline formal, sem catálogo concorrente. Fluxo constitution → specify → clarify → plan → checklist → tasks → analyze → implement → converge. Usar scripts versionados e checagem nativa; não alegar slash commands sem ferramenta. [Estado atual](../docs/planejamento/ESTADO-ATUAL.md).
-
-**Feature 005:** [spec](005-identidade-academica/spec.md), [plan](005-identidade-academica/plan.md), [tasks](005-identidade-academica/tasks.md) e [research](005-identidade-academica/research.md). **Nenhum login institucional implementado**; confirmar domínio Google Workspace e bloqueio de apps terceiros de menores antes de abrir contas de alunos. [D-010](../docs/planejamento/decisoes/D-010-login-google-academico-ifma.md).
+Backlog JSON é canônico; 39 tarefas amplas de isolamento não se encerram por testes de subincremento. Fluxo constitution → specify → clarify → plan → tasks → analyze → implement → converge; scripts versionados, sem alegar slash commands inexistentes. [Estado atual](../docs/planejamento/ESTADO-ATUAL.md).

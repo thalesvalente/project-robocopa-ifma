@@ -1,0 +1,34 @@
+{
+  "kind": "S03-ID-010",
+  "status": "PASS_UNIT_POLICY_CI",
+  "date": "2026-10-10",
+  "code_commit": "2dcea3cece5ca43358bd567501270fc12596be8c",
+  "plan_commit": "4f4b9114d4c2ab548e67e312aa9f80276cf6ef40",
+  "tests": {
+    "unit_policy": {
+      "passed": 20,
+      "failed": 0,
+      "run": 38082735138
+    },
+    "planning": {
+      "status": "success",
+      "run": 38082734825
+    },
+    "mobile": {
+      "status": "success",
+      "run": 38082734828
+    }
+  },
+  "code_blobs": {
+    "policy": "2352bb0d63bd7703150334e91438b8813a49d12e",
+    "tests": "17063e1cb414bb4d3e67b10548c44d118988a837"
+  },
+  "limitations": {
+    "real_google_oauth": false,
+    "real_supabase": false,
+    "real_rls": false,
+    "real_school_membership": false,
+    "production": false
+  },
+  "gprod": "BLOCKED"
+}

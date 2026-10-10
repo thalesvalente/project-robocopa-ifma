@@ -1,0 +1,109 @@
+{
+  "schema_version": 1,
+  "record": "S04-T04-I2-RECONCILIACAO",
+  "date": "2026-10-10",
+  "status": "FECHADO_NO_ESCOPO_EXPERIMENTAL",
+  "macro_task": "S04-T04",
+  "macro_status": "EM_EXECUCAO",
+  "production_gate": "BLOQUEADO",
+  "canonical_pr": 19,
+  "closed_alternatives": [
+    18,
+    21
+  ],
+  "source_commit": "e7afd8a2ac7cb1ab45eeec2146ae828e56f93e0a",
+  "checkout_commit": "447fb906dbd8d465086e502c0208516670a2e11c",
+  "workflow_runs": {
+    "i2": 38059207968,
+    "speckit": 38059207983,
+    "i1": 38059207938,
+    "authoring": 38059207943
+  },
+  "workflow_conclusions": {
+    "i2": "success",
+    "speckit": "success",
+    "i1": "success",
+    "authoring": "success"
+  },
+  "artifact": {
+    "id": 11672222277,
+    "bytes": 595103,
+    "sha256": "96c19f1da8e3ddc259006f27c47bebc731873de649c2aec8c732fd4037f79058",
+    "zip_entries": 16,
+    "manifest_files_verified": 12
+  },
+  "source_artifact": {
+    "id": 11672516551,
+    "bytes": 352695,
+    "sha256": "2c60e85bbe6c695705ee2c196104c0e9a6aed0ed3edd2c86d41505e816f5d282"
+  },
+  "offline_tests": {
+    "planning": 41,
+    "infra": 13,
+    "engine": 23,
+    "mobile": 35,
+    "security": 187,
+    "gateway": 21,
+    "total": 320,
+    "conclusion": "PASS",
+    "no_docker_or_bots": true
+  },
+  "scenarios": {
+    "battles": [
+      {
+        "name": "battle-1",
+        "rounds": 3,
+        "ticks": 3386,
+        "spin_score": 274,
+        "walls_score": 175
+      },
+      {
+        "name": "battle-2",
+        "rounds": 3,
+        "ticks": 2701,
+        "spin_score": 311,
+        "walls_score": 125
+      }
+    ],
+    "controlled_aborts": 2,
+    "real_timeout_cleanup": 1,
+    "unique_scenario_ids": 5
+  },
+  "reconciliation": {
+    "tasks": {
+      "R01": "DONE",
+      "R02": "DONE",
+      "R03": "DONE",
+      "R04": "DONE",
+      "R05": "DONE",
+      "R06": "DONE",
+      "R07": "DONE",
+      "R08": "DONE",
+      "R09": "DONE",
+      "R10": "DONE"
+    },
+    "findings": {
+      "C01": "CLOSED",
+      "C02": "CLOSED",
+      "C03": "CLOSED",
+      "C04": "CLOSED",
+      "C05": "CLOSED"
+    },
+    "open_i2_blockers": 0,
+    "open_review_threads": 0
+  },
+  "scope": {
+    "student_submissions": false,
+    "host_vm_tested": false,
+    "public_service_enabled": false,
+    "independent_third_party_review": false,
+    "i3_started": false
+  },
+  "outside_i2": [
+    "I3",
+    "I4",
+    "I5",
+    "S03/S04 broad approval"
+  ],
+  "evidence_claim": "Own read-only audit outside runner; does not establish referee authenticity or production safety"
+}

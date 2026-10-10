@@ -1,0 +1,53 @@
+{
+  "schema_version": 1,
+  "scope": "reference-engine-isolation-experiment-only",
+  "status": "PASS",
+  "source_commit": "9dd75a898d6c0817897098e114ad7394605b6047",
+  "ci_checkout_commit": "b3085bec3c57c4a0edc6d2b129676313cb821d35",
+  "workflow_run": 38048459272,
+  "workflow_url": "https://github.com/thalesvalente/project-robocopa-ifma/actions/runs/38048459272",
+  "environment": "GitHub-hosted Ubuntu 24.04 disposable runner",
+  "host_vm_tested": false,
+  "student_submission_enabled": false,
+  "production_security_approved": false,
+  "artifact": {
+    "id": 11667813980,
+    "name": "i2-separated-arena-evidence",
+    "bytes": 641890,
+    "sha256": "4f5dc37b6bf1f87f64dd2404fb4f96ca7da95f4865fd0f1ee1a8a3e09f8e41f6",
+    "expires_at_utc": "2026-11-09T11:28:35Z",
+    "batch_directory": "20261010T112736Z-feecc6ef",
+    "downloaded_and_reread_outside_runner": true,
+    "independent_third_party_review": false
+  },
+  "engine": {
+    "version": "1.4.0",
+    "commit": "c8ad3a8d19a843f6258d6f6f9db7f29229963903",
+    "server_jar_sha256": "16c277795bd823c9eda0b650f1d09a418ff35cfe43d59b820c52d5e6816f905c",
+    "result_source": "GameEndedEventForObserver",
+    "replay": "official event stream stored by the trusted Python controller; official GUI compatibility not tested"
+  },
+  "battles": [
+    {"name": "battle-1", "rounds": 3, "walls_score": 223, "spin_bot_score": 193, "ticks": 2932, "duration_ms": 6856, "replay_bytes": 290468, "replay_uncompressed_bytes": 3700653, "replay_sha256": "4fa363bf090ee63140c1d16b7d9456d631bc3320e0d0abb3e3a64ebb6bff8969"},
+    {"name": "battle-2", "rounds": 3, "walls_score": 159, "spin_bot_score": 186, "ticks": 3608, "duration_ms": 8256, "replay_bytes": 338239, "replay_uncompressed_bytes": 4542913, "replay_sha256": "8d29908f71f6f36eb346b465fc598ede17af254bc508a2d28b801ff12c37f6ec"}
+  ],
+  "runtime": {
+    "roles": ["referee", "walls", "spin"],
+    "exact_policy_checks_per_role": 24,
+    "network_protocol_checks_per_bot": 19,
+    "both_bot_namespaces_tested": true,
+    "pid_net_mnt_distinct_from_each_other_and_host": true,
+    "owned_acl_reject_packets_each_bot_each_battle": 6,
+    "host_filter_unchanged_during_acl_installation": true,
+    "docker_bridge_management_may_change_runner_host_rules": true,
+    "raw_engine_control_without_handshake_observed": true,
+    "bot_credentials_denied_for_controller_and_observer": true,
+    "gateway_blocked_control_preserved_engine_state": true
+  },
+  "faults": [
+    {"point": "after_containers", "observed": "EXPECTED_ABORT", "cleanup_verified": true, "owned_resources_remaining": false},
+    {"point": "after_ready", "observed": "EXPECTED_ABORT", "cleanup_verified": true, "owned_resources_remaining": false}
+  ],
+  "tests_in_reference_run": {"planning": 41, "infra": 13, "tank_royale": 23, "mobile": 35, "security": 163, "websocket_transport_fake_engine": 11, "total": 286},
+  "limitations": ["No personal VM deployed", "No public API or student code", "No durable broker/ledger or full twenty-cycle campaign", "Not a kernel escape proof", "Hashes do not authenticate a compromised referee", "Limits are experiment budgets, not production capacity"]
+}

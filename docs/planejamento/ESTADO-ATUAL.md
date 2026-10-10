@@ -1,43 +1,53 @@
-# Estado atual — pesquisa, autoria e primeiro incremento de isolamento
+# Estado atual — pesquisa, autoria e isolamento de robôs/árbitro
 
-**Atualizado:** 2026-10-10. **Trabalho corrente:** S04-T04, incremento I1 implementado e testado em ambiente descartável. VM dedicada aprovada como direção, ainda não instalada. Não há liberação para alunos.
+**Atualizado:** 2026-10-10. **Trabalho corrente:** S04-T04 em EM_EXECUCAO; I1 e o recorte I2 possuem código e provas em CI descartável. VM dedicada aprovada como direção, mas não instalada/testada no host. Sem liberação para alunos.
 
 ## Repositório e decisões
 
-PRs empilhados: #11 fundação/Spec Kit; #12 laboratório Compose; #13 motor de referência; #14 autoria responsiva; #16 especificação de isolamento; **#17 pesquisa oficial e primeiro incremento de segurança** (`feat/s04-isolation-validation`, base #16). Não houve merge na main.
+PRs empilhados: #11 fundação/Spec Kit; #12 Compose; #13 motor de referência; #14 autoria; #16 especificação; #17 pesquisa/I1; **#19 I2 com árbitro e bots separados**, branch `feat/s04-i2-separated-arena`, base #17. Não houve merge na main.
 
-Spec Kit v1.1.2 permanece fixado em `959e866caa3618bf3dc290d5dca33394365af9c6`. Sua estrutura versionada e verificador nativo são usados; não é uma conexão MCP nativa ou invocação fictícia de slash commands.
+A revisão ampliada encontrou rascunhos I2 prévios em #18 e #19. A continuação reaproveitou #19 e auditou o que já existia. #18 foi preservado sem alteração. #20, criado apenas com plano/coleta de fonte antes de detectar a sobreposição, foi encerrado sem merge para não manter terceira implementação concorrente.
 
-O backlog `docs/planejamento/backlog.json` continua canônico: dez sprints, sessenta tarefas. O publicador restrito do PR #17 reconcilia somente **S04-T04 para EM_EXECUCAO**, regenera as visões e não encerra nenhuma tarefa. S00-T01–T05 já têm entregas técnicas; S00-T06, S03 e revisão arquitetural integral continuam pendentes. Minutas S01/S02 existem, sem pesquisa de campo ou aprovação institucional presumida.
+Spec Kit v1.1.2 permanece fixado em `959e866caa3618bf3dc290d5dca33394365af9c6`. Estrutura, comandos versionados e verificador nativo são usados; não há conexão MCP nativa ou invocação fictícia de slash commands.
 
-**D1:** somente RoboDSL básica no MVP; intermediário, avançado e blocos no pós-MVP. **D2:** VM Linux com daemon/disco próprios e sem drives pessoais é direção aprovada pelo responsável. Registro: D-004 e D-005. D3/limites de D4 precisam de provas, D5 continua bloqueando produção.
+O backlog JSON é canônico: dez sprints, sessenta tarefas. S04-T04 continua **EM_EXECUCAO**, sem fechamento de tarefa/sprint. S00-T01–T05 têm entregas técnicas; S00-T06, requisitos S03 e ratificação arquitetural integral continuam pendentes. Minutas S01/S02 não são pesquisa de campo nem aprovação institucional.
+
+**D1:** somente RoboDSL básica no MVP; intermediário, avançado e blocos após MVP. **D2:** VM Linux independente com daemon/disco próprios e sem drives pessoais aprovada como direção. D3 tem prova técnica de separação no CI, não implantação na VM real; quotas e operação de D4 e liberação de D5 continuam condicionadas aos demais incrementos.
 
 ## Evidências anteriores preservadas
 
-- Laboratório Compose executado pelo responsável no Windows: Postgres e sonda healthy, redes/volume próprios, loopback18080. `docs/qualidade/evidencias/INFRA-LOCAL-HOST.md`.
-- Referência Tank Royale 1.4.0: CI documentado no run38004097096; reprodução Windows informou Walls391 × Spin Bot364, cinco rounds,5255ticks,10718ms,PASS. `TANK-ROYALE-HOST.md`. Replay/manifesto dessa rodada local não foram anexados.
-- Autoria: editor/RoboDSL em Chromium emulado e motor real passaram no CI. Capturas locais mostraram Sentinela536 × Walls226, velocidade0; Explorador188 × Walls188, velocidade5,47, movimento94,3%. `AUTORIA-MOBILE-HOST.md`. Não é auditoria independente dos arquivos locais nem teste em celular físico. Empate com ranks distintos está na issue#15, sem defeito confirmado.
+- Compose executado pelo responsável no Windows: Postgres/sonda saudáveis e loopback18080. `docs/qualidade/evidencias/INFRA-LOCAL-HOST.md`.
+- Tank Royale1.4.0 de referência: CI38004097096; reprodução Windows Walls391 × Spin Bot364, cinco rounds,5255ticks,10718ms,PASS. `TANK-ROYALE-HOST.md`. Replay/manifesto local não anexados.
+- Editor/RoboDSL: Chromium emulado e motor real no CI; capturas do PC Sentinela536 × Walls226 e Explorador188 × Walls188, movimento0%/94,3%. `AUTORIA-MOBILE-HOST.md`. Não é auditoria independente dos bytes locais nem telefone físico. Empate/ranks está na issue15.
 
-## Pesquisa externa e correções aplicadas
+## I1 — contenção inicial
 
-Fontes oficiais Docker, Microsoft, GitHub, gVisor e código Tank Royale fixado sustentam a direção da VM, com ressalvas. Outra distribuição WSL compartilha kernel; bridge/internal não garante rede inacessível ao host; ausência de socket não elimina todos os canais do daemon; externalServer do runner não separa automaticamente os processos de bot; hash sozinho não autentica um resultado produzido em ambiente comprometido.
+Plano anterior ao código em `specs/004-isolamento-execucao/iteration-1.md`, oito subentregas mapeadas às39tarefas amplas. Contrato puro de admissão, política de diagnóstico e limites de subprocessos foram implementados; isso não é broker público/fila/ledger.
 
-Relatório: `docs/arquitetura/pesquisa-isolamento-2026-10-10.md`. Atualizações do produto Docker Desktop precisam ser avaliadas separadamente do Engine28.1.1 informado pelo responsável. Não declarar a máquina vulnerável sem conhecer a versão/configuração do produto.
+Referência [38021817642](https://github.com/thalesvalente/project-robocopa-ifma/actions/runs/38021817642):164 testes unitários e9 provas reais de baseline, arquivos, rede, CPU, PIDs, tmpfs, memória, timeout e stdout.20 invariantes por contêiner e limpeza própria. Três testes de reconciliação posteriores levaram I1 a167. Relatório `docs/qualidade/evidencias/S04-T04-I1.md`. A bateria recusa Windows/WSL/Desktop; não comprova VM pessoal.
 
-## S04-T04 / I1 — código e provas reais
+## I2 — canal de jogo e ambientes separados
 
-Plano publicado antes do código: `specs/004-isolamento-execucao/iteration-1.md`, oito subentregas vinculadas às 39 tarefas amplas T001–T039. G-EXP permite engenharia e testes sintéticos descartáveis; G-PROD continua bloqueado. Nenhum teste adversarial foi executado no computador pessoal.
+Plano original `iteration-2.md` foi publicado antes do código; adendo N5 planejou filtro de mensagens antes do gateway. Nesta revisão, `i2-audit-plan.md` (commit69ee9c9) detalhou seis lacunas antes das correções: auditor estrito, redes efetivas, limites por sessão, falhas/cleanup, provas nos dois bots e documentação.
 
-Implementados: `services/worker_agent/contracts.py` (admissão estrita, não autenticação/ledger), `policy.py` (perfil diagnóstico e inspeção), `bounded.py` (limites durante leitura/tempo), harness e probes fixos. Nenhuma ampliação da RoboDSL nem integração pública foi feita.
+Implementação: três imagens/papéis separados, bridge interna owned com ACLs nos namespaces dos contêineres, controlador que utiliza eventos oficiais, gateway bot-only e auditor somente leitura. O teste comprovou que segredo no handshake não bastava para todos os comandos do servidor1.4.0 fixado; a mitigação bloqueia mensagem administrativa no gateway e acesso à porta bruta. Nenhum bot recebe o segredo administrativo.
 
-Lote conferido: [run38021817642](https://github.com/thalesvalente/project-robocopa-ifma/actions/runs/38021817642), fontebc82edb. **164 testes unitários OK, sendo55 novos**, Spec Kit nativo PASS e **nove provas reais** de baseline, arquivos, rede, CPU, PIDs, tmpfs, memória, timeout e stdout. Vinte invariantes antes de iniciar cada contêiner; todos removidos ao final. O artifact foi baixado e verificado por SHA256/CRC/JSON. Evidência detalhada: `docs/qualidade/evidencias/S04-T04-I1.md`.
+**Lote referência [38048459272](https://github.com/thalesvalente/project-robocopa-ifma/actions/runs/38048459272), fonte9dd75a8, aprovado:** duas batalhas de três rounds, Walls223 × Spin Bot193 e Walls159 × Spin Bot186.24 invariantes por papel,19 verificações por bot, namespaces PID/net/mnt distintos e6 pacotes recusados pela ACL de cada bot. Abortos `after_containers`/`after_ready` limparam recursos; nenhum órfão owned. ZIP/gzip/eventos/manifestos baixados e auditados fora do runner, não por auditoria externa.
 
-A bateria roda em GitHub-hosted Ubuntu e recusa execução local/WSL/Desktop. Não valida a VM, rede ou Hyper-V do Windows. Os limites pequenos das sondas não são limites aprovados de partidas. A reconciliação de progresso possui três testes adicionais aos164 do lote histórico.
+Nesse lote passaram286 testes automatizados (275 unitários/contratos/regressão e11 transportes contra engine falso). Uma correção adicional de H04 incluiu regressão de daemon indisponível durante cleanup; o novo código exige consulta de existência bem-sucedida. Os placares históricos não são reescritos pelas regressões posteriores.
 
-## O que permanece pendente
+Fontes e detalhes: `docs/qualidade/evidencias/S04-T04-I2.md` e `.json`, `spikes/isolamento/arena/README.md`, `specs/004-isolamento-execucao/i2-audit-results.md`. I2 atende apenas ao experimento descrito; tarefas T amplas/gates de produção continuam abertos.
 
-**Próxima prioridade técnica:** separação real bot/árbitro e canal WebSocket mínimo com papéis/segredos distintos. Depois: broker autenticado, fila durável, ledger/idempotência, política de imagens/patches, limites do motor, rate-limit, vinte ciclos de falha/limpeza, inventário/provisionamento da VM, backup/restore, revisão e aceite.
+## Próximos incrementos
 
-S04-T03 ainda requer uso em telefone físico e revisão pedagógica. Sem contas, inscrições/competição completas, piloto ou MVP homologado. A segurança é prioridade antes dessas expansões; níveis intermediário/avançado não entram agora.
+**I3:** detalhar e implementar broker autenticado, fila durável, ledger/idempotência, retry, cotas e suspensão sem socket Docker na API. A existência de contratos puros não equivale a esse serviço. Qualquer lacuna descoberta deve ser planejada no Spec Kit antes do código.
 
-Não foram alterados Docker Desktop/WSL, .env, Compose, Postgres, firewall, VHDX, roteador ou serviços pessoais. O servidor 18081 do laboratório continua com acesso à CLI Docker e **não deve ser exposto**. Não foi usado Codex/R4; não foi criada sessão remota na máquina do responsável.
+**I4:** verificar patches, discos, rede e provisionar/testar VM real, com ação e autorização específicas no host. **I5:** calibrar quotas de jogos, vinte ciclos, matriz completa de ameaças, backup/restauração, revisão e decisão de liberação. Telefone físico e revisão pedagógica permanecem em S04-T03/S03.
+
+G-EXP permitiu engenharia/experimentos sintéticos no CI; G-PROD continua bloqueado. Sem nova linguagem, aluno real, endpoint público, instalação de VM, mudança em Docker Desktop/WSL/.env/Compose/Postgres/firewall/VHDX/roteador ou serviços pessoais. O servidor18081 continua com acesso à CLI Docker do host e **não deve ser exposto**. Sem Codex/R4 ou sessão remota na máquina do responsável.
+
+## Atualização — I2 reconciliado antes de I3 (2026-10-10)
+
+Plano de reconciliação R01–R10 versionado antes dos patches; análise comparou PRs #18/#19/#21. PR #19 (`e7afd8a2ac7cb1ab45eeec2146ae828e56f93e0a`) é a única base executável I2; #18 e #21 encerrados sem merge, branches preservadas. C01–C05 fechados no escopo experimental, incluindo timeout REAL, verificação de processos e manifesto de evidências associado à fonte/run. Quatro workflows PASS: [arena I2](https://github.com/thalesvalente/project-robocopa-ifma/actions/runs/38059207968), [Spec Kit](https://github.com/thalesvalente/project-robocopa-ifma/actions/runs/38059207983), [I1](https://github.com/thalesvalente/project-robocopa-ifma/actions/runs/38059207938), [editor e motor](https://github.com/thalesvalente/project-robocopa-ifma/actions/runs/38059207943). Offline: 320 testes PASS; artefato I2 baixado, hash/CRC, 12 arquivos e conteúdo conferidos; nenhuma revisão independente por terceiro foi alegada. [Relatório](../qualidade/evidencias/S04-T04-I2-RECONCILIACAO.md).
+
+**Zero pendências I2 abertas dentro do recorte experimental planejado; S04-T04 continua EM_EXECUCAO, G-PROD BLOQUEADO.** I3 não iniciado. VM pessoal/host não testados, código de alunos e serviços públicos não habilitados. O termo “I2 concluído” nunca deve ser usado como aprovação de produção.

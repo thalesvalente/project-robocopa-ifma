@@ -1,0 +1,12 @@
+**
+!spikes/
+!spikes/tank-royale/
+!spikes/tank-royale/prepare.py
+!spikes/tank-royale/upstream.lock.json
+!spikes/isolamento/
+!spikes/isolamento/arena/
+!spikes/isolamento/arena/*.py
+!spikes/isolamento/arena/requirements.txt
+!services/
+!services/worker_agent/
+!services/worker_agent/arena_protocol.py

@@ -1,0 +1,98 @@
+name: I2 - arena separada e papéis
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/separated-arena.yml'
+      - 'specs/004-isolamento-execucao/iteration-2.md'
+      - 'specs/004-isolamento-execucao/i2-protocol-guard.md'
+      - 'specs/004-isolamento-execucao/i2-audit-plan.md'
+      - 'specs/004-isolamento-execucao/i2-reconciliation*'
+      - 'scripts/verify_i2_closure.py'
+      - 'spikes/isolamento/arena/**'
+      - 'services/worker_agent/arena*'
+      - 'services/worker_agent/bounded.py'
+      - 'scripts/run_separated_arena.py'
+      - 'scripts/verify_arena_evidence.py'
+      - 'tests/security/**'
+      - 'tests/arena/**'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: separated-arena-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+jobs:
+  contracts-and-gateway:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Dependência WebSocket fixa (apenas testes no runner)
+        run: python3 -m pip install --disable-pip-version-check --no-deps --require-hashes -r spikes/isolamento/arena/requirements.txt
+      - name: Regressão e novos contratos; gateway usa engine falso explicitamente
+        run: |
+          python3 scripts/verify_security_spec.py
+          python3 scripts/render_planning.py
+          git diff --exit-code -- docs/planejamento/
+          python3 -m unittest discover -s tests/planning -v
+          python3 -m unittest discover -s tests/infra -v
+          python3 -m unittest discover -s tests/tank_royale -v
+          python3 -m unittest discover -s tests/mobile -v
+          python3 -m unittest discover -s tests/security -v
+          python3 -m unittest discover -s tests/arena -v
+      - name: Spec Kit nativo feature 004
+        env:
+          SPECIFY_FEATURE_DIRECTORY: specs/004-isolamento-execucao
+          SPECIFY_FEATURE_NO_PERSIST: '1'
+        run: python3 .specify/scripts/python/check_prerequisites.py --json --require-spec --require-tasks --include-tasks
+  separated-real-battles:
+    needs: contracts-and-gateway
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Pré-requisitos do supervisor (somente runner descartável)
+        run: |
+          for tool in nsenter iptables-save iptables-restore ip6tables-restore; do
+            if ! command -v "$tool" >/dev/null; then
+              sudo apt-get update -qq
+              sudo apt-get install -y -qq iptables util-linux
+              break
+            fi
+          done
+          command -v nsenter iptables-save iptables-restore ip6tables-restore
+          sudo -n iptables-save >/dev/null
+          sudo -n nsenter --version
+      - name: Duas batalhas, dois abortos e timeout real no runner descartável
+        env:
+          RC_SOURCE_COMMIT: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: python3 scripts/run_separated_arena.py
+      - name: Auditoria própria somente leitura com fonte e run esperados
+        env:
+          RC_SOURCE_COMMIT: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          python3 - <<'PYCODE'
+          from pathlib import Path
+          import os
+          from services.worker_agent.arena_reconciliation import validate_reconciled_batch
+          batches=list(Path('.local/security-i2').glob('*/batch.json'))
+          assert len(batches)==1, 'Exactly one batch from this invocation required'
+          report=validate_reconciled_batch(batches[0].parent,expected_source_commit=os.environ['RC_SOURCE_COMMIT'],expected_workflow_run_id=int(os.environ['GITHUB_RUN_ID']))
+          assert report['status']=='PASS' and report['abort_checks_passed']==2 and report['timeout_cleanup_passed']
+          print('PASS: two battles, two aborts, real timeout/cleanup and source-bound evidence; not production approval')
+          PYCODE
+      - name: Guardar apenas evidências verificadas ou diagnósticos sintéticos sanitizados
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: i2-separated-arena-evidence
+          path: .local/security-i2/
+          include-hidden-files: true
+          retention-days: 30
+          if-no-files-found: warn
+# ACLs only in owned container namespaces of a disposable GitHub runner.
+# Not the operator Windows/VM, production, student code or public networking.

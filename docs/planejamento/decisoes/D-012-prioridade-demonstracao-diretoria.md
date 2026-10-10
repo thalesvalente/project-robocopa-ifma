@@ -15,12 +15,18 @@ Demonstrar à diretoria do Campus Itapecuru-Mirim que a RoboCopa permite **progr
 ## Caminho crítico reordenado para Marco A
 
 1. **Integração e consistência Git.** Preservar PRs #23/#24/#26, conciliar decisões vigentes da main, sem força/merge de código inseguro nem retrabalho em ID-011.
-2. **Resultado confiável — I3-04.** Detalhar **antes de qualquer patch** ledger/contrato de resultado, tentativa/fencing/identidade do programa, confirmação transacional única, erro/duplicidade/replay; testar em PostgreSQL real com evidência e rollback. Resultado do árbitro, nunca stdout de bot, é o insumo.
-3. **Broker cloud + worker outbound — restante I3-03/I3-05..07.** Adaptar contrato aprovado, conectar trabalho a executor autenticado via HTTPS de saída, controles de identidade e quota/leases/retries. Não confundir mTLS loopback sintético com autenticação do serviço cloud.
-4. **VM isolada (I4).** Autorizar e inspecionar instalação/segmentação real em PC/VM independente e sem acesso a pastas pessoais, Docker do Windows, segredos cloud ou LAN. Até isso, apenas provas em runner descartável.
-5. **PWA Vercel + Supabase e ensaio (HYB/S08/I5).** Interface móvel que edita/valida RoboDSL, solicita uma partida, consulta estado, apresenta placar/replay; persistência remota e Storage privado; recuperação do worker offline; backup/restore e custo/quota da demonstração comprovados.
+2. **I3-03 primeiro: fechar recorte operacional para a demonstração.** PG-01..06 (núcleo PostgreSQL) e AD-01..06 (admissão RoboDSL) passaram em CI, mas **I3-03 INTEGRAL continua EM EXECUÇÃO**. O recorte I3-03C ainda precisa de API/broker cloud, identidade de serviço e worker outbound autenticado, claims/leases/fencing e testes TLS/roles/compatibilidade do Supabase. Planejar contrato e testes antes do código. Quando aceites de Auth/RLS estudantil continuarem adiados ao piloto, não declarar I3-03 integral fechado.
+3. **I3-04 depois do recorte I3-03C.** Resultado oficial do árbitro, ledger e replay com commit transacional e efeito único; rejeitar tentativas obsoletas, canceladas, duplicadas e falhas de gravação. Planejar antes do código.
+4. **I3-05/I3-06/I3-07.** Quotas, rate limiting, suspensão, falhas/restart, recuperação e integração de ponta a ponta no ambiente de testes.
+5. **I4.** Testar VM Linux independente e isolada do computador pessoal, mediante autorização específica.
+6. **HYB/S08.** Integrar PWA Vercel, Supabase PostgreSQL/Storage, autoria RoboDSL, solicitações, placar e replay, com acesso DEMO restrito.
+7. **I5.** Ensaiar falhas/recuperação, backup/restauração, limites gratuitos e teste no celular; decisão separada de G-DEMO. G-PROD de alunos permanece bloqueado.
 
 **Não são bloqueadores para iniciar o Marco A**: ID-011 (`schools`, `school_memberships`, convite/autorização multiescola), ID-001..009 OAuth real de aluno, login Workspace/SUAP, perfis/admin da escola externa e abertura de torneio público. Isso **não autoriza deixar API pública sem autenticação**: implementar um mecanismo restrito **do ambiente de demonstração**, separado e testado, com negação a usuários reais e controles de segredo/abuso. Se a arquitetura escolhida vier a usar Google no Marco A, a integração terá de ser planejada/testada, não simulada como real.
+
+## Critérios de fechamento
+
+A demonstração poderá aprovar **um recorte I3-03C** com atores sintéticos e acesso controlado, mas isso **não encerra o I3-03 integral**. O incremento completo permanece EM EXECUÇÃO até satisfazer todos os seus critérios, inclusive os de autenticação/autorizações de estudantes que forem planejados para o piloto. Não reclassificar evidências históricas nem transformar G-DEMO em G-PROD.
 
 ## Critérios de go/no-go da demonstração
 

@@ -1,0 +1,60 @@
+name: Isolamento I2 - árbitro e bots segregados
+
+on:
+  pull_request:
+    paths:
+      - 'spikes/isolamento/i2/**'
+      - 'scripts/run_isolation_i2.py'
+      - 'tests/security/test_i2_protocol.py'
+      - '.github/workflows/isolation-i2.yml'
+      - 'specs/004-isolamento-execucao/iteration-2.md'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  contracts:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 6
+    steps:
+      - name: Fonte do PR
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Dependência WebSocket isolada apenas para testes
+        run: |
+          python3 -m venv /tmp/robocopa-i2-py
+          /tmp/robocopa-i2-py/bin/pip install --disable-pip-version-check --only-binary=:all: websockets==16.0
+      - name: Testar contratos I1/I2 e planejamento
+        run: |
+          /tmp/robocopa-i2-py/bin/python -m unittest discover -s tests/security -v
+          python3 scripts/verify_security_spec.py
+          python3 scripts/verify_planning.py
+      - name: Spec Kit feature 004
+        env:
+          SPECIFY_FEATURE_DIRECTORY: specs/004-isolamento-execucao
+          SPECIFY_FEATURE_NO_PERSIST: '1'
+        run: python3 .specify/scripts/python/check_prerequisites.py --json --require-spec --require-tasks --include-tasks
+
+  real-battle:
+    needs: contracts
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - name: Fonte do PR
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Batalha oficial com árbitro isolado por gateway e negativos de protocolo
+        run: python3 scripts/run_isolation_i2.py
+      - name: Preservar apenas evidências deste teste
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: isolation-i2-real-battle
+          path: .local/security-i2/
+          retention-days: 30
+          if-no-files-found: warn
+# Somente GitHub-hosted descartável. Sem runner pessoal, sem volume do host,
+# sem portas públicas e sem entrada de alunos. Um PASS não homologa VM/S08.

@@ -8,7 +8,7 @@ Os checkboxes são atualizados após evidência, não por criação deste arquiv
 - [x] T004 [US2] Verificar preservação da constituição e registrar hashes/run. Macro: S00-T02.
 - [x] T005 [US3] Executar suíte de planejamento e verificar consistência estrutural de IDs, dependências e projeções. Macro: S00-T03/S00-T04. Não equivale à análise semântica completa de requisitos do produto.
 - [x] T006 [US1] Criar issues por sprint e PR, reconciliando o backlog. Macro: S00-T01/S00-T04. Evidência: issues #1–#10, mapa em docs/planejamento/issues-map.json, issue #1 atualizada e PR #11 aberto.
-- [ ] T007 [US3] Conferir inventário na máquina alvo. Macro: S00-T05. Bloqueado: não há sessão no host.
+- [x] T007 [US3] Conferir inventário na máquina alvo. Macro: S00-T05. Evidência: inventários v1/v2/v3 e comandos Docker/WSL/hello-world executados pelo responsável, analisados e registrados sem identificadores pessoais em `docs/operacao/inventario-sanitizado.md`. Coleta realizada no host, mas nenhuma instalação RoboCopa ou alteração de rede ocorreu.
 - [ ] T008 [US3] Ratificar base e registrar ressalvas do responsável. Macro: S00-T06.
 
 Evidência de T002–T005: https://github.com/thalesvalente/project-robocopa-ifma/actions/runs/37884957842. Resultado confirmado: sucesso; commit gerado 51ee9727d8eda0f58c471262abcfc9d50eaeebb2. Não é homologação do MVP.

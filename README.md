@@ -15,8 +15,8 @@ Plataforma educacional em desenvolvimento para aprender programação por meio d
 | Regras de trabalho | [AGENTS.md](AGENTS.md) · [Processo](docs/processo/EXECUCAO.md) |
 | Princípios | [Constituição proposta](.specify/memory/constitution.md) |
 | Spec Kit | [Integração e limites](docs/processo/SPECKIT.md) · [Lock](tools/speckit.lock.json) |
-| Hospedagem própria | [Inventário sanitizado](docs/operacao/inventario-sanitizado.md) |
-| Especificações | [Índice](specs/README.md) |
+| Hospedagem própria | [Inventário sanitizado](docs/operacao/inventario-sanitizado.md) · [Laboratório Docker local](docs/operacao/COMPOSE-LOCAL.md) · [ADRs candidatos](docs/arquitetura/visao.md) |
+| Especificações | [Índice](specs/README.md) · [Hospedagem local (feature 001)](specs/001-hosting-local/spec.md) |
 | Descoberta, BMC e projeto | [Índice de minutas](docs/descoberta/README.md) |
 
 ## Verificação do planejamento

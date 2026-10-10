@@ -1,0 +1,83 @@
+# Ambiente inicial de infraestrutura, sem aplicação RoboCopa nem motor executando.
+# Somente o probe HTTP fica publicado e EXCLUSIVAMENTE no loopback do host.
+name: robocopa-ifma-local
+
+services:
+  database:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: robocopa
+      POSTGRES_DB: robocopa
+      POSTGRES_PASSWORD: ${ROBOCOPA_DB_PASSWORD:?Execute python scripts/init_local_env.py antes do Compose}
+      POSTGRES_INITDB_ARGS: "--auth-host=scram-sha-256"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$${POSTGRES_USER}\" -d \"$${POSTGRES_DB}\""]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 15s
+    mem_limit: 2g
+    cpus: 2.0
+    pids_limit: 256
+    stop_grace_period: 30s
+    restart: "no"
+    security_opt:
+      - no-new-privileges:true
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  infra-probe:
+    image: node:24-alpine
+    user: node
+    working_dir: /app
+    command: ["node", "server.mjs"]
+    read_only: true
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    volumes:
+      - type: bind
+        source: ./infra/probe
+        target: /app
+        read_only: true
+    tmpfs:
+      - /tmp:rw,nosuid,nodev,size=16m
+    ports:
+      - "127.0.0.1:${ROBOCOPA_HOST_PORT:-18080}:8080"
+    networks:
+      - edge
+    depends_on:
+      database:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('node:http').get('http://127.0.0.1:8080/health',r=>process.exit(r.statusCode===200?0:1)).on('error',()=>process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    mem_limit: 512m
+    cpus: 0.5
+    pids_limit: 64
+    restart: "no"
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  postgres_data:
+
+networks:
+  data:
+    internal: true
+  edge:
+    driver: bridge

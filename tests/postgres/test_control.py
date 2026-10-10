@@ -33,7 +33,7 @@ def command(args, *, body=None, timeout=20):
 
 def psql():
     return ['docker','exec','-i','--user','postgres',NAME,'psql','-XqAt',
-            '-v','ON_ERROR_STOP=1','-U','postgres','-d','robocopa_i3_ci','-f','-']
+            '-v','ON_ERROR_STOP=1','-v','VERBOSITY=verbose','-U','postgres','-d','robocopa_i3_ci','-f','-']
 
 
 class DatabaseError(ValueError):
@@ -49,8 +49,10 @@ def sql(body, role='rc_broker', *, wrap=True):
     if out.returncode:
         if 'permission denied' in out.stderr or 'must be' in out.stderr:
             raise DatabaseError('PERMISSION_DENIED')
-        codes = re.findall(r'ERROR:\s+([A-Z][A-Z_]{3,})', out.stderr)
-        raise DatabaseError(codes[0] if codes else 'SQL_OPERATION_FAILED')
+        codes = re.findall(r'ERROR:\s+(?:[A-Z0-9]{5}:\s+)?([A-Z][A-Z_]{3,})(?:\s|$)', out.stderr)
+        states = re.findall(r'(?:ERROR|FATAL):\s+([A-Z0-9]{5}):', out.stderr)
+        raise DatabaseError(codes[0] if codes else
+                            f'SQL_OPERATION_FAILED_{out.returncode}_{states[0] if states else "UNKNOWN"}')
     return out.stdout.strip()
 
 
@@ -223,6 +225,14 @@ class ControlTests(unittest.TestCase):
         with self.assertRaisesRegex(DatabaseError,'STALE_LEASE'): self.beat(old)
         self.assertEqual(self.count('attempts'),2)
 
+    def test_reap_records_reason_and_is_idempotent(self):
+        self.enq(); old=self.claim(); self.expire_lease(old)
+        self.assertEqual(sql('SELECT rc_control.reap();'),'1')
+        self.assertEqual(sql('SELECT rc_control.reap();'),'0')
+        reason=sql(f"SELECT reason FROM rc_control.attempts WHERE attempt_id={lit(old['attempt_id'])};",'postgres')
+        self.assertEqual(reason,'LEASE_EXPIRED')
+        self.assertEqual(self.state(old),'QUEUED')
+
     def test_real_clock_expiration(self):
         sql('UPDATE rc_control.settings SET lease_seconds=1;','postgres')
         self.enq(); j=self.claim(); time.sleep(1.2)
@@ -289,7 +299,7 @@ class ControlTests(unittest.TestCase):
         result=command(['docker','restart',NAME],timeout=30)
         self.assertEqual(result.returncode,0)
         for _ in range(50):
-            if command(['docker','exec',NAME,'pg_isready','-U','postgres','-d','robocopa_i3_ci']).returncode==0: break
+            if command(['docker','exec',NAME,'pg_isready','-h','127.0.0.1','-U','postgres','-d','robocopa_i3_ci']).returncode==0: break
             time.sleep(.1)
         else: self.fail('DATABASE_RESTART_NOT_READY')
         self.assertEqual(self.count(),1)

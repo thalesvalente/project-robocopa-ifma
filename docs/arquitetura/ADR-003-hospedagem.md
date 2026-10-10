@@ -65,3 +65,7 @@ Antes de acesso externo de alunos: avaliar upload, estabilidade, CGNAT/IPv6, dis
 - Subida dos serviços, health checks e persistência após recriar contêiner comprovadas **em runner do CI**.
 - Validação **na máquina alvo** realizada pelo responsável em 2026-10-09: PostgreSQL e sonda `healthy`, redes e volume criados, porta publicada somente no loopback e `/health` retornou `status=ok`. Ver `docs/qualidade/evidencias/INFRA-LOCAL-HOST.md`. Não houve teste de backup/restauração, segurança de bots ou acesso remoto.
 - Não declarar S04-T05, implantação ou segurança de código não confiável concluídas por um teste com PostgreSQL e sonda.
+
+## Alteração de direção do MVP — não altera o experimento local (2026-10-10)
+
+A hipótese de persistência definitiva no Postgres local da Etapa B foi **substituída quanto à arquitetura futura** por Supabase PostgreSQL cloud para dados canônicos e Supabase Storage para replays, frontend Vercel e VMs de execução no PC. O Compose 2026-10-09, seus testes/evidências e rollback permanecem intactos e úteis como laboratório, não como implantação do banco final. A VM local manterá apenas seus discos operacionais e staging efêmero/limitado; não salvará base central de contas/jobs/scores. [ADR-005 — decisão híbrida](ADR-005-hospedagem-hibrida-mvp.md), [D-006](../planejamento/decisoes/D-006-hospedagem-hibrida-e-persistencia-remota.md); nenhum serviço ou VM foi instalado por esta atualização.

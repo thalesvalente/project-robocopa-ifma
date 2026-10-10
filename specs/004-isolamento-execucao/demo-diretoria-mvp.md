@@ -14,11 +14,12 @@
 ## Incrementos ordenados e dependências
 
 - [ ] **DEMO-01 — Reconciliação da base:** alinhar branches #23→#24→#26 e a main com D-011/D-012 (sem modificar evidência histórica); revisar gates e API de demo restrita. Aceite: SHA/árvore, Spec Kit e regressões coerentes, nenhuma alteração de host.
-- [ ] **DEMO-02 — Próximo incremento de implementação I3-04:** publicar contrato de resultado/ledger/replay e tarefas técnicas **ANTES do código**. No PostgreSQL isolado CI, atestar que só resultado validado de tentativa vigente afeta score, que duplicatas repetidas/concorrentes/fence vencida/canceladas falham com efeito único. Sem afirmar que arquivo de replay já existe na nuvem.
-- [ ] **DEMO-03 — Broker/autenticação operacional:** completar I3-03 e demais recortes I3 com identidade real de serviço, API cloud compatível, claim outbound, quotas, suspensão e recuperação. Testar fail-closed. Nenhum segredo admin em VM/bot/browser.
-- [ ] **DEMO-04 — Segurança da VM (I4):** preparar procedimento, aprovação específica do responsável, inspeção de isolamento de host, rede, volumes, permissões, limites e limpeza. CI em Ubuntu não vale como ensaio do computador real.
-- [ ] **DEMO-05 — Aplicação de demonstração:** PWA Vercel ou fallback permitido + Supabase PostgreSQL/Storage; autoria real com conta sintética, endpoint restrito e testado, seleção de estratégias admitidas, trabalho e placar/replay. Nenhuma conta acadêmica nem Gmail real obrigatória para o MARCO A.
-- [ ] **DEMO-06 — Qualidade operacional/aceite (I5):** backups de banco/Storage e restore, timeout/falha/restart, testes no celular e recursos gratuitos, documentação/rollback e go/no-go de apresentação. G-PROD de estudantes só depois dos gates do piloto.
+- [ ] **DEMO-02 — I3-03C primeiro:** planejar e validar broker/API cloud DEMO, identidade de serviço e worker outbound autenticado, lease/fencing e compatibilidade TLS/roles/Supabase, com CI sintético, antes de código de resultado. PG-01..06 e AD-01..06 já validados. **I3-03 integral segue EM_EXECUCAO**, pois Auth/RLS de alunos e todos os aceites originais não estão concluídos.
+- [ ] **DEMO-03 — I3-04 depois:** planejar/testar ledger transacional, replay e placar único por job/attempt/fence oficial, rejeitando duplicatas, jobs cancelados e resultados obsoletos.
+- [ ] **DEMO-04 — I3-05/06/07:** quotas/rate-limit, recuperação e suspensão, integração com executor isolado e revisão de ameaças.
+- [ ] **DEMO-05 — I4:** isolamento e ensaios de VM real, somente com autorização específica do operador.
+- [ ] **DEMO-06 — PWA/Supabase:** conectar edição RoboDSL, versão, trabalho, placar e replay, com acesso DEMO restrito.
+- [ ] **DEMO-07 — I5:** backup/restore, falhas, repetibilidade, celular, custo e go/no-go da demonstração.
 
 ## Limites, risco e proteção obrigatória
 
@@ -29,4 +30,4 @@
 - A escolha D-011 de **Google acadêmico e Gmail pessoal permanece aprovada**, mas ID-011/convites/tenants e integração OAuth real deixam de bloquear a primeira demonstração. Planejamento detalhado dessas funcionalidades continuará disponível para **Marco B**.
 - Todo ajuste descoberto sem planejamento gera adendo Spec Kit antes de patch. Após testes atualizar decisão, `tasks`, evidências/JSON, `ESTADO-ATUAL` e PR.
 
-**Próxima tarefa técnica efetiva (sem execução neste documento):** DEMO-02 / I3-04; precedida pela reconciliação DEMO-01.
+**Próxima tarefa técnica efetiva (ainda sem código): DEMO-02 / I3-03C**, precedida por DEMO-01 e por especificação detalhada. I3-04 vem depois do recorte operacional; I3-03 integral só fecha com todos os aceites originais.

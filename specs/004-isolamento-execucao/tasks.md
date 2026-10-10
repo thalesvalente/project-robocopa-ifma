@@ -1,9 +1,9 @@
 # Tasks: Segurança e isolamento da execução (S04-T04)
 
 **Input:** [spec.md](spec.md), [plan.md](plan.md), [clarifications.md](clarifications.md), [research.md](research.md), [data-model.md](data-model.md), [contracts/job-protocol.md](contracts/job-protocol.md).  
-**Status:** backlog detalhado de **implementação futura** — todas as caixas abaixo permanecem `[ ]`. A produção deste arquivo não significa que os controles já existam.  
-**Macro:** S04-T04 (`A_FAZER` no backlog, porque gates prévios e testes de isolamento ainda faltam).  
-**Regra de execução:** fases de engenharia/teste somente após aprovação e em ambiente descartável autorizado. No host pessoal, não executar cargas adversariais.
+**Status:** catálogo de 39 entregas amplas. O incremento I1 já implementa subconjuntos de contratos/política/limites, com provas reais no CI; as caixas amplas permanecem `[ ]` até atender todo seu aceite. Progresso/evidência: [iteration-1.md](iteration-1.md).  
+**Macro:** S04-T04 em `EM_EXECUCAO` após D-005 e I1; estado histórico `A_FAZER` preservado no Git, sem fechamento dos gates S03/S04.  
+**Regra de execução:** G-EXP autoriza o incremento I1 em CI descartável; G-PROD continua bloqueado. Antes de alterações/VM no host é necessário plano e autorização próprios. Não executar cargas adversariais no computador pessoal.
 
 Formato: `- [ ] T### [P?] [US#] objetivo, caminho(s), requisitos (FR/SC), ameaças (TH)`. `[P]` indica independência de escrita, **não** autorização para burlar gates.
 

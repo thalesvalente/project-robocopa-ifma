@@ -1,0 +1,103 @@
+name: Isolamento - contratos e provas limitadas
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/isolation-validation.yml'
+      - 'specs/004-isolamento-execucao/**'
+      - 'services/worker_agent/**'
+      - 'tests/security/**'
+      - 'spikes/isolamento/**'
+      - 'scripts/run_isolation_checks.py'
+      - 'scripts/reconcile_isolation_backlog.py'
+      - 'tests/planning/test_isolation_progress.py'
+      - 'docs/arquitetura/pesquisa-isolamento-2026-10-10.md'
+      - 'docs/qualidade/evidencias/S04-T04-I1.md'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  source-and-contracts:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Regressao e contratos sem Docker
+        run: |
+          python3 scripts/verify_security_spec.py
+          python3 -m unittest discover -s tests/planning -v
+          python3 -m unittest discover -s tests/infra -v
+          python3 -m unittest discover -s tests/tank_royale -v
+          python3 -m unittest discover -s tests/mobile -v
+          python3 -m unittest discover -s tests/security -v
+      - name: Spec Kit nativo da feature 004
+        env:
+          SPECIFY_FEATURE_DIRECTORY: specs/004-isolamento-execucao
+          SPECIFY_FEATURE_NO_PERSIST: '1'
+        run: python3 .specify/scripts/python/check_prerequisites.py --json --require-spec --require-tasks --include-tasks
+      - name: Preparar fonte rastreada para revisao offline
+        run: |
+          mkdir -p "$RUNNER_TEMP/robocopa-source"
+          git archive --format=tar.gz HEAD -o "$RUNNER_TEMP/robocopa-source/source.tar.gz"
+          git rev-parse HEAD > "$RUNNER_TEMP/robocopa-source/commit.txt"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: isolation-review-source
+          path: ${{ runner.temp }}/robocopa-source/
+          retention-days: 7
+          if-no-files-found: error
+
+  bounded-runtime-probes:
+    needs: source-and-contracts
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Nove provas sinteticas de contencao no runner descartavel
+        run: python3 scripts/run_isolation_checks.py
+      - name: Preservar somente relatorio sintetico limitado
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: isolation-runtime-evidence
+          path: .local/security-i1/**/report.json
+          include-hidden-files: true
+          retention-days: 30
+          if-no-files-found: warn
+
+  publish-canonical-progress:
+    needs: bounded-runtime-probes
+    if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.head.ref == 'feat/s04-isolation-validation'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    steps:
+      - name: Obter exatamente a fonte testada para atualizar somente planejamento
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: true
+      - name: Reconciliar somente a tarefa autorizada e suas projecoes
+        run: |
+          python3 scripts/reconcile_isolation_backlog.py --apply
+          python3 scripts/verify_planning.py
+          python3 scripts/verify_security_spec.py
+          python3 -m unittest discover -s tests/planning -v
+          git add -- docs/planejamento/backlog.json docs/planejamento/PLANO-MESTRE.md docs/planejamento/sprints/S04.md specs/004-isolamento-execucao/spec.md specs/004-isolamento-execucao/tasks.md docs/arquitetura/ADR-004-isolamento-execucao.md
+          if git diff --cached --quiet; then
+            echo 'Planejamento ja reconciliado; nenhum commit necessario.'
+            exit 0
+          fi
+          git -c user.name='github-actions[bot]' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' commit -m 'docs(plano): registra S04-T04 em execucao e sincroniza Spec Kit apos evidencias'
+          git push origin HEAD:refs/heads/feat/s04-isolation-validation
+
+# Somente o job publicador possui token de escrita; nao executa probes/Docker.
+# Push sem force e apenas na branch autorizada, nunca main. Nenhuma tarefa encerrada.
+# Probes em jobs descartaveis separados, sem segredos e sem pull_request_target.

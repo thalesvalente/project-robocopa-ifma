@@ -1,8 +1,8 @@
 # Feature Specification: Isolamento da execução de robôs (S04-T04)
 
-**Feature Branch**: `docs/s04-t04-isolamento-speckit`  
+**Feature Branch**: `feat/s04-isolation-validation`  
 **Created**: 2026-10-09  
-**Status**: Draft — especificação técnica preparada; sem implementação, homologação ou teste de ataques  
+**Status**: requisitos em revisão; I1 implementado/testado no CI. Sem implementação pública ou homologação da VM pessoal  
 **Input**: solicitação do responsável para planejar a S04-T04 usando o Spec Kit, antes de implementar.  
 **Gates**: constituição S00-T06, requisitos S03-T06, arquitetura S04-T01, motor S04-T02 e autoria S04-T03 ainda não possuem todos os aceites formais.
 
@@ -146,8 +146,8 @@ Detalhamento de contratos e campos: [data-model.md](data-model.md) e [job-protoc
 
 ## Assumptions, exclusions and gates
 
-- A arquitetura **candidata** usa VM Linux segregada com mecanismo de execução próprio, para não compartilhar daemon, arquivos e credenciais com os projetos pessoais. É hipótese a validar, não instalação.
+- A arquitetura **candidata** usa VM Linux segregada com mecanismo de execução próprio, para não compartilhar daemon, arquivos e credenciais com os projetos pessoais. Direção aprovada em D-005; configuração efetiva da VM continua a validar, não instalada.
 - O primeiro recorte público, se ratificado, aceita **somente RoboDSL restrita**; código geral arbitrário fica fora.
 - Os limites numéricos usados em spikes anteriores (2 CPUs, 2 GiB, 256 PIDs, 240 s) **não são política de produção homologada**.
 - Não contempla autenticação de alunos, HTTPS público, coleta de dados institucionais, expansão de linguagem, avaliação de impacto educacional ou implantação na máquina: pertencem a outras tarefas e gates.
-- Esta feature pode ter **documentação preparada em paralelo**, mas a execução de testes de abuso só será autorizada em ambiente descartável separado depois da revisão. S04-T04 continua **A_FAZER** até evidência técnica e aceites formais.
+- Após D-005, o incremento de engenharia e as provas sintéticas em CI descartável estão autorizados. S04-T04 passa de **A_FAZER** para **EM_EXECUCAO**, sem concluir os aceites de produção. G-EXP não equivale a G-PROD; ver iteration-1.md e plan.md.

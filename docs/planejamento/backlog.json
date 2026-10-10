@@ -467,8 +467,14 @@
             "S04-T02",
             "S04-T03"
           ],
-          "status": "A_FAZER",
-          "evidence": []
+          "status": "EM_EXECUCAO",
+          "evidence": [
+            "Incremento I1 autorizado: pesquisa oficial, contrato estrito, política e subprocessos limitados implementados. 55 testes novos e nove provas sintéticas de contenção passaram em runner descartável; não é VM do responsável nem liberação de alunos.",
+            "https://github.com/thalesvalente/project-robocopa-ifma/actions/runs/38021817642",
+            "docs/qualidade/evidencias/S04-T04-I1.md",
+            "specs/004-isolamento-execucao/iteration-1.md",
+            "docs/planejamento/decisoes/D-005-vm-e-experimentos-controlados.md"
+          ]
         },
         {
           "id": "S04-T05",

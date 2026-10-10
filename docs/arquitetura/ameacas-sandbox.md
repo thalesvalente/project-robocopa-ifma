@@ -31,24 +31,24 @@ A1 — computador pessoal, credenciais e contas do responsável; A2 — outros p
 
 ## Inventário STRIDE e provas esperadas
 
-| Ameaça | Categoria | Ativo | Severidade preliminar | Controle pretendido | Evidência de teste exigida |
-|---|---|---|---|---|---|
-| TH-01 Endpoint HTTP público aciona Docker do host | E/T | A1/A2 | CRÍTICA | FR-003/004/020; broker segregado e flags fail-closed | TB1→TB3 negada sem permissão; nenhum job no host |
-| TH-02 Escape do contêiner ou daemon compartilhado | E | A1/A2 | CRÍTICA | FR-005/007/018; VM dedicada, sem socket | Sondas negativas **somente** na VM isolada; fronteira verificada |
-| TH-03 Código malicioso usa filesystem/binds/symlink | I/T | A1/A2/A4 | CRÍTICA | FR-005/007/018 | Tentativas sintéticas negadas; nenhum arquivo pessoal presente no ambiente |
-| TH-04 Exfiltração à internet, LAN ou metadata | I | A1/A3/A4/A6 | ALTA | FR-006/018 | Tráfego negado em policy efetiva, exceções do árbitro comprovadas |
-| TH-05 Acesso ao banco/segredos/tokens por subprocessos | I/E | A1/A3 | CRÍTICA | FR-003/004/007/014 | Segredos ausentes do ambiente e saída; endpoint inacessível |
-| TH-06 Falha de parser/template gera execução não permitida | T/E | A1/A5 | ALTA | FR-001/002/015/018 | Negativos de AST, limites e injeção sem criação de job |
-| TH-07 CPU/RAM/PIDs/disco exauridos, fork e stdout ilimitado | D | A2/A7 | ALTA | FR-008/009/017 | Quotas medidas com cargas sintéticas controladas e teto configurado |
-| TH-08 Job travado ou órfão após timeout/cancelamento | D | A7/A8 | ALTA | FR-009/010/016 | Recovery determinístico e inspeção de zero órfãos |
-| TH-09 Um aluno acessa código/replay/estado de outro | I/S | A4 | ALTA | FR-003/005/011/014 | Jobs de identidades sintéticas isolados; autorização negativa |
-| TH-10 Replay ou resultado adulterado altera ranking | T/R | A5/A8 | ALTA | FR-011/012/013 | Fixtures com hash/rounds divergentes rejeitados |
-| TH-11 Retry duplica pontuação, eventos ou contabilização | T/R | A5 | ALTA | FR-010/011/013 | Testes de concorrência e deduplicação |
-| TH-12 Logs e artefatos vazam identidade e segredos | I/R | A1/A4/A8 | ALTA | FR-014/015 | Varredura de valores sentinela e esquema sanitizado |
-| TH-13 Dependência/imagem oficial adulterada ou atualizada | T | A5/A8 | ALTA | FR-015/018 | Verificação digest/versão antes de uso, sem downloads durante job |
-| TH-14 Worker falha e sistema volta automaticamente para host | E/D | A1/A2 | CRÍTICA | FR-016/019/020 | Provar fail-closed sem fallback e sem alterar Compose alheio |
-| TH-15 Bot interfere no árbitro/placar no mesmo ambiente | T/E | A5 | CRÍTICA | FR-005/006/012 | Spike de isolamento bot↔árbitro; integridade do replay verificável |
-| TH-16 Requisições concorrentes contornam limite de filas | D/T | A7 | ALTA | FR-008/013/017 | Saturação com cargas sintéticas, admissão e quotas observadas |
+| ID | Ameaça | Categoria | Ativo | Severidade preliminar | Controle pretendido | Evidência de teste exigida |
+|---|---|---|---|---|---|---|
+| TH-01 | Endpoint HTTP público aciona Docker do host | E/T | A1/A2 | CRÍTICA | FR-003/004/020; broker segregado e flags fail-closed | TB1→TB3 negada sem permissão; nenhum job no host |
+| TH-02 | Escape do contêiner ou daemon compartilhado | E | A1/A2 | CRÍTICA | FR-005/007/018; VM dedicada, sem socket | Sondas negativas **somente** na VM isolada; fronteira verificada |
+| TH-03 | Código malicioso usa filesystem/binds/symlink | I/T | A1/A2/A4 | CRÍTICA | FR-005/007/018 | Tentativas sintéticas negadas; nenhum arquivo pessoal presente no ambiente |
+| TH-04 | Exfiltração à internet, LAN ou metadata | I | A1/A3/A4/A6 | ALTA | FR-006/018 | Tráfego negado em policy efetiva, exceções do árbitro comprovadas |
+| TH-05 | Acesso ao banco/segredos/tokens por subprocessos | I/E | A1/A3 | CRÍTICA | FR-003/004/007/014 | Segredos ausentes do ambiente e saída; endpoint inacessível |
+| TH-06 | Falha de parser/template gera execução não permitida | T/E | A1/A5 | ALTA | FR-001/002/015/018 | Negativos de AST, limites e injeção sem criação de job |
+| TH-07 | CPU/RAM/PIDs/disco exauridos, fork e stdout ilimitado | D | A2/A7 | ALTA | FR-008/009/017 | Quotas medidas com cargas sintéticas controladas e teto configurado |
+| TH-08 | Job travado ou órfão após timeout/cancelamento | D | A7/A8 | ALTA | FR-009/010/016 | Recovery determinístico e inspeção de zero órfãos |
+| TH-09 | Um aluno acessa código/replay/estado de outro | I/S | A4 | ALTA | FR-003/005/011/014 | Jobs de identidades sintéticas isolados; autorização negativa |
+| TH-10 | Replay ou resultado adulterado altera ranking | T/R | A5/A8 | ALTA | FR-011/012/013 | Fixtures com hash/rounds divergentes rejeitados |
+| TH-11 | Retry duplica pontuação, eventos ou contabilização | T/R | A5 | ALTA | FR-010/011/013 | Testes de concorrência e deduplicação |
+| TH-12 | Logs e artefatos vazam identidade e segredos | I/R | A1/A4/A8 | ALTA | FR-014/015 | Varredura de valores sentinela e esquema sanitizado |
+| TH-13 | Dependência/imagem oficial adulterada ou atualizada | T | A5/A8 | ALTA | FR-015/018 | Verificação digest/versão antes de uso, sem downloads durante job |
+| TH-14 | Worker falha e sistema volta automaticamente para host | E/D | A1/A2 | CRÍTICA | FR-016/019/020 | Provar fail-closed sem fallback e sem alterar Compose alheio |
+| TH-15 | Bot interfere no árbitro/placar no mesmo ambiente | T/E | A5 | CRÍTICA | FR-005/006/012 | Spike de isolamento bot↔árbitro; integridade do replay verificável |
+| TH-16 | Requisições concorrentes contornam limite de filas | D/T | A7 | ALTA | FR-008/013/017 | Saturação com cargas sintéticas, admissão e quotas observadas |
 
 Legenda STRIDE: **S** spoofing, **T** tampering, **R** repudiation, **I** information disclosure, **D** denial of service, **E** elevation of privilege.
 

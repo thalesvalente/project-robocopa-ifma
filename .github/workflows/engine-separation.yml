@@ -3,7 +3,9 @@ on:
   pull_request:
     paths:
       - 'specs/004-isolamento-execucao/iteration-2.md'
+      - 'specs/004-isolamento-execucao/i2-protocol-clarification.md'
       - 'spikes/isolamento/engine-separation/**'
+      - 'services/worker_agent/game_policy.py'
       - 'scripts/run_engine_separation.py'
       - 'tests/security/test_game_separation.py'
       - '.github/workflows/engine-separation.yml'
@@ -11,25 +13,47 @@ on:
 permissions:
   contents: read
 jobs:
-  inspect-upstream:
+  contracts:
     runs-on: ubuntu-24.04
     timeout-minutes: 8
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           persist-credentials: false
-      - name: Exportar fontes upstream fixadas, sem executá-las
+      - name: Regressões e contratos antes da execução real
         run: |
-          mkdir -p "$RUNNER_TEMP/upstream" "$RUNNER_TEMP/review"
-          git -C "$RUNNER_TEMP/upstream" init
-          git -C "$RUNNER_TEMP/upstream" remote add origin https://github.com/robocode-dev/tank-royale.git
-          git -C "$RUNNER_TEMP/upstream" fetch --depth 1 origin c8ad3a8d19a843f6258d6f6f9db7f29229963903
-          test "$(git -C "$RUNNER_TEMP/upstream" rev-parse FETCH_HEAD)" = "c8ad3a8d19a843f6258d6f6f9db7f29229963903"
-          git -C "$RUNNER_TEMP/upstream" archive --format=tar.gz FETCH_HEAD -o "$RUNNER_TEMP/review/upstream-source.tar.gz"
-          printf '%s\n' c8ad3a8d19a843f6258d6f6f9db7f29229963903 > "$RUNNER_TEMP/review/upstream-commit.txt"
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+          python3 scripts/verify_security_spec.py
+          python3 -m unittest discover -s tests/planning -v
+          python3 -m unittest discover -s tests/infra -v
+          python3 -m unittest discover -s tests/tank_royale -v
+          python3 -m unittest discover -s tests/mobile -v
+          python3 -m unittest discover -s tests/security -v
+      - name: Spec Kit nativo
+        env:
+          SPECIFY_FEATURE_DIRECTORY: specs/004-isolamento-execucao
+          SPECIFY_FEATURE_NO_PERSIST: '1'
+        run: python3 .specify/scripts/python/check_prerequisites.py --json --require-spec --require-tasks --include-tasks
+  separated-battle:
+    needs: contracts
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
-          name: i2-upstream-review
-          path: ${{ runner.temp }}/review/
-          if-no-files-found: error
-          retention-days: 7
+          persist-credentials: false
+      - name: Batalha real em quatro contêineres com gateway e negativos de rede/protocolo
+        run: python3 scripts/run_engine_separation.py
+      - name: Preservar apenas evidências sanitizadas desta invocação
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: i2-separated-battle-evidence
+          path: |
+            .local/engine-separation/**/report.json
+            .local/engine-separation/**/results.json
+            .local/engine-separation/**/recordings/*.battle.gz
+            .local/engine-separation/**/engine.log
+            .local/engine-separation/**/build-*.log
+          include-hidden-files: true
+          retention-days: 30
+          if-no-files-found: warn

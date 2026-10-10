@@ -1,0 +1,10 @@
+**
+!spikes/
+!spikes/tank-royale/
+!spikes/tank-royale/prepare.py
+!spikes/tank-royale/upstream.lock.json
+!spikes/isolamento/
+!spikes/isolamento/engine-separation/
+!spikes/isolamento/engine-separation/*.java
+!spikes/isolamento/engine-separation/prepare.py
+!spikes/isolamento/engine-separation/Dockerfile

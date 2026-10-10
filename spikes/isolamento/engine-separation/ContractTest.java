@@ -14,6 +14,12 @@ public final class ContractTest {
     static ProtocolGate.Rule auth()throws Exception{var r=fresh();r.inbound(hello());return r;}
     public static void main(String[] args)throws Exception{
         good(()->{
+            var env=Probe.officialEnvironment("ws://127.0.0.1:8765","front-fixture");
+            if(env.size()!=2 || !"front-fixture".equals(env.get("SERVER_SECRET"))
+                || !"ws://127.0.0.1:8765".equals(env.get("SERVER_URL")) || env.containsKey("ADMIN_SECRET"))
+                throw new AssertionError("OFFICIAL_BOT_ENVIRONMENT");
+        });
+        good(()->{
             var h=new HandshakeImpl1Client();h.setResourceDescriptor("/");h.put("Sec-WebSocket-Version","13");
             if(ProtocolGate.draft().acceptHandshakeAsServer(h)!=HandshakeState.MATCHED)throw new AssertionError("RFC6455_DEFAULT_PROTOCOL");
         });

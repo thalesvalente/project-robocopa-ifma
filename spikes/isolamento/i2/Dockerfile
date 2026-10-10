@@ -36,4 +36,5 @@ ENTRYPOINT ["python", "/app/gateway.py"]
 FROM ws-base AS controller
 COPY spikes/isolamento/i2/controller.py /app/controller.py
 COPY spikes/isolamento/i2/probe.py /app/probe.py
-ENTRYPOINT ["python", "/app/controller.py"]
+ENTRYPOINT ["python"]
+CMD ["/app/controller.py"]

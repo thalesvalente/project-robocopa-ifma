@@ -18,6 +18,8 @@ from services.worker_agent.arena_policy import ArenaPolicy,firewall,verify_names
 from services.worker_agent.arena_evidence import (validate_replay,validate_batch,
     validate_battle,require_checks,POLICY_CHECKS,PROBE_CHECKS)
 
+from services.worker_agent.arena_reconciliation import write_manifest,validate_reconciled_batch
+
 ROLES=('referee','walls','spin')
 
 def command(args,*,data=None,timeout=25,limit=1024**2,check=True):
@@ -148,8 +150,56 @@ def cleanup_images(tags,images):
 class ExpectedAbort(RuntimeError):
     pass
 
+class ExpectedTimeout(RuntimeError):
+    pass
+
+
+def observe_fixed_timeout(name):
+    """Fixed five-second fixture; only a real watchdog TIMEOUT is success."""
+    try:
+        docker('exec',name,'python','/app/role.py','deadline-fixture',timeout=.5,check=False)
+    except ProcessBoundError as error:
+        if error.reason!='TIMEOUT':raise RuntimeError('UNEXPECTED_DEADLINE_REASON') from None
+        started=docker('exec',name,'test','-f','/tmp/deadline-ready',timeout=3,check=False)
+        if started.returncode!=0:raise RuntimeError('DEADLINE_FIXTURE_NOT_STARTED')
+        return {'timeout_observed':True,'deadline_fixture_started':True,
+                'battle_completed':False,'deadline_seconds':.5,'fixture_sleep_seconds':5}
+    raise RuntimeError('TIMEOUT_NOT_OBSERVED')
+
+
+def wait_referee(referee,bot_tasks,game_completed,*,timeout=215):
+    """Do not silently turn an early reference-bot crash into a valid match."""
+    until=time.monotonic()+timeout
+    official_end=False
+    while not referee.done():
+        for future in bot_tasks.values():
+            if future.done():
+                result=future.result()
+                if result.returncode!=0:raise RuntimeError('BOT_PROCESS_FAILED')
+                if not official_end:official_end=game_completed()
+                if not official_end:raise RuntimeError('BOT_EXITED_BEFORE_GAME_END')
+        if time.monotonic()>=until:raise RuntimeError('REFEREE_WAIT_TIMEOUT')
+        time.sleep(.05)
+    return referee.result()
+
+
+def collect_bot_processes(bot_tasks,completed_before_cleanup,secret_values):
+    if set(bot_tasks)!={'walls','spin'}:raise RuntimeError('BOT_PROCESSES_MISSING')
+    checks={}
+    for role,future in bot_tasks.items():
+        result=future.result()
+        if any(secret.encode() in result.output for secret in secret_values):
+            raise RuntimeError('SECRET_IN_BOT_OUTPUT')
+        completed=role in completed_before_cleanup
+        if completed and result.returncode!=0:raise RuntimeError('BOT_PROCESS_FAILED')
+        checks[role]={'completed_before_cleanup':completed,'returncode':result.returncode,
+            'termination':'completed' if completed else 'owned_cleanup',
+            'output_bytes':len(result.output),'output_sha256':hashlib.sha256(result.output).hexdigest()}
+    return checks
+
+
 def one_battle(images,out,*,abort_at=None):
-    if abort_at not in (None,'after_containers','after_ready'):
+    if abort_at not in (None,'after_containers','after_ready','deadline'):
         raise ValueError('ABORT_STAGE_NOT_ALLOWED')
     run_id=secrets.token_hex(12)
     network='rc-arena-net-'+run_id
@@ -158,9 +208,10 @@ def one_battle(images,out,*,abort_at=None):
     admin=secrets.token_urlsafe(32);engine_bot=secrets.token_urlsafe(32)
     tokens={role:secrets.token_urlsafe(32) for role in ('walls','spin','probe')}
     secret_values=[admin,engine_bot,*tokens.values()]
-    report={'schema_version':2,'run_id':run_id,'status':'FAILED','host_vm_tested':False,'student_submission_enabled':False}
+    report={'schema_version':2,'run_id':run_id,'status':'FAILED','host_vm_tested':False,
+            'student_submission_enabled':False,'images':dict(images)}
     pool=ThreadPoolExecutor(max_workers=3)
-    tasks=[];host_canary=None
+    tasks=[];bot_tasks={};completed_before_cleanup=set();host_canary=None
     try:
         docker('network','create','--driver','bridge','--internal','--label',LABEL+'='+run_id,network)
         bridge_created=True
@@ -212,6 +263,9 @@ def one_battle(images,out,*,abort_at=None):
                 if not any(s.encode() in output for s in secret_values):(out/'referee-failure.log').write_bytes(output)
             raise
         if abort_at=='after_ready':raise ExpectedAbort(abort_at)
+        if abort_at=='deadline':
+            report.update(observe_fixed_timeout(names['walls']))
+            raise ExpectedTimeout('timeout-cleanup')
         report['network_and_protocol_probes']={}
         report['bot_output_acl_reject_packets']={}
         for role,peer in (('walls','spin'),('spin','walls')):
@@ -228,10 +282,13 @@ def one_battle(images,out,*,abort_at=None):
             report['bot_output_acl_reject_packets'][role]=rejected_packets(names[role],run_id)
         report['positive_host_peer_canaries']=True
         for role in ('walls','spin'):
-            tasks.append(pool.submit(role_exec,names[role],'bot',{'role':role,
-              'url':f"ws://{ips['referee']}:7654",'token':tokens[role]},190))
+            bot_tasks[role]=pool.submit(role_exec,names[role],'bot',{'role':role,
+              'url':f"ws://{ips['referee']}:7654",'token':tokens[role]},190)
+            tasks.append(bot_tasks[role])
         docker('exec',names['referee'],'touch','/tmp/start')
-        ref_result=ref_future.result(timeout=215)
+        ref_result=wait_referee(ref_future,bot_tasks,lambda:docker('exec',names['referee'],
+            'test','-f','/tmp/game-completed',timeout=3,check=False).returncode==0)
+        completed_before_cleanup={role for role,future in bot_tasks.items() if future.done()}
         if ref_result.returncode:
             if not any(s.encode() in ref_result.output for s in secret_values):(out/'referee-failure.log').write_bytes(ref_result.output)
             raise RuntimeError('REFEREE_FAILED')
@@ -243,6 +300,8 @@ def one_battle(images,out,*,abort_at=None):
         report['status']='PASS'
     except ExpectedAbort as error:
         report['status']='EXPECTED_ABORT';report['abort_injected']=str(error)
+    except ExpectedTimeout as error:
+        report['status']='EXPECTED_TIMEOUT';report['scenario']=str(error)
     finally:
         if host_canary:host_canary.close()
         clean=True
@@ -259,6 +318,12 @@ def one_battle(images,out,*,abort_at=None):
                 docker('network','rm',network)
             except Exception:clean=False
         pool.shutdown(wait=True,cancel_futures=True)
+        if report['status']=='PASS':
+            try:
+                report['bot_processes']=collect_bot_processes(bot_tasks,completed_before_cleanup,secret_values)
+                report['bot_processes_verified']=True
+            except Exception:
+                report['bot_processes_verified']=False;report['status']='FAILED'
         report['cleanup_completed']=clean
         try:
             report['remaining_owned_containers']=bool(docker('ps','-aq','--filter','label='+LABEL+'='+run_id).output.strip())
@@ -270,8 +335,8 @@ def one_battle(images,out,*,abort_at=None):
         raw=json.dumps(report,indent=2).encode()
         if any(s.encode() in raw for s in secret_values):raise ValueError('SECRET_IN_REPORT')
         (out/'report.json').write_bytes(raw)
-    if report['status'] not in ('PASS','EXPECTED_ABORT'):raise RuntimeError('CLEANUP_NOT_CONFIRMED')
-    if abort_at and report.get('abort_injected')!=abort_at:raise RuntimeError('ABORT_NOT_REACHED')
+    if report['status'] not in ('PASS','EXPECTED_ABORT','EXPECTED_TIMEOUT'):raise RuntimeError('CLEANUP_NOT_CONFIRMED')
+    if abort_at and abort_at!='deadline' and report.get('abort_injected')!=abort_at:raise RuntimeError('ABORT_NOT_REACHED')
     if not abort_at:validate_battle(out)
     return report
 
@@ -299,6 +364,10 @@ def main():
             one_battle(images,folder,abort_at=checkpoint)
             batch['abort_checks'].append(name)
             print('PASS: fixed abort and owned cleanup',checkpoint,flush=True)
+        folder=out/'timeout-cleanup';folder.mkdir()
+        one_battle(images,folder,abort_at='deadline')
+        batch['timeout_check']='timeout-cleanup'
+        print('PASS: real bounded timeout and owned cleanup',flush=True)
         batch['status']='PASS'
     finally:
         batch['image_cleanup_completed']=cleanup_images(tags,images)
@@ -307,7 +376,9 @@ def main():
         revision=command(['git','rev-parse','HEAD'],check=False)
         batch['project_commit']=revision.output.decode().strip() if revision.returncode==0 else 'unavailable'
         (out/'batch.json').write_text(json.dumps(batch,indent=2)+'\n',encoding='utf-8')
-    validate_batch(out)
+    write_manifest(out,source_commit=os.environ['RC_SOURCE_COMMIT'],
+        checkout_commit=batch['project_commit'],workflow_run_id=int(os.environ['GITHUB_RUN_ID']),
+        workflow_run_attempt=int(os.environ['GITHUB_RUN_ATTEMPT']))
     print('PASS: .local/security-i2/'+out.name,flush=True)
 
 if __name__=='__main__':

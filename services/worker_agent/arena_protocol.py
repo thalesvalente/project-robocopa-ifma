@@ -8,6 +8,7 @@ import json
 import math
 import re
 import secrets
+from ipaddress import IPv4Address
 
 MAX_MESSAGE = 16384
 BOT_OUTPUT_TYPES = frozenset({'GameStartedEventForBot', 'GameEndedEventForBot',
@@ -37,12 +38,19 @@ def _pairs(items):
 def decode(raw: str, *, limit=MAX_MESSAGE) -> dict:
     if not isinstance(raw, str):
         raise ProtocolDenied('TEXT_ONLY')
+    def finite(value):
+        number = float(value)
+        if not math.isfinite(number):
+            raise ProtocolDenied('NON_FINITE')
+        return number
     try:
         if len(raw.encode('utf-8')) > limit:
             raise ProtocolDenied('MESSAGE_LIMIT')
-        data = json.loads(raw, object_pairs_hook=_pairs,
+        data = json.loads(raw, object_pairs_hook=_pairs, parse_float=finite,
             parse_constant=lambda _: (_ for _ in ()).throw(ProtocolDenied('NON_FINITE')))
-    except (UnicodeError, json.JSONDecodeError, RecursionError):
+    except ProtocolDenied:
+        raise
+    except (UnicodeError, ValueError, RecursionError, OverflowError):
         raise ProtocolDenied('INVALID_JSON') from None
     if not isinstance(data, dict) or not isinstance(data.get('type'), str):
         raise ProtocolDenied('MESSAGE_SHAPE')
@@ -145,3 +153,41 @@ class SessionBudget:
         size=self.size(raw)
         if self.output_bytes+size>self.limits.output_bytes:raise ProtocolDenied('OUTPUT_BUDGET')
         self.output_bytes+=size
+
+
+def reference_roster(rows: list[dict]) -> list[dict]:
+    """Only official reference identities, using addresses supplied by the engine."""
+    if type(rows) is not list or len(rows) != 2:
+        raise ProtocolDenied('REFERENCE_ROSTER')
+    names, addresses, result = set(), set(), []
+    for row in rows:
+        if (type(row) is not dict or type(row.get('name')) is not str
+            or row['name'] not in {'Walls', 'Spin Bot'} or row.get('version') != '1.0'
+            or row['name'] in names or type(row.get('host')) is not str
+            or type(row.get('port')) is not int or not 1 <= row['port'] <= 65535):
+            raise ProtocolDenied('REFERENCE_ROSTER')
+        try:
+            address = IPv4Address(row['host'])
+        except ValueError:
+            raise ProtocolDenied('REFERENCE_ROSTER') from None
+        if address.is_unspecified or address.is_multicast:
+            raise ProtocolDenied('REFERENCE_ROSTER')
+        endpoint = (str(address), row['port'])
+        if endpoint in addresses:
+            raise ProtocolDenied('REFERENCE_ROSTER')
+        names.add(row['name']); addresses.add(endpoint)
+        result.append({'host': endpoint[0], 'port': endpoint[1]})
+    return result
+
+
+def reference_setup() -> dict:
+    """Fixed experiment, not client-supplied game configuration."""
+    setup = {'gameType': 'classic', 'arenaWidth': 800, 'arenaHeight': 600,
+        'minNumberOfParticipants': 2, 'maxNumberOfParticipants': 2,
+        'numberOfRounds': 3, 'gunCoolingRate': .1, 'maxInactivityTurns': 450,
+        'turnTimeout': 30000, 'readyTimeout': 10000000, 'defaultTurnsPerSecond': -1}
+    for field in ('ArenaWidth', 'ArenaHeight', 'MinNumberOfParticipants',
+                  'MaxNumberOfParticipants', 'NumberOfRounds', 'GunCoolingRate',
+                  'MaxInactivityTurns', 'TurnTimeout', 'ReadyTimeout'):
+        setup['is' + field + 'Locked'] = False
+    return setup

@@ -6,6 +6,8 @@ on:
       - 'specs/004-isolamento-execucao/iteration-2.md'
       - 'specs/004-isolamento-execucao/i2-protocol-guard.md'
       - 'specs/004-isolamento-execucao/i2-audit-plan.md'
+      - 'specs/004-isolamento-execucao/i2-reconciliation*'
+      - 'scripts/verify_i2_closure.py'
       - 'spikes/isolamento/arena/**'
       - 'services/worker_agent/arena*'
       - 'services/worker_agent/bounded.py'
@@ -16,6 +18,9 @@ on:
   workflow_dispatch:
 permissions:
   contents: read
+concurrency:
+  group: separated-arena-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 jobs:
   contracts-and-gateway:
     runs-on: ubuntu-24.04
@@ -62,18 +67,23 @@ jobs:
           command -v nsenter iptables-save iptables-restore ip6tables-restore
           sudo -n iptables-save >/dev/null
           sudo -n nsenter --version
-      - name: Duas batalhas oficiais e negativas de rede/papéis no runner descartável
+      - name: Duas batalhas, dois abortos e timeout real no runner descartável
+        env:
+          RC_SOURCE_COMMIT: ${{ github.event.pull_request.head.sha || github.sha }}
         run: python3 scripts/run_separated_arena.py
-      - name: Auditoria independente somente leitura do lote produzido
+      - name: Auditoria própria somente leitura com fonte e run esperados
+        env:
+          RC_SOURCE_COMMIT: ${{ github.event.pull_request.head.sha || github.sha }}
         run: |
           python3 - <<'PYCODE'
           from pathlib import Path
-          from services.worker_agent.arena_evidence import validate_batch
+          import os
+          from services.worker_agent.arena_reconciliation import validate_reconciled_batch
           batches=list(Path('.local/security-i2').glob('*/batch.json'))
           assert len(batches)==1, 'Exactly one batch from this invocation required'
-          report=validate_batch(batches[0].parent)
-          assert report['status']=='PASS' and report['abort_checks_passed']==2
-          print('PASS: two real battles and two finite abort cleanups; not a production gate')
+          report=validate_reconciled_batch(batches[0].parent,expected_source_commit=os.environ['RC_SOURCE_COMMIT'],expected_workflow_run_id=int(os.environ['GITHUB_RUN_ID']))
+          assert report['status']=='PASS' and report['abort_checks_passed']==2 and report['timeout_cleanup_passed']
+          print('PASS: two battles, two aborts, real timeout/cleanup and source-bound evidence; not production approval')
           PYCODE
       - name: Guardar apenas evidências verificadas ou diagnósticos sintéticos sanitizados
         if: always()

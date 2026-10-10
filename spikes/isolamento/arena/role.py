@@ -6,7 +6,7 @@ from pathlib import Path
 from websockets.sync.client import connect
 from websockets.exceptions import ConnectionClosed
 from gateway import BotGateway,QUIET
-from arena_protocol import decode
+from arena_protocol import decode,reference_roster,reference_setup
 
 RECORD_TYPES={'GameStartedEventForObserver','RoundStartedEvent','RoundEndedEventForObserver',
               'TickEventForObserver','GameEndedEventForObserver','GameAbortedEvent'}
@@ -92,17 +92,10 @@ def referee(cfg):
                 if len(bots)==2:break
         if not blocked_control_unchanged:raise RuntimeError('CONTROL_MESSAGE_CROSSED_GATEWAY')
         if len(bots)!=2:raise RuntimeError('TWO_REFERENCE_BOTS_REQUIRED')
-        if any(b.get('version')!='1.0' for b in bots):raise RuntimeError('BOT_VERSION_MISMATCH')
-        setup={'gameType':'classic','arenaWidth':800,'arenaHeight':600,
-            'minNumberOfParticipants':2,'numberOfRounds':3,'gunCoolingRate':.1,
-            'maxInactivityTurns':450,'turnTimeout':30000,'readyTimeout':10000000,
-            'defaultTurnsPerSecond':-1}
-        for field in ('ArenaWidth','ArenaHeight','MinNumberOfParticipants','MaxNumberOfParticipants',
-                      'NumberOfRounds','GunCoolingRate','MaxInactivityTurns','TurnTimeout','ReadyTimeout'):
-            setup['is'+field+'Locked']=False
+        addresses=reference_roster(bots)
+        setup=reference_setup()
         stage='start_game'
-        ctrl.send(json.dumps({'type':'StartGame','gameSetup':setup,'botAddresses':[
-            {'host':b['host'],'port':b['port']} for b in bots]}))
+        ctrl.send(json.dumps({'type':'StartGame','gameSetup':setup,'botAddresses':addresses}))
         stage='observe_game'
         events=[];rounds=[];ticks=0;start=time.monotonic();total_bytes=0
         final=None
@@ -123,6 +116,7 @@ def referee(cfg):
         rows=final['results']
         if len(rows)!=2 or {r['name'] for r in rows}!={'Walls','Spin Bot'}:
             raise RuntimeError('RESULT_IDENTITIES')
+        Path('/tmp/game-completed').touch()
         results={'schema_version':1,'engine_version':'1.4.0',
             'source':'GameEndedEventForObserver','completed':True,'numberOfRounds':3,
             'roundEnds':rounds,'ticks':ticks,'duration_ms':round((time.monotonic()-start)*1000),
@@ -227,6 +221,10 @@ def canary():
 def main():
     mode=sys.argv[1]
     if mode=='canary':canary();return
+    if mode=='deadline-fixture':
+        Path('/tmp/deadline-ready').touch()
+        time.sleep(5)
+        return
     raw=sys.stdin.buffer.read(65537)
     if len(raw)>65536:raise RuntimeError('INPUT_LIMIT')
     cfg=json.loads(raw)

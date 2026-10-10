@@ -22,6 +22,8 @@ class BotGateway:
         self.port=port
         self.upstream=upstream
         self.lock=threading.Lock()
+        self.drained=threading.Condition(self.lock)
+        self.stopping=False
         self.active=set()
         self.connections=set()
         self.budget=threading.BoundedSemaphore(8)
@@ -35,12 +37,18 @@ class BotGateway:
         identity=None
         session_budget=SessionBudget(self.limits)
         try:
-            with self.lock:self.connections.add(client)
+            with self.lock:
+                if self.stopping:raise ProtocolDenied('GATEWAY_STOPPING')
+                self.connections.add(client)
             if client.request.path!='/':raise ProtocolDenied('PATH_DENIED')
             with connect(self.upstream,open_timeout=3,close_timeout=1,max_size=2*1024**2,
                          max_queue=16,compression=None,proxy=None,logger=QUIET) as upstream:
                 greeting=decode(upstream.recv(timeout=3),limit=2*1024**2)
-                if greeting['type']!='ServerHandshake':raise ProtocolDenied('SERVER_HANDSHAKE_REQUIRED')
+                if (greeting['type']!='ServerHandshake' or greeting.get('version')!='1.4.0'
+                    or type(greeting.get('sessionId')) is not str
+                    or not 1 <= len(greeting['sessionId']) <= 128
+                    or not greeting['sessionId'].isascii()):
+                    raise ProtocolDenied('SERVER_HANDSHAKE_REQUIRED')
                 greeting_text=json.dumps(greeting)
                 session_budget.accept_output(greeting_text);client.send(greeting_text)
                 first=client.recv(timeout=min(4,session_budget.wait_timeout()))
@@ -90,6 +98,7 @@ class BotGateway:
             with self.lock:
                 self.connections.discard(client)
                 if identity:self.active.discard(identity)
+                self.drained.notify_all()
             self.budget.release()
     def start(self):
         self.server=serve(self.handle,'0.0.0.0',self.port,compression=None,
@@ -98,8 +107,16 @@ class BotGateway:
         self.thread=threading.Thread(target=self.server.serve_forever,daemon=True)
         self.thread.start()
     def close(self):
+        # Stop admissions before snapshotting live sockets. Handlers entering late
+        # observe stopping under the same lock and cannot reopen an engine session.
+        with self.lock:self.stopping=True
+        if self.server:
+            self.server.shutdown();self.thread.join(timeout=3)
         with self.lock:connections=list(self.connections)
         for sock in connections:sock.close(1001,'END')
-        if self.server:self.server.shutdown();self.thread.join(timeout=3)
+        with self.drained:
+            if not self.drained.wait_for(lambda:not self.connections and not self.active,timeout=5):
+                raise RuntimeError('GATEWAY_DRAIN_TIMEOUT')
+        if self.server and self.thread.is_alive():raise RuntimeError('GATEWAY_STOP_TIMEOUT')
     def report(self):
         with self.lock:return dict(self.counts)

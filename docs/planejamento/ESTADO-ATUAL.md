@@ -10,7 +10,7 @@ Somente RoboDSL básica no MVP; linguagens gerais, níveis intermediário/avanç
 
 [D-006](decisoes/D-006-hospedagem-hibrida-e-persistencia-remota.md)/[ADR-005](../arquitetura/ADR-005-hospedagem-hibrida-mvp.md): dados canônicos no Supabase PostgreSQL, Auth e Storage privado; PC apenas hospeda VMs Linux segregadas para computação/staging limitado. SQLite I3-01 é teste, não banco final.
 
-[D-007](decisoes/D-007-execucao-pos-revisao-mvp.md)/[ADR-006](../arquitetura/ADR-006-demo-gratuita-plano-controle.md): Cloudflare Pages Free como preferência para PWA estática, Vercel condicionado a termos; API cloud curta candidata em Supabase Edge Functions, sem batalha/worker permanente; status/replay antes de streaming. pgmq foi avaliado; núcleo inicial usa uma tabela de jobs/tentativas PostgreSQL com reserva transacional, sem fila paralela. Isso exige ledger separado de efeitos únicos em I3-04.
+[D-007](decisoes/D-007-execucao-pos-revisao-mvp.md)/[ADR-006](../arquitetura/ADR-006-demo-gratuita-plano-controle.md), **retificadas pela [D-008](decisoes/D-008-revisao-hobby-vercel-ifma.md)**: Vercel como primeira opção CONDICIONAL à elegibilidade Hobby, Cloudflare Pages como fallback; API cloud curta candidata em Supabase Edge Functions, sem batalha/worker permanente; status/replay antes de streaming. pgmq foi avaliado; núcleo inicial usa uma tabela de jobs/tentativas PostgreSQL com reserva transacional, sem fila paralela. Isso exige ledger separado de efeitos únicos em I3-04.
 
 ## Repositório e rastreabilidade
 
@@ -43,3 +43,7 @@ I3-04: resultado/replay validado e commit único do placar. I3-05/06/07: quotas/
 ## Restrições operacionais
 
 Nenhum deploy Supabase/Cloudflare/Vercel, serviço pago contratado, VM instalada, dados reais ou alunos liberados nesta rodada. Não houve alteração de Windows/WSL/Docker Desktop/.env/Compose/banco/roteador/firewall/discos pessoais. O laboratório 18081 ainda tem acesso à CLI Docker do host e não deve ser exposto à internet/LAN. Nenhum teste do CI homologa esse servidor como API pública.
+
+## D-008 — revisão contratual da preferência de frontend (2026-10-10)
+
+A preferência **Cloudflare primeiro** foi superada: **Vercel primeiro, sujeita ao enquadramento Hobby**; Cloudflare como alternativa. Fonte: Terms §4, Fair Use, manifestação contextual da equipe Vercel sobre voluntariado em organização sem fins lucrativos e regras de colaboração. Gratuidade do IFMA/RoboCopa não é certificação suficiente; remunerados envolvidos na produção precisam ser considerados. HYB-09 e G-PROD não foram encerrados. A PWA deve continuar um build estático portátil, com conteúdo sensível no Supabase e revisão/opt-out de treinamento em conta Hobby quando aplicável. [D-008](decisoes/D-008-revisao-hobby-vercel-ifma.md). A alteração NÃO muda o aceite PostgreSQL experimental do PR #26 ou libera deploy.

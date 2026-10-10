@@ -4,9 +4,9 @@
 
 ## Arquitetura e trade-offs
 
-PWA estática portável React/TypeScript -> Cloudflare Pages (preferência Free) -> Supabase Auth/API curta -> PostgreSQL canônico + Storage privado. VM dedicada no PC inicia HTTPS de saída ao serviço autorizado; navegador e banco não expõem a máquina residencial. O banco guarda jobs, tentativas e leases; a VM guarda apenas sistema e staging limitado. Não há fallback SQLite nem banco mestre local.
+PWA estática portável React/TypeScript -> **Vercel (primeira opção, Hobby sujeito à elegibilidade conforme D-008; Cloudflare Pages como alternativa)** -> Supabase Auth/API curta -> PostgreSQL canônico + Storage privado. VM dedicada no PC inicia HTTPS de saída ao serviço autorizado; navegador e banco não expõem a máquina residencial. O banco guarda jobs, tentativas e leases; a VM guarda apenas sistema e staging limitado. Não há fallback SQLite nem banco mestre local.
 
-Cloudflare Pages substitui a dependência exclusiva de Vercel Hobby; a documentação atual limita o Hobby a uso pessoal/não comercial. Conferir termos/conta institucional antes de deploy. Pages Free tem 500 builds mensais documentados; isso não promete SLA. Edge Functions Free documenta 500.000 invocações e limites de 150 s de duração, 2 s CPU e 256 MB: usar chamadas curtas, não hospedar batalhas. Polling com backoff é requisito, não um laço permanente de invocações. Supabase Free e SMTP padrão não são garantia de operação de turma: preparar contas sintéticas antes da demonstração; cadastro institucional, recuperação, email e consentimentos permanecem no marco do piloto.
+**A revisão D-008 substitui a preferência inicial por Cloudflare**: Vercel é preferida para hospedagem da PWA, mas o uso Hobby depende da elegibilidade contratual; **Cloudflare Pages é fallback, não hospedagem obrigatória**. Os [Terms §4](https://vercel.com/legal/terms) incluem uso pessoal ou não comercial, enquanto as [Fair Use Guidelines](https://vercel.com/docs/limits/fair-use-guidelines#commercial-usage) tratam de ganho financeiro de pessoas envolvidas na produção, inclusive empregados pagos/consultores. O [caso de voluntários em organização sem fins lucrativos respondido pela equipe da Vercel](https://community.vercel.com/t/question-about-commercial-usage/23321/4) não constitui autorização individual para projeto de servidor público. Conferir enquadramento antes de publicação oficial, como HYB-09. Cloudflare Pages Free segue opção conhecida de 500 builds mensais; nenhum provedor gratuito oferece SLA institucional por mera escolha. Frontend deve continuar portátil. Edge Functions Free documenta 500.000 invocações e limites de 150 s de duração, 2 s CPU e 256 MB: usar chamadas curtas, não hospedar batalhas. Polling com backoff é requisito, não um laço permanente de invocações. Supabase Free e SMTP padrão não são garantia de operação de turma: preparar contas sintéticas antes da demonstração; cadastro institucional, recuperação, email e consentimentos permanecem no marco do piloto.
 
 ## pgmq versus tabela de jobs
 
@@ -39,3 +39,9 @@ Piloto estudantil: RLS por dono e papéis, login/recuperação/email, consentime
 - Planos Supabase: https://supabase.com/pricing
 
 Valores são condições consultadas, não reserva de cota/SLA nem autorização de custo. Nenhum serviço cloud foi criado por esta ADR.
+
+## Precedência posterior de hospedagem — D-008 (2026-10-10)
+
+**Decisão revisada:** Vercel Hobby é **candidata prioritária ao frontend estático**, não isenção contratual obtida; Cloudflare Pages é contingência se for inelegível/inadequada. Isso modifica somente a preferência descrita na primeira edição da D-007/ADR-006, nunca PostgreSQL, pgmq, roles, worker, leases, segurança ou marcos.
+
+**Gates:** HYB-09 exige apurar caráter remunerado/institucional do desenvolvimento, solicitar confirmação apropriada à Vercel antes do uso oficial com estudantes, checar tipo de conta/colaboração e limites, e avaliar [Model Training no Hobby](https://vercel.com/legal/terms) com opt-out disponível em Team Settings. Não pôr PII, código privado de estudantes ou segredos no build. Nenhum deploy/conta foi criado por esta revisão. Ver [D-008](../planejamento/decisoes/D-008-revisao-hobby-vercel-ifma.md).

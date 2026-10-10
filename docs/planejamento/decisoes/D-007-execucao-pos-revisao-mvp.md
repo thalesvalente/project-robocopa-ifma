@@ -6,7 +6,7 @@
 
 Manter RoboDSL básica/PWA, Supabase PostgreSQL como fonte canônica, Auth e Storage privado, VMs Linux dedicadas no PC apenas para processamento. Priorizar demonstração privada à diretoria com identidades sintéticas e estratégias previamente verificadas. Piloto aberto com estudantes é um marco posterior, não a consequência automática da demonstração.
 
-Ajustar a prioridade de hospedagem estática para Cloudflare Pages Free, mantendo Vercel como alternativa condicionada ao enquadramento contratual. Não presumir que Vercel Hobby pessoal/não comercial homologa uso institucional. Supabase Edge Functions é o candidato para operações curtas do plano de controle, sem árbitro ou loop de worker permanente. Retorno de status e replay precede streaming contínuo.
+**Hospedagem estática — precedência revisada em D-008:** manter **Vercel como primeira opção para a PWA**, condicionada ao enquadramento Hobby do caso concreto, e **Cloudflare Pages como alternativa**. A preferência Cloudflare registrada na decisão inicial foi superada após consultar Terms §4, Fair Use e resposta de staff sobre projeto voluntário sem remuneração para organização sem fins lucrativos. Instituição pública e gratuita não é autorização automática, especialmente se o desenvolvimento integrar função remunerada. Não habilitar publicação oficial com alunos antes de confirmar elegibilidade. Supabase Edge Functions é o candidato para operações curtas do plano de controle, sem árbitro ou loop de worker permanente. Retorno de status e replay precede streaming contínuo.
 
 Avaliar pgmq antes de codificar. A decisão técnica limitada da ADR-006 usa inicialmente uma tabela transacional PostgreSQL como único registro de jobs/leases/tentativas; não criar uma segunda fila pgmq em paralelo. Não confundir entrega em janela de visibilidade com efeito único de resultado. O ledger de placar continua em I3-04.
 
@@ -19,3 +19,7 @@ Preservar os experimentos SQLite e mTLS dos PRs #23/#24, sem promovê-los a banc
 3. Depois implementar e testar integração de autenticação/cloud, resultados, RLS por usuário, Storage e frontend; ensaiar VM/backup e go/no-go da demonstração.
 
 A aprovação não é pagamento, liberação de alunos, migração em projeto real Supabase, alteração de firewall/VM/roteador, nem bypass de proteção. Não presumir relatórios de pesquisa não anexados como provas de execução. Fontes oficiais consultadas e critérios estão na ADR-006 e no plano I3-03.
+
+## Retificação posterior da preferência de hospedagem — D-008
+
+Esta atualização **não reabre** aprovações técnicas do I3-03. A prioridade de hosting da PWA é [Vercel, elegibilidade Hobby pendente](D-008-revisao-hobby-vercel-ifma.md); Cloudflare permanece contingência por portabilidade. Devem ser considerados (a) uso pessoal/não comercial dos Terms, (b) ganho financeiro de participantes na produção segundo Fair Use, (c) colaboração, quotas, retenção, (d) opção de desabilitar treinamento de IA no conteúdo de contas Hobby e ausência de PII/segredos nos builds. [ADR-006 revisada](../../arquitetura/ADR-006-demo-gratuita-plano-controle.md). Banco Supabase, serviço cloud curto e VM de execução não mudam. HYB-09, S08 e G-PROD continuam pendentes.

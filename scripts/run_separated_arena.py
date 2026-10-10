@@ -120,7 +120,7 @@ def install_firewall(name,run_id,role,ref_ip,bot_ips):
     for ipv6,tool in ((False,'iptables'),(True,'ip6tables')):
         rules=firewall(role,ref_ip,bot_ips,ipv6=ipv6)
         command(prefix+[tool+'-restore','-w','3'],data=rules.encode())
-        dump=command(prefix+[tool+'-S']).output.decode()
+        dump=command(prefix+[tool,'-S']).output.decode()
         for chain in ('INPUT','OUTPUT','FORWARD'):
             if f'-P {chain} DROP' not in dump:raise PolicyError('FIREWALL_DEFAULT_POLICY')
         expected=[line for line in rules.splitlines() if line.startswith('-A ')]

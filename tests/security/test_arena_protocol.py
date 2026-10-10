@@ -40,7 +40,7 @@ class ArenaProtocolTests(unittest.TestCase):
     def test_ready_extra_fields(self):
         with self.assertRaises(p.ProtocolDenied):p.intent('{"type":"BotReady","command":"x"}')
     def test_bad_intent_values(self):
-        for key,value in [('targetSpeed',True),('targetSpeed',1e20),('rescan',1),
+        for key,value in [('targetSpeed',True),('targetSpeed',1e20),('targetSpeed',10**500),('rescan',1),
                           ('bodyColor','red'),('stdOut','x'*2049),('unknown',3),('debugGraphics','x')]:
             with self.subTest(key=key),self.assertRaises(p.ProtocolDenied):
                 p.intent(json.dumps({'type':'BotIntent',key:value}))

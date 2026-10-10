@@ -79,7 +79,7 @@ def intent(raw: str) -> dict:
         raise ProtocolDenied('INTENT_FIELD_DENIED')
     for key,value in data.items():
         if key in NUMBERS:
-            if type(value) not in (int,float) or not math.isfinite(value) or abs(value)>1e6:
+            if type(value) not in (int,float) or abs(value)>1e6 or not math.isfinite(value):
                 raise ProtocolDenied('INTENT_NUMBER')
         elif key in BOOLEANS and type(value) is not bool:
             raise ProtocolDenied('INTENT_BOOLEAN')

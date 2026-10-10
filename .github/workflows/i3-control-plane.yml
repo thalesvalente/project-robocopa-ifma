@@ -1,0 +1,43 @@
+name: I3 - controle offline, sem Docker
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/i3-control-plane.yml'
+      - 'services/execution_control/**'
+      - 'tests/security/test_i3_control_plane.py'
+      - 'specs/004-isolamento-execucao/**'
+      - 'docs/planejamento/ESTADO-ATUAL.md'
+      - 'docs/qualidade/evidencias/S04-T04-I3-01.md'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  offline-contracts:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Dependencia fixada apenas para regressao gateway I2
+        run: python3 -m pip install --disable-pip-version-check --no-deps --require-hashes -r spikes/isolamento/arena/requirements.txt
+      - name: Verificadores e seis suites sem bot ou Docker
+        run: |
+          python3 scripts/verify_security_spec.py
+          python3 scripts/render_planning.py
+          git diff --exit-code -- docs/planejamento/PLANO-MESTRE.md docs/planejamento/sprints
+          python3 scripts/verify_planning.py
+          python3 -m unittest discover -s tests/planning -v
+          python3 -m unittest discover -s tests/infra -v
+          python3 -m unittest discover -s tests/tank_royale -v
+          python3 -m unittest discover -s tests/mobile -v
+          python3 -m unittest discover -s tests/security -v
+          python3 -m unittest discover -s tests/arena -v
+      - name: Spec Kit nativo feature 004
+        env:
+          SPECIFY_FEATURE_DIRECTORY: specs/004-isolamento-execucao
+          SPECIFY_FEATURE_NO_PERSIST: '1'
+        run: python3 .specify/scripts/python/check_prerequisites.py --json --require-spec --require-tasks --include-tasks
+      - name: Nenhuma alteracao rastreada
+        run: git diff --exit-code
+# CI descartavel, sem endpoint publico, worker, Docker ou host pessoal.

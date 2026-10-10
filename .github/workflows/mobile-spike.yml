@@ -1,0 +1,57 @@
+name: Autoria móvel - editor e motor reais
+on:
+  pull_request:
+    paths:
+      - 'spikes/autoria-mobile/**'
+      - 'scripts/*mobile_spike.py'
+      - 'tests/mobile/**'
+      - 'specs/003-autoria-mobile/**'
+      - '.github/workflows/mobile-spike.yml'
+      - 'docs/**'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: mobile-spike-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+jobs:
+  mobile-authoring:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Regressão unitária e planejamento
+        run: |
+          python3 scripts/render_planning.py
+          git diff --exit-code -- docs/planejamento
+          python3 scripts/verify_planning.py
+          python3 -m unittest discover -s tests/planning -v
+          python3 -m unittest discover -s tests/infra -v
+          python3 -m unittest discover -s tests/tank_royale -v
+          python3 -m unittest discover -s tests/mobile -v
+          node --check spikes/autoria-mobile/web/app.js
+      - name: Pré-requisitos nativos do Spec Kit
+        env:
+          SPECIFY_FEATURE_DIRECTORY: specs/003-autoria-mobile
+          SPECIFY_FEATURE_NO_PERSIST: '1'
+        run: python3 .specify/scripts/python/check_prerequisites.py --json --require-spec --require-tasks --include-tasks
+      - name: Preparar motor e compilador do experimento
+        run: python3 scripts/run_mobile_spike.py --prepare
+      - name: Preparar Chromium de teste (somente runner descartável)
+        run: |
+          python3 -m pip install playwright==1.57.0
+          python3 -m playwright install --with-deps chromium
+      - name: Editor responsivo e duas estratégias no motor real
+        run: python3 tests/mobile/browser_flow.py
+      - name: Preservar evidências sintéticas e screenshots
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: mobile-authoring-evidence
+          path: |
+            .local/mobile-spike/
+            .local/mobile-browser/
+          include-hidden-files: true
+          retention-days: 30

@@ -52,15 +52,34 @@ async def main() -> None:
             if err.rcvd is None or err.rcvd.code != 1008:
                 raise ValueError('WRONG_AUTHENTICATED_BOT_DENIAL') from err
 
-    # The referee name resolves only on the trusted segment, never on the bot segment.
-    # This checks name-based reachability; it is not a complete firewall audit.
+    # Name isolation alone is insufficient: test direct TCP to the official
+    # referee's numeric address while its server process is running. This
+    # synthetic probe knows the address, unlike actual participants.
+    import errno
+    import ipaddress
     import socket
     try:
         socket.getaddrinfo('referee', 7654)
     except socket.gaierror:
-        print('I2_NEGATIVE_PASS: controller types denied, referee alias absent from bot network')
+        pass
     else:
         raise ValueError('REFEREE_NAME_LEAKS_TO_BOT_NETWORK')
+    referee_ip = os.environ.get('REFEREE_IP', '')
+    try:
+        ip = ipaddress.ip_address(referee_ip)
+        if ip.version != 4 or not ip.is_private:
+            raise ValueError('REFEREE_IP_INVALID')
+    except ValueError as exc:
+        raise ValueError('REFEREE_IP_INVALID') from exc
+    try:
+        with socket.create_connection((referee_ip, 7654), timeout=0.9):
+            pass
+    except OSError as exc:
+        if exc.errno not in (errno.ETIMEDOUT, errno.EHOSTUNREACH, errno.ENETUNREACH, errno.EACCES):
+            raise ValueError('REFEREE_DIRECT_ROUTE_INCONCLUSIVE') from exc
+    else:
+        raise ValueError('REFEREE_DIRECT_IP_REACHABLE')
+    print('I2_NEGATIVE_PASS: admin types denied, DNS and numeric referee route blocked')
 
 if __name__ == '__main__':
     try:

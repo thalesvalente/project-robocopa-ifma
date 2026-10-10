@@ -26,3 +26,7 @@ Gmail verificado não recebe escola/role automaticamente; `hd` ausente de Gmail 
 ## Gates abertos
 
 Confirmar IFMA Google Workspace/SUAP, admin para menores, consentimento, atribuição de escolas e convites, RLS, infraestrutura Vercel/Supabase real e worker. **Não usar conta Gmail pessoal para contornar política institucional de menores.**
+
+## Resultado ID-010 — política de classificação offline
+
+O planejamento D-011/ADR-008, a especificação, o contrato e as tarefas foram publicados ANTES do runtime no commit `4f4b911`. A implementação do classificador puro `services/identity/google_policy.py` foi publicada depois, no commit `2dcea3c`, seguida de **20/20 testes unitários sintéticos PASS no CI** (run `38082735138`); planejamento e autoria passaram nos runs `38082734825` e `38082734828`. [Evidência](../../docs/qualidade/evidencias/S03-ID-010.md). Resultado elegível sempre PENDING, sem escola/role; não valida JWT/assinatura Google e não participa de competição. **ID-010 concluída somente no recorte offline; Google OAuth, vínculos escolares, RLS e autorização para menores ainda não foram executados.** Próximo incremento ID-011 exige plano específico antes de SQL, endpoints e convites.

@@ -1,0 +1,52 @@
+name: I2 - arena separada e papéis
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/separated-arena.yml'
+      - 'specs/004-isolamento-execucao/iteration-2.md'
+      - 'spikes/isolamento/arena/**'
+      - 'services/worker_agent/arena*'
+      - 'services/worker_agent/bounded.py'
+      - 'scripts/run_separated_arena.py'
+      - 'tests/security/**'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  upstream-review:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Fontes e artefatos oficiais para revisão da implementação
+        run: |
+          python3 - <<'PY'
+          import os, pathlib, urllib.request, json, hashlib, zipfile
+          out=pathlib.Path(os.environ['RUNNER_TEMP'])/'i2-upstream-review'
+          out.mkdir()
+          commit='c8ad3a8d19a843f6258d6f6f9db7f29229963903'
+          url='https://codeload.github.com/robocode-dev/tank-royale/tar.gz/'+commit
+          with urllib.request.urlopen(url, timeout=90) as response:
+              source=response.read(64*1024**2+1)
+          assert len(source)<=64*1024**2
+          (out/'upstream.tar.gz').write_bytes(source)
+          lock=json.loads(pathlib.Path('spikes/tank-royale/upstream.lock.json').read_text())
+          for name,asset in lock['artifacts'].items():
+              with urllib.request.urlopen(asset['url'], timeout=90) as response:
+                  data=response.read(asset['size']+1)
+              assert len(data)==asset['size'] and hashlib.sha256(data).hexdigest()==asset['sha256']
+              (out/name).write_bytes(data)
+          (out/'provenance.json').write_text(json.dumps({'upstream_commit':commit,'source_sha256':hashlib.sha256(source).hexdigest(),'assets':lock['artifacts']},indent=2))
+          with zipfile.ZipFile(out/'runner.jar') as jar:
+              print('EMBEDDED:',[p for p in jar.namelist() if p.endswith('.jar')])
+          PY
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: i2-upstream-review
+          path: ${{ runner.temp }}/i2-upstream-review/
+          retention-days: 7
+          if-no-files-found: error
+# Etapa inicial de obtenção de dependências verificadas para o I2-01.
+# A batalha e provas somente serão adicionadas após a implementação; não presumir PASS.

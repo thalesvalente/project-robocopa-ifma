@@ -4,7 +4,7 @@ Four containers and three isolated networks. No student source or public endpoin
 """
 from __future__ import annotations
 from datetime import datetime, timezone
-import gzip, hashlib, importlib.util, ipaddress, json, os, platform, secrets, socket, sys, threading, time, uuid
+import argparse, gzip, hashlib, importlib.util, ipaddress, json, os, platform, secrets, socket, sys, threading, time, uuid
 from pathlib import Path
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
 from services.worker_agent.policy import require_disposable_ci, PolicyError
@@ -72,7 +72,21 @@ def validate_replay(path: Path, results: dict) -> dict:
         if type(row.get('totalScore')) is not int or row['totalScore']<0 or row.get('rank') not in (1,2):raise ValueError('SCORE')
     return {'sha256':hashlib.sha256(path.read_bytes()).hexdigest(),'compressed_bytes':path.stat().st_size,'uncompressed_bytes':size,'ticks':ticks,'rounds':rounds,'results_equal':True}
 
-def run():
+class CleanupCheckComplete(Exception):
+    """Internal marker: a planned timeout was observed, no battle claimed."""
+
+
+def expect_deadline(action):
+    try:
+        action()
+    except ProcessBoundError as error:
+        if error.reason == 'TIMEOUT':
+            return
+        raise
+    raise RuntimeError('DEADLINE_NOT_OBSERVED')
+
+
+def run(timeout_cleanup: bool = False):
     require_disposable_ci(dict(os.environ),platform.system(),platform.release())
     endpoint=docker('context','inspect','--format','{{.Endpoints.docker.Host}}').decode().strip()
     if endpoint!='unix:///var/run/docker.sock':raise PolicyError('LOCAL_CI_DAEMON_REQUIRED')
@@ -82,6 +96,7 @@ def run():
     if any(p.is_symlink() for p in (ROOT/'.local',out.parent)):raise ValueError('SYMLINK')
     out.mkdir(parents=True)
     report={'schema_version':1,'status':'FAILED','scope':'I2_TRUSTED_REFERENCE_BOTS_CI_ONLY','run_id':run_id,'engine_version':'1.4.0','host_vm_tested':False,'student_submission_enabled':False,'source_commit':os.environ.get('GITHUB_SHA','unavailable'),'started_at':datetime.now(timezone.utc).isoformat(),'containers':{},'networks':{},'negative_tests':{},'stage':'build'}
+    report.update(scenario='deadline-cleanup' if timeout_cleanup else 'separated-battle', battle_completed=False)
     created=[];nets=[];tags=[];server=None
     values={'ADMIN_SECRET':secrets.token_urlsafe(32),'BACKEND_SECRET':secrets.token_urlsafe(32),'FRONT_A':secrets.token_urlsafe(32),'FRONT_B':secrets.token_urlsafe(32)}
     try:
@@ -151,6 +166,10 @@ def run():
                 if response.get('denied') is not True:raise ValueError('PROTOCOL_NOT_DENIED')
                 report['negative_tests'][role]['protocol'].append(response)
         server.close();thread.join(1);server=None
+        if timeout_cleanup:
+            report['stage']='deadline-fixture'
+            expect_deadline(lambda: jexec(names['walls'],'Probe','deadline-fixture',timeout=.5))
+            raise CleanupCheckComplete()
         report['stage']='battle';time.sleep(.5)
         for role in ('walls','spin'):jexec(names[role],'Probe','start')
         output=jexec(names['judge'],'Judge','battle',timeout=210,limit=8*1024**2)
@@ -165,7 +184,9 @@ def run():
         for data in [(out/'results.json').read_bytes(),gzip.decompress(replays[0].read_bytes()),(out/'engine.log').read_bytes()]:
             if any(value.encode() in data for key,value in values.items() if key in ('ADMIN_SECRET','BACKEND_SECRET','FRONT_A','FRONT_B')):raise ValueError('SECRET_IN_ARTIFACT')
         if report['gateway_stats'].get('forwarded_intents',0)<1:raise ValueError('NO_REAL_INTENTS')
-        report['status']='PASS';report['stage']='verified'
+        report['status']='PASS';report['stage']='verified';report['battle_completed']=True
+    except CleanupCheckComplete:
+        report.update(status='PASS',stage='expected_timeout_verified',timeout_observed=True,battle_completed=False)
     except Exception as error:
         diagnostic=getattr(error,'output',b'')
         if not isinstance(diagnostic,bytes):diagnostic=b''
@@ -203,6 +224,9 @@ def run():
     return out
 
 if __name__=='__main__':
-    try:run()
+    parser=argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--timeout-cleanup-check',action='store_true',help='CI-only finite timeout/cleanup scenario; no battle is claimed')
+    args=parser.parse_args()
+    try:run(args.timeout_cleanup_check)
     except Exception as error:
         print('BLOCKED/FAILED: '+str(error),file=sys.stderr);raise SystemExit(1)

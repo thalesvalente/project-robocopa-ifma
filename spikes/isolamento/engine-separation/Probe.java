@@ -78,6 +78,7 @@ public final class Probe {
                 o.addProperty("network",Files.readSymbolicLink(Path.of("/proc/self/ns/net")).toString());
                 System.out.println(o);break;
             }
+            case "deadline-fixture":TimeUnit.SECONDS.sleep(5);break;
             case "network":network(args);break;
             case "deny":denied(args[1]);break;
             case "idle":waitBot();break;

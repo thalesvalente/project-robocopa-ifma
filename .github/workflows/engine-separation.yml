@@ -4,10 +4,11 @@ on:
     paths:
       - 'specs/004-isolamento-execucao/iteration-2.md'
       - 'specs/004-isolamento-execucao/i2-protocol-clarification.md'
+      - 'specs/004-isolamento-execucao/i2-cleanup-scenarios.md'
       - 'spikes/isolamento/engine-separation/**'
       - 'services/worker_agent/game_policy.py'
       - 'scripts/run_engine_separation.py'
-      - 'tests/security/test_game_separation.py'
+      - 'tests/security/**'
       - '.github/workflows/engine-separation.yml'
   workflow_dispatch:
 permissions:
@@ -43,6 +44,8 @@ jobs:
           persist-credentials: false
       - name: Batalha real em quatro contêineres com gateway e negativos de rede/protocolo
         run: python3 scripts/run_engine_separation.py
+      - name: Verificar timeout externo e limpeza em invocação separada
+        run: python3 scripts/run_engine_separation.py --timeout-cleanup-check
       - name: Preservar apenas evidências sanitizadas desta invocação
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02

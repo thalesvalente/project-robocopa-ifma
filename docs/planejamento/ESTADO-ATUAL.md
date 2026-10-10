@@ -40,7 +40,7 @@ A pedido do responsável, a segurança será **especificada antes de ser impleme
 
 A direção proposta separa plano de controle e worker: VM Linux dedicada com daemon próprio (não instalada), comunicação mínima com o árbitro a provar e execução da RoboDSL T1 restrita; Java/JS livres T2 continuam fora do MVP inicial. O servidor atual `127.0.0.1:18081` **não é seguro para LAN/público**, pois seu processo Python acessa a CLI Docker do host.
 
-As decisões D1–D5, testes negativos em ambiente descartável autorizado, isolamento bot/árbitro, backup, limites e ratificação da arquitetura permanecem pendentes. **S04-T04 continua A_FAZER** no backlog macro; esta preparação documental não conclui dependências S03/S04-T01/T02/T03. Validação estática por GitHub Actions documenta apenas qualidade dos artefatos, não segurança de código não confiável.
+As decisões D1–D5, testes negativos em ambiente descartável autorizado, isolamento bot/árbitro, backup, limites e ratificação da arquitetura permanecem pendentes. **S04-T04 continua A_FAZER** no backlog macro; esta preparação documental não conclui dependências S03/S04-T01/T02/T03. **Validação documental executada e aprovada:** [GitHub Actions 38019520410](https://github.com/thalesvalente/project-robocopa-ifma/actions/runs/38019520410), 38 testes unitários OK, pré-requisitos nativos do Spec Kit PASS, cobertura estrutural 20 FR/8 SC/16 TH por 39 tarefas e 18 gates bloqueados. Evidência: `docs/qualidade/evidencias/S04-T04-PLANEJAMENTO.md`. Isso **não** comprova segurança de código não confiável.
 
 ## Limites e próximos aceites
 

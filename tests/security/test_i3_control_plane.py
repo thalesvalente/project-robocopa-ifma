@@ -124,13 +124,19 @@ class I3ControlPlaneTests(unittest.TestCase):
             self.submit(data=other)
 
     def test_bounded_queue_and_existing_duplicate(self):
-        q = SQLiteQueue(self.path, capacity=1)
+        q = SQLiteQueue(Path(self.tmp.name) / "bounded.sqlite3", capacity=1)
         b = self.broker(queue=q)
         self.submit(broker=b)
         with self.assertRaisesRegex(BrokerError, "^QUEUE_FULL$"):
             self.submit(broker=b, data=self.new_job("key-two"))
         self.assertTrue(self.submit(broker=b).duplicate)
         self.assertEqual(q.count(), 1)
+
+
+    def test_reopen_with_conflicting_global_capacity_rejected(self):
+        with self.assertRaisesRegex(QueueError, "^STORE_CONFIG_MISMATCH$"):
+            SQLiteQueue(self.path, capacity=1)
+        self.assertEqual(self.queue.count(), 0)
 
     def test_process_reopen_preserves_queue(self):
         first = self.submit()
@@ -149,7 +155,7 @@ class I3ControlPlaneTests(unittest.TestCase):
         self.assertEqual(self.queue.count(), 1)
 
     def test_concurrent_unique_requests_reject_overflow(self):
-        q = SQLiteQueue(self.path, capacity=3)
+        q = SQLiteQueue(Path(self.tmp.name) / "concurrent.sqlite3", capacity=3)
         b = self.broker(queue=q)
         items = [self.new_job("key-" + str(i)) for i in range(9)]
         def invoke(item):

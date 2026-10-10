@@ -15,7 +15,7 @@ import sqlite3
 from services.worker_agent.contracts import AdmittedJob, ENGINE, SHA256
 
 OWNER = re.compile(r"^[a-zA-Z0-9_-]{1,64}$")
-SCHEMA = 1
+SCHEMA = 2
 
 class QueueError(ValueError):
     """Only stable codes, never client-controlled text."""
@@ -63,7 +63,26 @@ class SQLiteQueue:
                             UNIQUE(owner_ref, idempotency_key)
                         )
                     """)
-                    db.execute("PRAGMA user_version=1")
+
+                    db.execute("""
+                        CREATE TABLE IF NOT EXISTS queue_config (
+                            singleton INTEGER PRIMARY KEY CHECK(singleton=1),
+                            capacity INTEGER NOT NULL CHECK(capacity BETWEEN 1 AND 256)
+                        )
+                    """)
+                    config = db.execute(
+                        "SELECT capacity FROM queue_config WHERE singleton=1"
+                    ).fetchone()
+                    if config is None:
+                        if version != 0:
+                            raise QueueError("STORE_CONFIG_MISSING")
+                        db.execute(
+                            "INSERT INTO queue_config(singleton,capacity) VALUES (1,?)",
+                            (self.capacity,),
+                        )
+                    elif config[0] != self.capacity:
+                        raise QueueError("STORE_CONFIG_MISMATCH")
+                    db.execute("PRAGMA user_version=2")
                     db.commit()
                 except BaseException:
                     db.rollback()

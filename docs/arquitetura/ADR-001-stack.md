@@ -48,3 +48,7 @@ Se as medições mostrarem filas longas, alta taxa de treino ou necessidade de e
 ## Evidência e aprovação
 
 O arquivo não comprova battle runner integrado, desempenho, segurança contra código não confiável ou validação pedagógica. Essas questões exigem testes e aceites próprios antes da baseline de arquitetura.
+
+## Decisão posterior para o MVP — persistência remota (2026-10-10)
+
+A escolha candidata **PostgreSQL** foi confirmada pelo responsável; para o MVP, o banco canônico ficará **no Supabase**, com Supabase Auth/Storage, PWA na **Vercel** e execução Tank Royale em **VMs Linux dedicadas no PC do responsável**. SQLite do I3-01 permanece fixture experimental, **não** segundo banco de produção. Local Compose/Postgres permanece laboratório/teste histórico. Esquema/RLS/auth, adaptador PostgreSQL da fila I3-03, replay remoto e broker de conexão outbound ainda exigem plano/testes/aceite antes de implantação. O backend Node/TypeScript continua candidato e a localização exata do broker com mTLS requer verificação de compatibilidade do provider. [ADR-005](ADR-005-hospedagem-hibrida-mvp.md), [D-006](../planejamento/decisoes/D-006-hospedagem-hibrida-e-persistencia-remota.md).

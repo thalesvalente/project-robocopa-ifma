@@ -1,0 +1,51 @@
+name: I2 - arbitro e bots separados
+on:
+  pull_request:
+    paths:
+      - 'specs/004-isolamento-execucao/**'
+      - 'spikes/isolamento/engine-separated/**'
+      - 'services/worker_agent/engine_isolation.py'
+      - 'scripts/run_engine_isolation.py'
+      - 'tests/security/test_engine_isolation.py'
+      - '.github/workflows/engine-isolation.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  upstream-review:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Obter somente fontes e binarios publicos de referencia
+        run: |
+          python3 - <<'PY'
+          import hashlib,json,os,urllib.request,zipfile
+          from pathlib import Path
+          dest=Path(os.environ['RUNNER_TEMP'])/'i2-upstream';dest.mkdir()
+          lock=json.loads(Path('spikes/tank-royale/upstream.lock.json').read_text())
+          artifacts=dict(lock['artifacts'])
+          artifacts['upstream-source.tar.gz']={'url':'https://codeload.github.com/robocode-dev/tank-royale/tar.gz/'+lock['upstream_commit']}
+          manifest={}
+          for name,info in artifacts.items():
+              with urllib.request.urlopen(info['url'],timeout=60) as response:
+                  data=response.read(64*1024*1024+1)
+              if len(data)>64*1024*1024: raise SystemExit('Download excessivo')
+              digest=hashlib.sha256(data).hexdigest()
+              if 'sha256' in info and digest!=info['sha256']: raise SystemExit('Hash incorreto')
+              if 'size' in info and len(data)!=info['size']: raise SystemExit('Tamanho incorreto')
+              (dest/name).write_bytes(data)
+              manifest[name]={'sha256':digest,'bytes':len(data),'upstream_commit':lock['upstream_commit']}
+          (dest/'manifest.json').write_text(json.dumps(manifest,indent=2))
+          with zipfile.ZipFile(dest/'runner.jar') as jar:
+              (dest/'runner-entries.txt').write_text('\n'.join(jar.namelist()))
+          print(json.dumps(manifest,indent=2))
+          PY
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: i2-upstream-review
+          path: ${{ runner.temp }}/i2-upstream/
+          retention-days: 7
+          if-no-files-found: error

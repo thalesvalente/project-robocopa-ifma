@@ -37,3 +37,7 @@ O Google Admin pode bloquear aplicativos OAuth terceiros para menores em domíni
 - G-PROD permanece BLOQUEADO até todos os gates de segurança, dados, VM, backup e homologação.
 
 **Não implementado por esta ADR:** OAuth/Google Client, migrations de vínculos, RLS em Supabase, convites e operação aberta.
+
+## Comprovação limitada de ID-010 (2026-10-10)
+
+O classificador **offline** de conta Google já verificada foi implementado após planejamento em Spec Kit, com **20 testes sintéticos PASS** no CI. A classificação de Gmail pessoal sem `hd` e Workspace com `hd` produz apenas `PENDING`; o resultado não contém escola, papel nem permissão de competição. [Relatório](../qualidade/evidencias/S03-ID-010.md). Esses testes **não** verificam assinatura OIDC, sessão Google/Supabase, aplicativo Workspace para menores, JWT, banco/RLS ou convite escolar, que permanecem etapas posteriores.

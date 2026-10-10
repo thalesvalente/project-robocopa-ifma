@@ -9,7 +9,7 @@
 - [x] MOB-005 Executar unitários: 34 testes de autoria e 63 anteriores no lote de referência, 97 OK. Regressão adicional de token não ASCII adicionada posteriormente.
 - [x] MOB-006 Executar duas estratégias pela UI e conferir artifacts reais: três rounds por treino; sentinela velocidade média 0; explorador 5,7989. Logs/resultados/replays e onze controles efetivos Docker por execução conferidos.
 - [x] MOB-007 Validar Chromium nos viewports 360/390/1280px; rascunhos recuperados, erros preservados, layout sem overflow e screenshots reais inspecionados. **Emulação**, não aparelho físico.
-- [ ] MOB-008 Reproduzir o novo laboratório no Windows e avaliar em smartphone físico, com conexão controlada autorizada.
+- [ ] MOB-008 Reproduzir o novo laboratório no Windows e avaliar em smartphone físico, com conexão controlada autorizada. **Parcial:** captura compartilhada pelo responsável demonstra editor/replay e resultado da estratégia Sentinela no PC (Aprendiz 536 × Walls 226, três rounds; velocidade 0). Evidência `docs/qualidade/evidencias/AUTORIA-MOBILE-HOST.md`. Ainda pendentes: exercício do Explorador e edição própria no PC, arquivos locais não inspecionados e teste em celular físico.
 - [ ] MOB-009 Ratificar escolha pedagógica da autoria e reconciliar com a baseline S03/S04; nenhuma aprovação presumida.
 
 Evidência do lote: https://github.com/thalesvalente/project-robocopa-ifma/actions/runs/38009658981 e `docs/qualidade/evidencias/AUTORIA-MOBILE-CI.json`. Fonte testada `6c101094b75f212de5f65719234fd74614f29e51`. Não houve uso de Codex/R4, inscrições, participantes reais, modificação do Compose ou abertura de rede.

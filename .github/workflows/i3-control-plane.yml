@@ -5,6 +5,7 @@ on:
       - '.github/workflows/i3-control-plane.yml'
       - 'services/execution_control/**'
       - 'tests/security/test_i3_control_plane.py'
+      - 'tests/security/test_i3_mtls.py'
       - 'specs/004-isolamento-execucao/**'
       - 'docs/planejamento/ESTADO-ATUAL.md'
       - 'docs/qualidade/evidencias/S04-T04-I3-01.md'

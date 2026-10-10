@@ -70,3 +70,11 @@ Legenda STRIDE: **S** spoofing, **T** tampering, **R** repudiation, **I** inform
 - **R-06 alto:** pontuação empatada exibida com ranks diferentes (issue #15) requer regra explícita S03-T03 antes de ranking definitivo.
 
 **Gate:** nenhum código geral de estudantes ou acesso externo é autorizado por este documento. Priorizar D1–D5 em `specs/004-isolamento-execucao/clarifications.md`.
+
+## Adendo de fronteira I3-02 (2026-10-10; planejamento, não evidência)
+
+Diante das ameaças TH-01/TH-05/TH-09/TH-14, o plano [I3-02](../../specs/004-isolamento-execucao/i3-02-auth-plan.md) separa TLS autenticado de mera reivindicação de identidade por payload. A identidade deve ser extraída exclusivamente do certificado do socket autenticado, com CA do laboratório, URI SAN, digest exato, escopo e operação. Acesso a jogos e Docker continua negado. Revogação em memória é prova limitada, sem persistência/revogação de PKI operacional. Não considerar ausência de acesso em loopback como segurança de uma rede pública.
+
+## Resultado experimental I3-02 (2026-10-10)
+
+As 33 verificações reais de TLS1.3/identidade/role/SAN/leaf/escopo/rotação e comandos negados foram aprovadas no CI [38066999247](https://github.com/thalesvalente/project-robocopa-ifma/actions/runs/38066999247). Isso demonstra mitigação pontual das tentativas de personificação e escopo no **canal de probe sintético**, não elimina TH-01/TH-04/TH-05/TH-09/TH-14 para API/VM/worker público. Revogação de folhas **in-memory** não é revogação de PKI após restart; risco residual documentado em [S04-T04-I3-02](../qualidade/evidencias/S04-T04-I3-02.md).

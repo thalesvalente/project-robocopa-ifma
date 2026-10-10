@@ -1,0 +1,101 @@
+{
+  "schema_version": 1,
+  "record": "S04-T04-I3-02",
+  "date": "2026-10-10",
+  "status": "PASS_EXPERIMENTAL_ONLY",
+  "scope": "TLS13_MUTUAL_WORKER_PROBE_LOOPBACK",
+  "source_commit": "7819c901b8897a7d1e86425e968c6ecadafacf12",
+  "checkout_commit": "e8cd56d2df3ee876c74f5e89a0f2202253a8ebf8",
+  "branch": "feat/s04-i3-02-mtls-identity",
+  "pr": 24,
+  "base_pr": 23,
+  "run_ids": {
+    "tls": 38066999247,
+    "i3": 38066999443,
+    "speckit": 38066999286,
+    "i1": 38066999229,
+    "i2": 38066999263,
+    "authoring": 38066999237
+  },
+  "workflow_results": {
+    "tls": "success",
+    "i3": "success",
+    "speckit": "success",
+    "i1": "success",
+    "i2": "success",
+    "authoring": "success"
+  },
+  "tls_tests": {
+    "total": 33,
+    "passed": 33,
+    "failed": 0,
+    "openssl_ci": "3.0.13",
+    "tls_version": "TLSv1.3",
+    "real_handshake": true,
+    "synthetic_certificates": true
+  },
+  "offline_regressions": {
+    "planning": 41,
+    "infra": 13,
+    "tank_royale": 23,
+    "mobile": 35,
+    "security": 246,
+    "arena": 21,
+    "total": 379,
+    "passed": 379,
+    "environment": "isolated Linux Python 3.13.5"
+  },
+  "source_artifact": {
+    "id": 11675395362,
+    "bytes": 391949,
+    "sha256": "2ce2e4154972ad8894782f8bd1112f4fb7c3f05c9c75cd29b9dea7b25e940602"
+  },
+  "i2_artifact": {
+    "id": 11674529240,
+    "bytes": 540236,
+    "sha256": "09d912dc6a04507c144010f63d1934e24de5fd59b86c21f040ebd3ff1c846923",
+    "zip_entries": 16,
+    "manifest_files_verified": 12,
+    "scenarios": 5,
+    "battles": [
+      {
+        "rounds": 3,
+        "ticks": 2489,
+        "spin": 350,
+        "walls": 166
+      },
+      {
+        "rounds": 3,
+        "ticks": 3241,
+        "spin": 52,
+        "walls": 311
+      }
+    ],
+    "aborts": 2,
+    "real_timeout_cleanup": 1,
+    "outside_runner_audit": "PASS"
+  },
+  "work_items": {
+    "i3_02a": "DONE",
+    "i3_02b": "DONE",
+    "i3_02c": "DONE",
+    "i3_02d": "DONE",
+    "i3_02e": "DONE",
+    "i3_02f": "DONE",
+    "H01": "COVERED",
+    "open_scope_findings": 0
+  },
+  "guards": {
+    "no_worker_claim": true,
+    "no_jobs_executed": true,
+    "no_public_http": true,
+    "no_vm": true,
+    "no_docker_personal": true,
+    "no_student_data": true,
+    "cert_rotation_revocation_in_memory_only": true,
+    "production_pki_deployed": false,
+    "worker_auth_production": false,
+    "g_prod": "BLOCKED",
+    "i3_complete": false
+  }
+}

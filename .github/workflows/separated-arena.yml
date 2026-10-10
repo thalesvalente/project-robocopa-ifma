@@ -48,6 +48,18 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           persist-credentials: false
+      - name: Pré-requisitos do supervisor (somente runner descartável)
+        run: |
+          for tool in nsenter iptables-save iptables-restore ip6tables-restore; do
+            if ! command -v "$tool" >/dev/null; then
+              sudo apt-get update -qq
+              sudo apt-get install -y -qq iptables util-linux
+              break
+            fi
+          done
+          command -v nsenter iptables-save iptables-restore ip6tables-restore
+          sudo -n iptables-save >/dev/null
+          sudo -n nsenter --version
       - name: Duas batalhas oficiais e negativas de rede/papéis no runner descartável
         run: python3 scripts/run_separated_arena.py
       - name: Guardar apenas evidências verificadas ou diagnósticos sintéticos sanitizados

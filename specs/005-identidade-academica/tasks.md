@@ -11,8 +11,10 @@
 - [ ] **ID-007** Testes negativos de autenticação/autorização: `hd` falso ou ausente de Workspace, Gmail não verificado, papel autoatribuído, entrada de escola falsa, convite repetido, PENDING/SUSPENDED, tenant cruzado, JWT inválido, acesso entre turmas.
 - [ ] **ID-008** E2E em celular e OAuth real com contas **de teste** (Gmail e Workspace quando disponível), com proteção de menores e dados minimizados, sem PII em Git/artefatos.
 - [ ] **ID-009** Sincronizar Spec Kit, decisões, índice, evidências/CI e gates reais a cada incremento.
-- [ ] **ID-010** [recorte CI inicial] Implementar política pura de classificação de identidades **já verificadas**, com Gmail `@gmail.com` sem `hd` e Workspace com `hd` autenticado; sempre iniciar PENDING sem derivar escola/papel. Testar provider, sub, email_verified, hd textual forjado, dados malformados. **Não é login OAuth real.**
+- [x] **ID-010** [recorte CI inicial] Implementar política pura de classificação de identidades **já verificadas**, com Gmail `@gmail.com` sem `hd` e Workspace com `hd` autenticado; sempre iniciar PENDING sem derivar escola/papel. Testar provider, sub, email_verified, hd textual forjado, dados malformados. **Não é login OAuth real.**
 - [ ] **ID-011** [posterior] Planejar e implementar convites/aprovação multiescola no servidor e RLS de vínculos ACTIVE por escola/turma, com TTL, rate limit, auditoria e suspensão.
 - [ ] **ID-012** [posterior] Exercitar casos multi-escola e onboarding externo sob revisão institucional; não confundir conta permitida com torneio publicamente aberto.
 
 **Regra de execução:** incluir lacuna no plano ANTES de qualquer patch de código; só marcar checkbox quando houver relatório e testes no SHA correto.
+
+**Evidência ID-010:** plano publicado primeiro no commit `4f4b911` e política offline implementada depois no commit `2dcea3c`. [Relatório S03-ID-010](../../docs/qualidade/evidencias/S03-ID-010.md) confirma **20 casos sintéticos PASS** no CI, além do planejamento e autoria. Os testes não representam login Google real nem autorização escolar; ID-001..009, ID-011/012, S03 e G-PROD permanecem abertos.

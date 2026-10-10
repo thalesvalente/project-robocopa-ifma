@@ -69,7 +69,9 @@ jobs:
           PY
       - name: Testar fontes e atualizar somente branch do PR
         run: |
-          python3 -m unittest discover -s tests/security -v
+          python3 -m venv /tmp/i2-review-venv
+          /tmp/i2-review-venv/bin/pip install --disable-pip-version-check --only-binary=:all: 'websockets==16.0'
+          /tmp/i2-review-venv/bin/python -m unittest discover -s tests/security -v
           python3 scripts/verify_security_spec.py
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'

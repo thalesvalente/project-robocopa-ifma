@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
-"""I2 real reference battles in disposable GitHub CI only, not on the operator host.
+"""I2 reference experiments: owned disposable GitHub CI only, not operator host.
 
-The supervisor configures ONLY owned container network namespaces before payloads.
-No published ports, host mounts, student input or Docker metadata credentials.
+ACLs are installed only in verified child namespaces. No host mounts, published
+ports, student code or Docker metadata credentials. Cleanup fails closed.
 """
 from __future__ import annotations
 import base64
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime,timezone
-import gzip,hashlib,json,os,platform,re,secrets,shlex,socket,sys,time,uuid
+import hashlib,json,os,platform,re,secrets,shlex,socket,sys,time,uuid
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT))
@@ -25,7 +25,7 @@ def command(args,*,data=None,timeout=25,limit=1024**2,check=True):
     if check and result.returncode:
         if args[0]=='sudo':
             detail=result.output.decode('utf-8',errors='replace')[:400]
-            print('SUPERVISOR_FAILURE '+detail, file=sys.stderr, flush=True)
+            print('SUPERVISOR_FAILURE '+detail,file=sys.stderr,flush=True)
         raise RuntimeError('COMMAND_FAILED:'+args[0]+':'+str(result.returncode))
     return result
 
@@ -97,8 +97,7 @@ def install_firewall(name,run_id,role,ref_ip,bot_ips):
         expected=[line for line in rules.splitlines() if line.startswith('-A ')]
         if len([line for line in dump.splitlines() if line.startswith('-A ')])!=len(expected):
             raise PolicyError('FIREWALL_UNEXPECTED_RULE')
-        for line in expected:
-            command(prefix+[tool,'-C',*shlex.split(line)[1:]])
+        for line in expected:command(prefix+[tool,'-C',*shlex.split(line)[1:]])
         hashes[tool]=hashlib.sha256(dump.encode()).hexdigest()
     if os.readlink('/proc/self/ns/net')!=host_inode:raise PolicyError('HOST_NAMESPACE_CHANGED')
     return {'verified':True,'netns':target,'host_netns_distinct':True,'rules_sha256':hashes}
@@ -120,7 +119,7 @@ def build_images(out,images=None,tags=None):
     unique=uuid.uuid4().hex[:12]
     for role in ROLES:
         tag=f'robocopa-i2-{unique}:{role}'
-        if docker('image','inspect',tag,check=False).returncode==0:
+        if docker('image','ls','-q','--filter','reference='+tag).output.strip():
             raise PolicyError('BUILD_TAG_ALREADY_EXISTS')
         tags[role]=tag
         result=docker('build','-f','spikes/isolamento/arena/Dockerfile','--target',role,
@@ -136,12 +135,13 @@ def cleanup_images(tags,images):
         try:
             if role not in ROLES or not re.fullmatch(r'robocopa-i2-[0-9a-f]{12}:'+role,tag):
                 raise PolicyError('IMAGE_TAG_OWNERSHIP')
-            current=docker('image','inspect','--format','{{.Id}}',tag,check=False)
-            if current.returncode:continue
+            present=docker('image','ls','-q','--filter','reference='+tag).output.strip()
+            if not present:continue
+            current=docker('image','inspect','--format','{{.Id}}',tag)
             if role in images and current.output.decode().strip()!=images[role]:
                 raise PolicyError('IMAGE_CONTENT_CHANGED')
             docker('image','rm',tag,timeout=30)
-            if docker('image','inspect',tag,check=False).returncode==0:clean=False
+            if docker('image','ls','-q','--filter','reference='+tag).output.strip():clean=False
         except Exception:clean=False
     return clean
 
@@ -160,8 +160,7 @@ def one_battle(images,out,*,abort_at=None):
     secret_values=[admin,engine_bot,*tokens.values()]
     report={'schema_version':2,'run_id':run_id,'status':'FAILED','host_vm_tested':False,'student_submission_enabled':False}
     pool=ThreadPoolExecutor(max_workers=3)
-    tasks=[]
-    host_canary=None
+    tasks=[];host_canary=None
     try:
         docker('network','create','--driver','bridge','--internal','--label',LABEL+'='+run_id,network)
         bridge_created=True

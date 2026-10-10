@@ -13,3 +13,7 @@
 - [ ] INF-009 [US3] Ratificar a topologia final após os gates S03/S04, backup e avaliações de acesso externo; **não** declarar concluída por uma sonda.
 
 **Nota:** checkboxes INF-001–006 registram apenas elaboração de arquivos. As tarefas macro de S04 exigem especificação aprovada, spikes, execução local e decisão humana antes da conclusão.
+
+## Subentregas posteriores da Feature 001 — alvo híbrido (2026-10-10)
+
+O experimento INF-001..INF-008 permanece concluído apenas para Compose local; INF-009 continua aberto. A implantação híbrida aprovada quanto à **direção** tem backlog técnico novo [HYB-01..HYB-10](hybrid-mvp.md), com todos os itens ainda **[ ]**. Não marcar infraestrutura pública, hospedagem Vercel, Supabase real, migrations/backup, VM pessoal ou conexão à internet como executadas. O SQLite I3-01 não deve ser promovido a banco principal; adotar PostgreSQL cloud após CI/migrações, e Storage privado para replays.

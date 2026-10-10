@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "record": "S04-T04-I3-03-POSTGRES-CORE",
+  "date": "2026-10-10",
+  "status": "PASS_NUCLEO_POSTGRES_CI",
+  "source_commit": "0b97ee6d7e69bc06806f498ee29278a97c2fa8a6",
+  "checkout_commit": "713af70110489e89d4124881c72538d02ea3148e",
+  "pr": 26,
+  "branch": "feat/s04-i3-03-postgres-leases",
+  "postgres": {"version":"17.11", "integration_tests":30, "passed":30, "migration_sha256":"f699c6830324b9b88eb3b57973225eb63cafef50ea0d4e9e90e318c365056045", "cleanup":"VERIFIED"},
+  "regressions": {"planning":41,"infra":13,"tank_royale":23,"mobile":35,"security":249,"arena":21,"total":382,"passed":382,"location":"isolated session; loopback transports, no Docker or external database"},
+  "workflows": {"postgres":38074491846,"speckit":38074491725,"i3":38074491783,"i1":38074491843,"i2":38074491801,"authoring":38074491828},
+  "workflow_conclusion": "all completed/success on source_commit",
+  "artifacts": {
+    "postgres":{"id":11678407200,"bytes":1471,"sha256":"df0db4ca132597fefa042d00e8f9257eddc6591e81b9622706268776fd11b66c"},
+    "source":{"id":11677613120,"bytes":426376,"sha256":"0477dffa2dca66fa6671d515906513eebc4b225351fd96572ec0bc13a8085525"},
+    "i2":{"id":11677653042,"bytes":644737,"sha256":"b93a2d7e36bc5d251b1a9870dbeb029a14a4b7013ae3c0068744086378c362b6","files_verified":12,"real_battles":2,"aborts":2,"timeout_cleanup":true}
+  },
+  "self_audit_outside_runner":"PASS",
+  "independent_third_party_review":false,
+  "subtasks":{"PG-01":"DONE","PG-02":"DONE","PG-03":"DONE","PG-04":"DONE","PG-05":"DONE","PG-06":"DONE"},
+  "findings":{"F01":"READINESS_CORRECTED_RETESTED","F02":"REAP_SCOPE_CORRECTED_RETESTED","C01":"I2_WORKFLOW_TRIGGER_FIXED","C02":"CLEANUP_ERROR_HANDLING_FIXED_WITH_MUTATION_CHECK"},
+  "i3_03_complete":false,
+  "cloud_deployed":false,
+  "authenticated_cloud_worker":false,
+  "score_ledger":false,
+  "host_vm_tested":false,
+  "students_enabled":false,
+  "g_prod":"BLOCKED",
+  "demo_complete_go_no_go":"NO_GO_UNTIL_END_TO_END_REHEARSAL"
+}

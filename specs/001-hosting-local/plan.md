@@ -33,3 +33,7 @@ Validar publicação exclusiva 127.0.0.1, banco sem `ports`, rede de dados `inte
 Conflito de nome de projeto, porta 18080 ocupada, Docker Desktop não iniciado, unidade do Docker sem espaço, CPU consumida por outros projetos, backup ausente, disponibilidade limitada e ausência de sandbox. A sonda não tem autorização para ficar acessível fora do loopback. O DockerRoot interno não determina o disco físico Windows.
 
 **Próxima decisão:** aprovar arquitetura depois das especificações e spikes. Infraestrutura candidata pode existir sem marcar S04-T01/T05 como concluídas.
+
+## Plano posterior da hospedagem híbrida — 2026-10-10
+
+O laboratório Compose e a sonda não são o destino persistente do MVP. A nova direção aprovada pelo responsável será implementada **somente após** os aceites adicionais em [Spec Kit — híbrido](hybrid-mvp.md): PostgreSQL no Supabase como armazenamento canônico, Vercel frontend, Storage remoto e VMs locais de computação isolada. Para I3-03 é obrigatório testar fila, leases/fencing e idempotência em PostgreSQL de CI antes de usar conexão Supabase real; o SQLite I3-01 continua teste. Comunicação outbound do worker, RLS, backups e disponibilidade são gates separados. [ADR-005](../../docs/arquitetura/ADR-005-hospedagem-hibrida-mvp.md).

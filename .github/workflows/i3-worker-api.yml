@@ -1,0 +1,137 @@
+name: I3-03C - worker HTTPS Deno e PostgreSQL reais
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/i3-worker-api.yml'
+      - 'supabase/functions/worker-control/**'
+      - 'supabase/worker-control-config.example.toml'
+      - 'services/execution_control/postgres/**'
+      - 'services/worker_agent/control_client.py'
+      - 'tests/postgres/test_worker_api.py'
+      - 'tests/worker_api/**'
+      - 'tests/security/test_i3_worker_client.py'
+      - 'specs/004-isolamento-execucao/i3-03c*'
+      - 'specs/004-isolamento-execucao/contracts/worker-api.md'
+      - 'docs/qualidade/evidencias/S04-T04-I3-03C*'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: worker-api-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+jobs:
+  worker-api-integration:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    env:
+      RC_PG_CONTAINER: robocopa-i3pg-${{ github.run_id }}-${{ github.run_attempt }}
+      RC_PG_VOLUME: robocopa-i3pg-data-${{ github.run_id }}-${{ github.run_attempt }}
+      RC_SOURCE_COMMIT: ${{ github.event.pull_request.head.sha || github.sha }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - uses: denoland/setup-deno@e95548e56dfa95d4e1a28d6f422fafe75c4c26fb
+        with:
+          deno-version: 'v2.5.6'
+      - name: Dependencias fixadas e preflight do runner descartavel
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_ACTIONS" = true
+          test "$RUNNER_ENVIRONMENT" = github-hosted
+          test "$(uname -s)" = Linux
+          echo "RC_ADMISSION_ROOT=$RUNNER_TEMP/robocopa-admission-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" >> "$GITHUB_ENV"
+          echo "RC_PG_SOCKET=$RUNNER_TEMP/robocopa-admission-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT/socket" >> "$GITHUB_ENV"
+          docker info >/dev/null
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq libpq5
+          python3 -m pip install --disable-pip-version-check --only-binary=:all: --require-hashes -r services/execution_control/postgres/requirements.txt
+          python3 -m compileall -q services/worker_agent/control_client.py tests/postgres/test_worker_api.py
+          deno cache --no-config --lock=supabase/functions/worker-control/deno.lock supabase/functions/worker-control/index.ts tests/worker_api/server.mjs
+          deno check --no-config --lock=supabase/functions/worker-control/deno.lock supabase/functions/worker-control/index.ts
+          node --test tests/worker_api/handler.test.mjs
+          python3 -m unittest discover -s tests/security -p test_i3_worker_client.py -v
+      - name: PostgreSQL privado e socket temporario sem portas publicadas
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -m 700 "$RC_ADMISSION_ROOT"
+          mkdir -m 1777 "$RC_PG_SOCKET"
+          printf '%s\n' 'local all postgres trust' 'local all rc_admission_ci scram-sha-256' 'local all rc_worker_api_ci scram-sha-256' 'local all all reject' 'host all all all reject' > "$RC_ADMISSION_ROOT/hba.conf"
+          chmod 644 "$RC_ADMISSION_ROOT/hba.conf"
+          docker volume create --label "org.robocopa.i3pg.run=$GITHUB_RUN_ID" "$RC_PG_VOLUME"
+          PASSWORD="$(python3 -c 'import secrets; print(secrets.token_hex(32))')"
+          echo "::add-mask::$PASSWORD"
+          docker run -d --name "$RC_PG_CONTAINER" --label "org.robocopa.i3pg.run=$GITHUB_RUN_ID" \
+            --network none --memory 512m --cpus 1 --pids-limit 128 \
+            --mount "type=volume,source=$RC_PG_VOLUME,target=/var/lib/postgresql/data" \
+            --mount "type=bind,source=$RC_PG_SOCKET,target=/var/run/postgresql" \
+            --mount "type=bind,source=$RC_ADMISSION_ROOT/hba.conf,target=/etc/rc-ci-hba.conf,readonly" \
+            -e POSTGRES_DB=robocopa_i3_ci -e "POSTGRES_PASSWORD=$PASSWORD" \
+            postgres:17-alpine@sha256:b0f9560a2de083e2cc7382e75f808c7381a32852a7ec49117deedb300e552b24 \
+            postgres -c shared_buffers=32MB -c max_connections=20 -c hba_file=/etc/rc-ci-hba.conf
+          unset PASSWORD
+          for i in $(seq 1 60); do
+            if docker exec "$RC_PG_CONTAINER" pg_isready -h 127.0.0.1 -U postgres -d robocopa_i3_ci; then break; fi
+            sleep 1
+          done
+          docker exec "$RC_PG_CONTAINER" pg_isready -h 127.0.0.1 -U postgres -d robocopa_i3_ci
+          test "$(docker exec --user postgres "$RC_PG_CONTAINER" psql -XqAt -v ON_ERROR_STOP=1 -U postgres -d robocopa_i3_ci -c 'SELECT 1')" = 1
+      - name: Python outbound HTTPS, Deno e comandos PostgreSQL reais
+        run: python3 tests/postgres/test_worker_api.py
+      - name: Doubles unitarios identificados e Spec Kit
+        env:
+          SPECIFY_FEATURE_DIRECTORY: specs/004-isolamento-execucao
+          SPECIFY_FEATURE_NO_PERSIST: '1'
+        run: |
+          python3 -m unittest discover -s tests/security -p test_i3_worker_client.py -v
+          python3 scripts/verify_security_spec.py
+          python3 scripts/render_planning.py
+          python3 scripts/verify_planning.py
+          python3 .specify/scripts/python/check_prerequisites.py --json --require-spec --require-tasks --include-tasks
+          git diff --exit-code
+      - name: Cleanup owned e evidencia sem segredos
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          RC_ADMISSION_ROOT="$RUNNER_TEMP/robocopa-admission-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
+          FOUND="$(docker ps -a --filter "name=^/${RC_PG_CONTAINER}$" --format '{{.Names}}')"
+          if [ -n "$FOUND" ]; then
+            test "$(docker inspect -f '{{index .Config.Labels "org.robocopa.i3pg.run"}}' "$RC_PG_CONTAINER")" = "$GITHUB_RUN_ID"
+            docker rm -f "$RC_PG_CONTAINER"
+          fi
+          FOUND="$(docker volume ls --filter "name=^${RC_PG_VOLUME}$" --format '{{.Name}}')"
+          if [ -n "$FOUND" ]; then
+            test "$(docker volume inspect -f '{{index .Labels "org.robocopa.i3pg.run"}}' "$RC_PG_VOLUME")" = "$GITHUB_RUN_ID"
+            docker volume rm "$RC_PG_VOLUME"
+          fi
+          REMAINING_CONTAINERS="$(docker ps -a --filter "label=org.robocopa.i3pg.run=$GITHUB_RUN_ID" -q)"
+          REMAINING_VOLUMES="$(docker volume ls --filter "label=org.robocopa.i3pg.run=$GITHUB_RUN_ID" -q)"
+          test -z "$REMAINING_CONTAINERS"
+          test -z "$REMAINING_VOLUMES"
+          test "$RC_ADMISSION_ROOT" = "$RUNNER_TEMP/robocopa-admission-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
+          if [ -d "$RC_ADMISSION_ROOT" ]; then sudo rm -rf -- "$RC_ADMISSION_ROOT"; fi
+          test ! -e "$RC_ADMISSION_ROOT"
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          path=Path('.local/i3-worker-api/report.json')
+          path.parent.mkdir(parents=True,exist_ok=True)
+          report=json.loads(path.read_text()) if path.exists() else {'status':'NOT_RUN'}
+          report['cleanup']='VERIFIED'
+          path.write_text(json.dumps(report,indent=2)+'\n')
+          PY
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: i3-worker-api-evidence
+          path: |
+            .local/i3-worker-api/report.json
+            supabase/functions/worker-control/deno.lock
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 30
+# Only the created CI socket/HBA directory is mounted. Deno HTTPS is loopback-only. No user directory or Docker socket.
+# No remote Supabase, Vercel deployment, VM on the user's PC, or student workload.

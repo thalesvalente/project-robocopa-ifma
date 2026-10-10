@@ -45,3 +45,7 @@ Os nomes de endpoint e os contratos **não** são baseline aprovada. Precisam na
 - Local físico do disco virtual Docker, capacidade e backup/restauração.
 
 Ver `ADR-001-stack.md`, `ADR-003-hospedagem.md` e `docs/operacao/COMPOSE-LOCAL.md`.
+
+## Visão aprovada para planejamento do MVP híbrido (2026-10-10)
+
+O desenho inicial acima representava hospedagem candidata integralmente local. Para o **MVP futuro**, a direção aprovada pelo responsável é: **Vercel** PWA → API/autenticação → **Supabase PostgreSQL** (fonte de verdade para projetos/versões/jobs/placares) e **Storage privado** (replays) → broker cloud autorizado → **VM Linux isolada no PC pessoal** via conexão outbound para processar partidas. O retorno do árbitro só passa a definitivo após validação e transação cloud; a VM pode ter buffer temporário até o ACK, mas não banco principal. Worker offline = partidas pendentes, sem perda dos projetos já persistidos. O local de implantação do broker e o mecanismo operacional de mTLS ainda exigem validação. [ADR-005](ADR-005-hospedagem-hibrida-mvp.md) e [plano Spec Kit híbrido](../../specs/001-hosting-local/hybrid-mvp.md).

@@ -1,99 +1,71 @@
 # Implementation Plan — Isolamento de execução não confiável
 
-**Revisão:** 2026-10-10 · **Feature:** [spec.md](spec.md) · **Branch de I2:** `feat/s04-i2-separated-arena`.
+**Revisão:** 2026-10-10, após I3-03B. **Feature:** [spec.md](spec.md). **Branch vigente:** `feat/s04-i3-03-postgres-leases`, PR #26. **Macro S04-T04:** EM_EXECUCAO.
 
-**Status:** implementação experimental autorizada por D-005, I1 e recorte I2 verificados no CI. **NÃO IMPLEMENTAR em produção nem liberar alunos antes de G-PROD.** G-EXP permite construir provas; G-PROD exige a arquitetura alvo validada e aceites humanos.
+**Status:** implementação experimental autorizada por D-005 e pedidos posteriores; I1/I2 e subconjuntos I3 verificados. **NÃO IMPLEMENTAR em produção nem liberar alunos antes de G-PROD.** G-EXP permite construir provas finitas; **GATE BLOQUEADO — G-PROD** exige integração, VM-alvo, recuperação, revisão e aceites próprios.
 
-## Summary e decisões
+## Summary e decisões vigentes
 
-MVP somente RoboDSL básica. VM Linux dedicada, sistema/daemon/disco próprios e sem drives pessoais é direção aprovada, não outra distribuição WSL. Não houve instalação no host. API pública sem socket Docker, broker autenticado, worker segregado, isolamento por job e árbitro independente continuam o alvo completo.
+MVP somente RoboDSL básica, mobile-first. Vercel Hobby é primeira escolha do frontend no contexto voluntário sem remuneração associada declarado em D-009; Cloudflare é alternativa. Supabase PostgreSQL/Auth/Storage são destino canônico remoto; SQLite e Compose/Postgres pessoal são laboratório, não banco definitivo. API/controle cloud não recebem socket Docker. VM Linux dedicada no PC, sistema/daemon/disco próprios e sem drives pessoais, é direção aprovada, não outra distribuição WSL nem instalação já executada.
 
-A [pesquisa oficial](../../docs/arquitetura/pesquisa-isolamento-2026-10-10.md) já demonstrou que rede internal e ausência de mounts/socket não bastam; externalServer do BattleRunner ainda inicia bots localmente; hashes não autenticam árbitro comprometido. I2 acrescentou prova controlada do protocolo fixado e filtro de mensagens planejado antes do código em [N5](i2-protocol-guard.md).
+A [pesquisa de isolamento](../../docs/arquitetura/pesquisa-isolamento-2026-10-10.md) e os [riscos](../../docs/arquitetura/ameacas-sandbox.md) guiam as fronteiras. I2 demonstrou separação e filtro do protocolo fixado, planejado em [N5](i2-protocol-guard.md); redes internal e ausência de mounts isoladamente não bastam, hashes não autenticam árbitro comprometido. Não ampliar linguagens pelo sucesso das provas.
 
 ## Technical Context
 
-| Elemento | Recorte atual |
+| Elemento | Estado demonstrado e limite |
 |---|---|
-| Testes | Ubuntu24.04 GitHub-hosted descartável; sem dados/credenciais pessoais, sem VM aninhada |
-| Linguagem | Python para supervisor/contratos; websockets15.0.1 fixado no gateway; RoboDSL básica inalterada |
-| Motor | Tank Royale1.4.0 fixado; servidor extraído de runner oficial; controlador recebe eventos oficiais sem booter local de bots |
-| Separação I2 | Árbitro, Walls e Spin Bot em contêineres distintos; bridge internal owned e ACLs em seus namespaces; gateway7654, motor bruto7655 inacessível aos bots |
-| Operação | Novos módulos não foram ligados à UI pública/pessoal. O laboratório Python existente continua localhost |
-| Limites I1 | Sondas pequenas:64MiB,0,5CPU,16PIDs,tmpfs4MiB,saída8KiB; não dimensionam jogos |
-| Limites I2 | 1CPU por papel, árbitro1GiB/bots512MiB,128PIDs,tmpfs128MiB; quotas de sessão finitas e timeout externo; orçamentos experimentais |
-| Dados | Resultados/replay/manifestos sanitizados por execução; nenhum banco migrado; sem ledger de produção |
-| Host futuro | VM independente ainda exige patches, discos, switches, rede guest, backup e recuperação verificados |
+| Testes | Ubuntu GitHub-hosted descartável, dados sintéticos; regressões locais sem Docker pessoal |
+| Linguagem | Python para contratos/supervisão/admissão; RoboDSL básica preservada; nenhuma portabilidade automática de Python a Deno |
+| Motor e I2 | Tank Royale1.4.0 fixado; árbitro/bots separados, gateway com allowlist, ACLs em namespaces owned; provas reais de batalha e limpeza |
+| I3-01 | Broker interno e SQLite em arquivo temporário, somente experimento OFF por padrão |
+| I3-02 | mTLS TLS1.3 real de probe em loopback CI, sem canal de jobs/PKI de produção |
+| I3-03 / PG | Migration001, PostgreSQL17 real, jobs/attempts/leases/fencing, cancelamento/retry/reap e privilégios; não é Supabase implantado |
+| I3-03B / AD | Migration002, catálogo privado de hashes/revisão, papel rc_admission, parser/compilador I1 e adaptador Psycopg3.3.6; 22 integrações reais de banco/driver |
+| Persistência final | PostgreSQL/Auth/Storage Supabase, RLS/app/cloud a integrar; não guardar banco mestre no PC |
+| VM real | Direção aprovada; hypervisor/rede/discos/patches/segredos/recuperação ainda sujeitos a I4 e autorização específica |
 
 ## Constitution Check
 
-- Inclusão e escopo mantidos: RoboDSL básica, intermediário/avançado pós-MVP.
-- **G-EXP autorizado:** referências conhecidas, fixtures finitas e runner descartável. Nenhum teste adversarial no computador pessoal.
-- **GATE BLOQUEADO — G-PROD:** ainda faltam VM alvo, broker/autenticação/fila/ledger, quotas calibradas, vinte ciclos, backup/restauração, revisão e aceite. A prova de separação no CI não substitui implantação segura.
-- Configuração declarada não substitui inspeção/runtime/negativos. Um conjunto de testes aprovado não prova inexistência de vulnerabilidades.
-- D1/D2 e experimentos não homologam S00-T06, S03 ou o MVP.
+Inclusão, acessibilidade e escopo básico mantidos. G-EXP autoriza fixtures finitas e runner descartável, nunca testes adversariais na máquina pessoal. S00-T06, S03 e homologação não são ratificados por decisões técnicas. Configuração declarada não substitui inspeção/negativos; CI verde não prova inexistência de vulnerabilidades. Não abrir serviço de aluno ou escolher conta/projeto cloud pago nesta entrega.
 
 ## Planejamento completo e dependências
 
-O catálogo [tasks.md](tasks.md) mantém39 tarefas T001–T039 com FR/SC/TH, abertas onde o aceite amplo ainda não foi atendido. [I1](iteration-1.md) e [I2](iteration-2.md) registram subconjuntos concluídos com evidência. A revisão extra de I2 foi planejada em [i2-audit-plan.md](i2-audit-plan.md) antes das correções, com [resultados](i2-audit-results.md).
+O catálogo [tasks.md](tasks.md) mantém 39 tarefas T001–T039 com FR/SC/TH, abertas até o aceite integral. Os planos de incremento decompõem esses objetivos sem criar uma baseline concorrente.
 
-| Etapa ampla | Tarefas | Situação e aceite restante |
+| Etapa ampla | Tarefas | Aceite restante |
 |---|---|---|
-| Fontes/autorização/ameaças | T001–T004 | D1/D2/G-EXP registrados; baselines e aprovações de produto continuam pendentes |
-| Fronteira/compatibilidade | T005–T007 | I1 prova contenção e I2 separa bots/árbitro no runner. Falta VM alvo e revisão de rede/host |
-| Plano de controle | T008–T012 | Contrato puro I1 pronto; broker autenticado e integração com fila ainda não existem |
-| Admissão | T013–T016 | Negativos da DSL/versão implementados; falta autorização multiusuário e ligação com plataforma |
-| Sandbox/árbitro | T017–T022 | Imagens/isolamento por papel, rede e gateway comprovados no recorte I2; não é implantação de alunos |
-| Recursos/recuperação | T023–T027 | Limites finitos e dois abortos/cleanup testados; não é recuperação durável, cotas de produção ou20 ciclos |
-| Integridade | T028–T032 | I2 audita origem lógica, campos, sequência, replay e hashes; ledger/idempotência de produção ainda necessário |
-| Suspensão/operação | T033–T035 | Falha fechada nos harnesses; chave operacional do broker e runbook da VM ainda pendentes |
-| Homologação | T036–T039 | Matriz completa, revisão, smoke da VM por ação autorizada e liberação permanecem em aberto |
+| Governança/ameaças | T001–T004 | Ratificações e limites de produto; minutas não são pesquisa de campo |
+| Fronteira/compatibilidade | T005–T007 | I1/I2 provados no runner; VM-alvo/rede/host ainda pendentes |
+| Plano de controle | T008–T012 | Núcleo PG e ponte AD implementados; falta API cloud autenticada e identidade operacional do worker |
+| Admissão | T013–T016 | I1 conectado a PostgreSQL em CI; falta identidade multiusuário real, catálogo da aplicação, RLS e roteamento seguro |
+| Sandbox/árbitro | T017–T022 | Evidências I2 limitadas; não implantação de alunos |
+| Recursos/recuperação | T023–T027 | Leases/cancelamento/retry no banco; watchdog da VM, quotas/20ciclos e recovery ampliado pendentes |
+| Integridade | T028–T032 | Descriptor/versionamento comprovados; resultado/replay e ledger com efeito único ainda I3-04 |
+| Suspensão/operação | T033–T035 | Gate OFF em biblioteca/banco; operação cloud/runbook da VM pendentes |
+| Homologação | T036–T039 | Matriz integral, revisão independente, smoke autorizado do host e decisão de liberação |
 
-## I1 entregue
+## I1/I2 — provas históricas preservadas
 
-Admissão estrita desabilitada por padrão, política com20 invariantes de perfil diagnóstico, subprocesso sem shell e limites durante leitura,9 sondas reais finitas.55 testes iniciais do novo código, distintos das provas Docker. [Evidência](../../docs/qualidade/evidencias/S04-T04-I1.md). Não autentica usuários nem executa ledger.
+[I1](iteration-1.md): contrato de admissão puro, invariantes e limites, nove sondas reais; [evidências](../../docs/qualidade/evidencias/S04-T04-I1.md). Não autentica usuários nem cria ledger.
 
-## I2 entregue no recorte
+[I2](iteration-2.md): arena_policy, arena_protocol/gateway, run_separated_arena e auditores somente leitura; imagens/papéis distintos, isolamento/ACLs, duas batalhas de referência, abortos e timeout/cleanup. [Auditoria planejada](i2-audit-plan.md), [resultados](i2-audit-results.md), [reconciliação R01–R10](i2-reconciliation-plan.md), [decisão](i2-reconciliation-decision.md), [relatório de reconciliação](../../docs/qualidade/evidencias/S04-T04-I2-RECONCILIACAO.md). Os placares históricos não são reescritos por novas regressões. ACLs manuais só nos namespaces verificados; Docker cria suas próprias regras no runner. Não afirmar que o host pessoal foi testado.
 
-- `arena_policy.py`:24 verificações por contêiner, conjunto de redes anexadas, namespaces/ownership; regras somente no namespace owned, sem privilégios de administração no bot.
-- `arena_protocol.py` e `gateway.py`: handshake exato e allowlist de BotReady/BotIntent, sem canais administrativos; tokens do bot não são segredo do controlador. Limites por sessão e11 testes de transporte contra engine falso, separados da prova real.
-- `run_separated_arena.py`: duas batalhas de3 rounds oficiais, testes positivos/negativos nos dois bots, manifestos, dois abortos controlados e limpeza específica. Falha do daemon não é interpretada como recurso ausente.
-- `arena_evidence.py` e `verify_arena_evidence.py`: auditoria somente leitura de esquema, tipos, identidades, eventos/rounds, hash, flags e cleanup; nenhum processo ou rede iniciados.
-- Lote referência: [run38048459272](https://github.com/thalesvalente/project-robocopa-ifma/actions/runs/38048459272), duas batalhas reais,24 invariantes por papel e19 verificações por bot. [Relatório](../../docs/qualidade/evidencias/S04-T04-I2.md).
+## I3 — decomposição executada e próxima fronteira
 
-As ACLs manuais só são instaladas nos namespaces verificados; o Docker cria as regras da bridge no runner. Não afirmar ausência de qualquer regra de host ao longo de toda a execução. O host pessoal não é acessado.
+[Plano geral I3](iteration-3.md) e [decisões](i3-design-decisions.md) preservam o histórico de I3-01/I3-02. [I3-01](../../docs/qualidade/evidencias/S04-T04-I3-01.md): SQLite de laboratório, não fallback de produção. [I3-02](i3-02-auth-plan.md): probe mTLS real e [contrato](contracts/worker-channel.md), sem jobs; [evidências](../../docs/qualidade/evidencias/S04-T04-I3-02.md). Q-07 só foi provada para o laboratório.
 
-## Próximos incrementos a detalhar antes do código
+[I3-03 / PG-01..06](i3-03-postgres-plan.md): migration001 testada em PostgreSQL real, owner NOLOGIN sem superuser/BYPASSRLS, RLS forçada, estado transacional e fencing; [relatório](../../docs/qualidade/evidencias/S04-T04-I3-03.md). [Contrato PostgreSQL](contracts/postgres-control.md) atualizado para distinguir antes/depois da migration002.
 
-**I3:** broker autenticado, admissão multiusuário, fila e estado duráveis, ledger/idempotência, retry, cotas e suspensão. O catálogo T já prevê esses temas, mas contratos e casos de falha concretos devem virar plano do incremento antes de implementar. A API não recebe socket Docker.
+**I3-03B / AD-01..06:** [plano anterior ao código](i3-03-admission-plan.md), [contrato](contracts/admission-postgres.md), [relatório](../../docs/qualidade/evidencias/S04-T04-I3-03B.md) e [manifesto](../../docs/qualidade/evidencias/S04-T04-I3-03B.json). Fonte `4179e5b`: 22 testes reais I1/Psycopg/PostgreSQL; 25 unidades novas incluídas em407 regressões locais e sete workflows aprovados. Cadastro privado de versões/hashes; revisão/política reconferidas na gravação; commit antes de sucesso. **Após002:** rc_admission é a entrada de enfileiramento, rc_broker conserva operações de execução mas perde o enqueue bruto. A compilação ocorre fora de transação longa. Revogar versão bloqueia novas admissões, não cancela automaticamente jobs já enfileirados; definir política de ciclo de vida na integração futura.
 
-**I4:** inventário de versões do produto Docker Desktop/Windows/Hyper-V/Linux, disco e capacidade; instalação e rede da VM somente sob procedimento específico e ação do responsável. Switch Internal permite host↔VM, não é isolamento automático; a rede guest exige prova própria.
+**I3-03 integral permanece EM_EXECUCAO:** falta JWT/identidade operacional, API cloud/clientes compatíveis, cadastro de versões da aplicação, conexão Supabase real com permissões/pooler/TLS, controle de worker outbound e ensaio fim a fim. Contexto ServiceActor não é autenticação. Psycopg Python não vira runtime de Edge Deno; só contrato SQL pode ser compartilhado. Não transportar DSN de rc_admission/rc_broker para bot/cliente.
 
-**I5:** quotas calibradas do motor,20 ciclos, matriz integral TH, backup/restauração, resposta a incidentes, revisão independente e liberação. Rootless/gVisor são camadas opcionais sujeitas à compatibilidade, não pretexto para ampliar o MVP.
+**I3-04:** resultado/replay validado e ledger de efeitos únicos. **I3-05/06/07:** quotas/polling econômico, recuperação ampliada e integração. **I4:** instalação/rede/patches/disco/segredos de VM no host apenas sob procedimento/autorização específicos. **I5:** 20ciclos, matriz TH, backup de banco e objetos, restauração, revisão independente e ensaio de demonstração. Rootless/gVisor são camadas a avaliar, não condição para ampliar o MVP.
 
-## Estrutura e invariantes
+## Estrutura, testes e invariantes
 
-Os módulos Python concretos estão em `services/worker_agent/`; `services/worker-agent/` era caminho candidato do desenho inicial. Não substituímos serviço de produção. Feature004 conserva spec/clarifications/research/data-model/contracts/tasks/analysis/checklists e iterações vinculadas.
+Pacotes concretos Python: `services/worker_agent/` e `services/execution_control/`; os nomes com hífen do catálogo macro são rascunhos de organização e não módulos Python existentes. SQL versionado em `services/execution_control/postgres/`. Ver [dados](data-model.md), [contrato legado I1](contracts/job-protocol.md) e [ADR004](../../docs/arquitetura/ADR-004-isolamento-execucao.md).
 
-[Contrato](contracts/job-protocol.md) · [Dados](data-model.md) · [Ameaças](../../docs/arquitetura/ameacas-sandbox.md) · [ADR004](../../docs/arquitetura/ADR-004-isolamento-execucao.md).
+Verificar scripts de planejamento e Spec Kit nativo, manter as 39 caixas amplas e18 gates sem ratificação indevida. Toda necessidade descoberta vira plano/adendo antes do patch; [correção do CI AD](i3-03-admission-ci-fix.md) exemplifica essa trilha. Artefatos referenciam fonte/run, hashes e limitações. Erro de consulta de cleanup não é prova de ausência. Nenhum prune global, down-v pessoal, migração VHDX, abertura de firewall, mount de drives ou fallback ao Docker pessoal.
 
-Em falha, negar execução e registrar incerteza, sem fallback ao Docker pessoal. Limpeza apenas owned; nenhuma orientação de prune global/down-v, migração VHDX, abertura de firewall ou drives compartilhados. Critérios finais: [security-gates.md](checklists/security-gates.md).
-
-## Reconciliação de I2 encerrada no recorte (2026-10-10)
-
-O plano [R01–R10](i2-reconciliation-plan.md) e a [matriz C01–C05](i2-reconciliation-decision.md) antecederam o código corretivo. PR #19 permaneceu como única implementação canônica; PRs #18 e #21 encerrados sem merge e com históricos preservados. [Relatório final](../../docs/qualidade/evidencias/S04-T04-I2-RECONCILIACAO.md): quatro workflows PASS, duas batalhas reais, dois abortos, timeout efetivo com cleanup, 320 regressões reproduzidas, 12 arquivos auditados fora do runner. Zero lacunas I2 abertas no recorte experimental. Isso **não conclui** T001–T039, G-PROD, I3, I4 ou I5; requisitos amplos continuam abertos.
-
-## I3 — preparação documental antes do primeiro código (2026-10-10)
-
-O [plano I3](iteration-3.md) decompõe a execução em I3-01..I3-07, com [decisões e bloqueios](i3-design-decisions.md) e testes/aceites por subincremento. A modelagem anterior não resolvia autenticação do worker Q-07; por segurança I3-01 usa SOMENTE SQLite em arquivo temporário do CI, sem interface HTTP/worker e desligado por padrão. A arquitetura Postgres, auth, leases, ledger de resultado e recovery ainda exigem planejamento e comprovação próprios. Macro S04-T04 e G-PROD mantêm os estados. Branch de engenharia: `feat/s04-i3-control-plane`.
-
-## I3-01 implementado e testado no recorte G-EXP (2026-10-10)
-
-`services/execution_control/{broker.py,store.py}` implementa broker interno e armazenamento SQLite em arquivo de laboratório, sem endpoint, sem worker, sem Docker, sem código de estudante. Gate padrão OFF, `owner_ref` confiável apenas em fixture, versão T1 aprovada por I1, transações `BEGIN IMMEDIATE`, unicidade/idempotência, schema 2/capacidade persistida. F01/F02 corrigidos após registro no [plano I3](iteration-3.md). CI `4d89fc5` com seis workflows PASS e 346 testes de regressão reexecutados offline, sendo 26 I3-01. [Relatório](../../docs/qualidade/evidencias/S04-T04-I3-01.md). I3-02 autenticação real, I3-03 leases, I3-04 ledger, I3-05 quotas operacionais, I3-06 recuperação e I3-07 integração seguem pendentes; G-PROD BLOQUEADO.
-
-## Plano específico I3-02 — identity channel (2026-10-10)
-
-[Plano detalhado I3-02](i3-02-auth-plan.md) registrado antes de código e [contrato do canal](contracts/worker-channel.md). Para ensaio restrito, mTLS TLS1.3 bidirecional e autorização de URI SAN/leaf SHA-256, escopo e operação `probe` (sem claim, fila/score, API pública ou VM). Worker inicia conexão; fixture CI vincula `127.0.0.1:0`. Q-07 segue aberta na implantação real. Nenhum aceite de G-PROD, S00-T06 ou S04-T04 integral é antecipado.
-
-## I3-02 — canal mTLS de identidade, sem jobs (2026-10-10)
-
-[Plano](i3-02-auth-plan.md) e [contrato](contracts/worker-channel.md) publicados antes do runtime. `worker_channel.py` usa TLSv1.3 obrigatório, CA restrita, hostname + SAN/pin de broker no cliente e SAN/pin + scope/op do worker no broker. A única operação `probe` não alcança a fila/VM/árbitro. Registros de autorização em memória permitem rotação e revogação na próxima conexão, mas **não** demonstram recuperação ou revogação durável. 33 casos reais PASS; 6 workflows do commit `7819c90` PASS; 379 testes reproduzidos sobre fonte exportada. [Evidências](../../docs/qualidade/evidencias/S04-T04-I3-02.md). Próximo I3-03 depende de planejamento próprio de leases/fencing, e Q-07 de produção ainda exige PKI, identidade do operador, secrets e rede alvo.
+Concluir cada rodada sincronizando planos/tarefas/contratos/estado/evidências/dependências. Os relatórios guardam os lotes reais anteriores; descrição do PR registra nova rodada documental sem inventar execução no host. [Gates finais](checklists/security-gates.md).

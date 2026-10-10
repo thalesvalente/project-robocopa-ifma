@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "record": "S04-T04-I3-03B",
+  "date": "2026-10-10",
+  "status": "PASS_ADMISSAO_POSTGRES_CI",
+  "source_commit": "4179e5b6a001a5ed6471caa5d9f70d1d2f5df15c",
+  "branch": "feat/s04-i3-03-postgres-leases",
+  "pr": 26,
+  "planning_commits": ["9824bda2e88813694dc81ba3edad1d477cf0a9fb", "aedbd3794c3727ad45076ae58b87c286d8f141e4"],
+  "first_migration_commit": "9a6be3526fc5857f64ac151857d87c5f27e86ea0",
+  "ci_fix_plan_commit": "40714b8bebbf814f41b9a23ba0d7c092f9ac8129",
+  "workflow_runs": {"admission":38079697510,"postgres_core":38079697467,"speckit":38079697439,"i3":38079697440,"i1":38079697426,"i2":38079697421,"authoring":38079697810},
+  "workflow_conclusions": {"admission":"success","postgres_core":"success","speckit":"success","i3":"success","i1":"success","i2":"success","authoring":"success"},
+  "integration": {"tests":22,"failures":0,"errors":0,"postgres_version":"17.11","psycopg_version":"3.3.6","real_driver":true,"real_postgres":true,"authentication":"SCRAM_DATABASE_LOGIN_ONLY_NOT_USER_JWT","cleanup":"VERIFIED"},
+  "local_regression": {"source_commit":"7e8f014c48b5ca6ccf1564758051298696b71a4e","checkout_commit":"a283ca731262c277d6b894eef15f43a64ae60c4d","runtime_identical_to_ci_source":true,"python":"3.13.5","planning":41,"infra":13,"tank_royale":23,"mobile":35,"security":274,"arena":21,"total":407,"new_unit_tests_included":25,"all_passed":true,"local_postgres_or_docker_started":false},
+  "artifacts": {"admission":{"id":11679761808,"bytes":563,"sha256":"647edb13c98f916ab81a343964915ffa81416d2942d7cb4ad667441f9d7c2fb8","crc_verified":true,"outside_runner_self_audit":true},"source":{"id":11680116100,"bytes":451853,"sha256":"f95fe8f3511d56a892c8cc956d446a587b79a45001fe9061beb145e8a95c729a","crc_verified":true}},
+  "migration_sha256": {"001_control.sql":"f699c6830324b9b88eb3b57973225eb63cafef50ea0d4e9e90e318c365056045","002_admission.sql":"35701a18872d335141e679b77bc763a00c5bf1b56d8de7bd8a928f9a4c9b2518"},
+  "tasks": {"AD-01":"DONE_IN_CI_SCOPE","AD-02":"DONE_IN_CI_SCOPE","AD-03":"DONE_IN_CI_SCOPE","AD-04":"DONE_IN_CI_SCOPE","AD-05":"DONE_IN_CI_SCOPE","AD-06":"DONE_IN_CI_SCOPE"},
+  "historical_failure": {"invalid_workflow_run":38079559910,"event":"push","no_jobs_executed":true,"cause":"runner context used in jobs.env","fixed":true},
+  "limits": {"user_jwt_verified":false,"worker_operational_auth":false,"supabase_deployed":false,"vercel_deployed":false,"vm_provisioned":false,"student_data":false,"main_merged":false,"auto_cancel_on_version_revocation":false,"python_adapter_is_deno_runtime":false,"i3_03_complete":false,"g_prod":"BLOCKED"}
+}

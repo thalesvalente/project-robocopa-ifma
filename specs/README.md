@@ -2,20 +2,17 @@
 
 | Feature | Escopo | Estado |
 |---|---|---|
-| [000-governanca](000-governanca/spec.md) | Fundação, rastreabilidade e bootstrap | Base técnica entregue; ratificação pendente |
-| [001-hosting-local](001-hosting-local/spec.md) | PostgreSQL e sonda local | CI e primeira execução no host confirmados; não é MVP |
-| [002-tank-royale](002-tank-royale/spec.md) | Batalha de referência | CI aprovado; reprodução Windows informada pelo responsável |
-| [003-autoria-mobile](003-autoria-mobile/spec.md) | RoboDSL e editor com treino real | CI/PC demonstrados; telefone físico e ratificação pendentes |
-| [004-isolamento-execucao](004-isolamento-execucao/spec.md) | Segurança, contratos e provas de isolamento | I1 e I2 técnicos comprovados no CI; VM real, broker, revisão e produção pendentes |
+| [000-governanca](000-governanca/spec.md) | Fundação/Spec Kit | Base técnica; ratificação pendente |
+| [001-hosting-local](001-hosting-local/spec.md) | Laboratório e [MVP híbrido](001-hosting-local/hybrid-mvp.md) | Local demonstrado; cloud/VM reais pendentes |
+| [002-tank-royale](002-tank-royale/spec.md) | Motor de batalha | CI e provas históricas de host |
+| [003-autoria-mobile](003-autoria-mobile/spec.md) | Editor/RoboDSL básica | CI/PC; telefone e revisão pendentes |
+| [004-isolamento-execucao](004-isolamento-execucao/spec.md) | Isolamento e controle | I1/I2/recortes I3 validados; I3 integral aberto |
+| [005-identidade-academica](005-identidade-academica/spec.md) | Google Workspace/Gmail pessoal | ID-010 offline; login/vínculos/RLS para o piloto |
 
-A feature004 mantém catálogo amplo [T001–T039](004-isolamento-execucao/tasks.md) e incrementos vinculados: [I1](004-isolamento-execucao/iteration-1.md), [I2](004-isolamento-execucao/iteration-2.md), [adendo de protocolo](004-isolamento-execucao/i2-protocol-guard.md) e [plano da revisão](004-isolamento-execucao/i2-audit-plan.md). Detalhar novas necessidades antes do código; só marcar concluído o recorte realmente evidenciado.
+**Prioridade D-012:** [trilha DEMO](004-isolamento-execucao/demo-diretoria-mvp.md): I3-03C antes de I3-04, seguido de I3-05/06/07, I4, PWA/Supabase e I5. ID-011/multiescola e OAuth estudantil não bloqueiam a demonstração privada, mas proteção da API/VM e dados permanece obrigatória.
 
-`spec.md` descreve problema/histórias/aceite, `plan.md` decisões/interfaces/testes e `tasks.md` execução. Cada incremento referencia tarefa macro Sxx-Tyy. Requisitos aprovados na S03 serão a fonte de verdade; artefatos no Spec Kit não criam baseline concorrente.
+**I3-03:** [núcleo PG](004-isolamento-execucao/i3-03-postgres-plan.md), [admissão AD](004-isolamento-execucao/i3-03-admission-plan.md), [CW-01..06](004-isolamento-execucao/i3-03c-worker-api-plan.md) e [contrato worker](004-isolamento-execucao/contracts/worker-api.md). PG/AD possuem evidências; I3-03C em preparação pré-código, não Supabase já implantado. [Evidência AD](../docs/qualidade/evidencias/S04-T04-I3-03B.md).
 
-Fluxo: constitution → specify → clarify → plan → checklist → tasks → analyze → implement → converge. Usar os arquivos/scripts versionados e verificar a feature selecionada; não alegar execução nativa dos slash commands nem segurança aprovada por ter documentos.
+**Feature005:** [D-011](../docs/planejamento/decisoes/D-011-google-pessoal-multiescolas.md), [ADR-008](../docs/arquitetura/ADR-008-google-multiescolas.md), [spec](005-identidade-academica/spec.md), [plan](005-identidade-academica/plan.md), [tasks](005-identidade-academica/tasks.md), [contrato](005-identidade-academica/contracts/google-eligibility.md) e [evidência ID-010](../docs/qualidade/evidencias/S03-ID-010.md). Gmail verificado e Workspace entram apenas PENDING na política; não é OAuth real.
 
-A reconciliação dos PRs I2 foi [planejada e encerrada no recorte experimental](004-isolamento-execucao/i2-reconciliation-plan.md), com [matriz de decisão](004-isolamento-execucao/i2-reconciliation-decision.md) e [relatório](../docs/qualidade/evidencias/S04-T04-I2-RECONCILIACAO.md). G-PROD e tarefas amplas continuam bloqueados/abertos.
-
-**I3:** [plano de implementação por subincrementos](004-isolamento-execucao/iteration-3.md) e [decisões de segurança/pendências](004-isolamento-execucao/i3-design-decisions.md), elaborados após I1/I2, com código de broker/fila apenas experimental. I3 completo e G-PROD seguem pendentes.
-
-**I3-02:** [plano autenticacão TLS de laboratório](004-isolamento-execucao/i3-02-auth-plan.md), [contrato worker↔broker](004-isolamento-execucao/contracts/worker-channel.md), [evidências](../docs/qualidade/evidencias/S04-T04-I3-02.md). Gate completo I3/produção não foi aprovado.
+Backlog JSON é canônico; 39 tarefas amplas de isolamento não se encerram por testes de subincremento. Fluxo constitution → specify → clarify → plan → tasks → analyze → implement → converge; scripts versionados, sem alegar slash commands inexistentes. [Estado atual](../docs/planejamento/ESTADO-ATUAL.md).

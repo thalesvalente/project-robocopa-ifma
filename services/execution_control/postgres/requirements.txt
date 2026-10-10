@@ -1,0 +1,5 @@
+# I3-03B driver integration, Python >=3.10, libpq required from the CI OS.
+# Wheels and SHA-256 from PyPI, checked 2026-10-10. No package is vendored.
+# psycopg: LGPL-3.0-only; typing_extensions: PSF-2.0.
+psycopg==3.3.6 --hash=sha256:a1db9f7148b06a28606767efaca51fa6f9398c5c0a3810519be69d7000bdb631
+typing_extensions==4.15.0 --hash=sha256:f0fa19c6845758ab08074a0cfa8b7aecb71c999ca73d62883bc25cc018c4e548

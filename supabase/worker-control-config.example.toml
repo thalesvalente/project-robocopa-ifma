@@ -1,0 +1,6 @@
+# CANDIDATE ONLY; not a deployed Supabase project/config.
+# Merge only this per-function setting during a separately authorized deployment.
+# This service has its OWN mandatory auth in handler + transactional PostgreSQL.
+# DO NOT disable verify_jwt globally or on user-facing functions.
+[functions.worker-control]
+verify_jwt = false

@@ -433,8 +433,13 @@
           "dependencies": [
             "S04-T01"
           ],
-          "status": "A_FAZER",
-          "evidence": []
+          "status": "EM_REVISAO",
+          "evidence": [
+            "Experimento antecipado autorizado pelo responsável: Tank Royale 1.4.0, Walls v1.0 e Spin Bot v1.0, duas batalhas reais de cinco rounds concluídas em GitHub-hosted Ubuntu. Pontuações, replays e política efetiva Docker verificados; 63 testes unitários aprovados. Aceite formal de S04-T01/S03 e reprodução no host permanecem pendentes.",
+            "https://github.com/thalesvalente/project-robocopa-ifma/actions/runs/38004097096",
+            "docs/arquitetura/spike-motor.md",
+            "docs/qualidade/evidencias/TANK-ROYALE-CI.json"
+          ]
         },
         {
           "id": "S04-T03",

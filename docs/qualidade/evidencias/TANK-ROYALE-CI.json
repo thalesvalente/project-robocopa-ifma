@@ -1,0 +1,78 @@
+{
+  "schema_version": 1,
+  "task": "S04-T02",
+  "technical_result": "PASS",
+  "macro_status": "EM_REVISAO",
+  "date": "2026-10-09",
+  "executor": "ChatGPT Pro; GitHub-hosted CI",
+  "codex_used": false,
+  "r4_used": false,
+  "engine_version": "1.4.0",
+  "upstream_commit": "c8ad3a8d19a843f6258d6f6f9db7f29229963903",
+  "ci_run": "https://github.com/thalesvalente/project-robocopa-ifma/actions/runs/38004097096",
+  "source_commit": "cf7d6b5a98d12b8f42f40214b495aad9357010fd",
+  "tested_merge_commit": "b3900380501a4a861f196d80ee484949de1dfbba",
+  "unit_tests": {
+    "planning": 27,
+    "infrastructure": 13,
+    "tank_spike": 23,
+    "total": 63,
+    "failed": 0
+  },
+  "spec_kit_native_prerequisites": "PASS",
+  "artifact": {
+    "id": 11650431842,
+    "name": "tank-royale-reference-evidence",
+    "zip_bytes": 924477,
+    "sha256": "28cabec21a4cfad1fc53fb9cf8ca10bc7fe0bf670f412f9c95a2e6c7b8692823",
+    "expires_at": "2026-11-08T23:23:08Z"
+  },
+  "battles": [
+    {
+      "run_id": "20261009T232234Z-48268878",
+      "status": "PASS",
+      "preset": "classic",
+      "rounds": 5,
+      "ticks": 4899,
+      "duration_ms": 11391,
+      "results": [
+        {"name":"Walls","version":"1.0","rank":1,"totalScore":495,"survival":200,"bulletDamage":218,"ramDamage":5,"firstPlaces":4,"secondPlaces":1},
+        {"name":"Spin Bot","version":"1.0","rank":2,"totalScore":229,"survival":50,"bulletDamage":153,"ramDamage":4,"firstPlaces":1,"secondPlaces":4}
+      ],
+      "replay": {"file":"game-2026-10-09-23-22-47.battle.gz","sha256":"c1df5d7b0c499705120706a4a759fb668e5b1cb222a488ed5f4f8430a66e95e1","compressed_bytes":448209,"uncompressed_bytes":6166724},
+      "runtime_checks": {"network_none":true,"root_read_only":true,"not_privileged":true,"non_root":true,"no_host_mounts":true,"no_host_ports":true,"capabilities_dropped":true,"no_new_privileges":true,"memory_limited":true,"cpus_limited":true,"pids_limited":true},
+      "cleanup_completed": true,
+      "image_id": "sha256:f99ef62f2f15efac0b5f497501719b00b3adfb69e845954fa8327728c2c17b89"
+    },
+    {
+      "run_id": "20261009T232256Z-ab0f7af6",
+      "status": "PASS",
+      "preset": "classic",
+      "rounds": 5,
+      "ticks": 4921,
+      "duration_ms": 11481,
+      "results": [
+        {"name":"Walls","version":"1.0","rank":1,"totalScore":465,"survival":200,"bulletDamage":197,"ramDamage":2,"firstPlaces":4,"secondPlaces":1},
+        {"name":"Spin Bot","version":"1.0","rank":2,"totalScore":141,"survival":50,"bulletDamage":80,"ramDamage":1,"firstPlaces":1,"secondPlaces":4}
+      ],
+      "replay": {"file":"game-2026-10-09-23-22-58.battle.gz","sha256":"fcb0da0455987f46e88e71050905115666f0dd771e5093edf573151beabbe8ed","compressed_bytes":471139,"uncompressed_bytes":6259115},
+      "runtime_checks": {"network_none":true,"root_read_only":true,"not_privileged":true,"non_root":true,"no_host_mounts":true,"no_host_ports":true,"capabilities_dropped":true,"no_new_privileges":true,"memory_limited":true,"cpus_limited":true,"pids_limited":true},
+      "cleanup_completed": true,
+      "image_id": "sha256:f99ef62f2f15efac0b5f497501719b00b3adfb69e845954fa8327728c2c17b89"
+    }
+  ],
+  "independent_artifact_review": {
+    "zip_sha256_matches_github": true,
+    "gzip_crc_and_sizes_valid": true,
+    "all_replay_lines_json_valid": true,
+    "five_round_end_events_per_battle": true,
+    "replay_final_scores_match_results": true,
+    "note": "Verification after downloading the official CI artifact; separate from unit fixtures."
+  },
+  "limits": [
+    "No execution of this spike on the operator's Windows host yet.",
+    "No untrusted participant code, mobile editor, public access or production sandbox validated.",
+    "Measured duration includes runner startup/shutdown, excludes image build; not a capacity benchmark.",
+    "S03/S04-T01 approvals and global sprint gates remain pending."
+  ]
+}

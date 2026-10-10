@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "engine_version": "1.4.0",
+  "upstream_commit": "c8ad3a8d19a843f6258d6f6f9db7f29229963903",
+  "release": "https://github.com/robocode-dev/tank-royale/releases/tag/v1.4.0",
+  "license": "Apache-2.0",
+  "artifacts": {
+    "runner.jar": {
+      "url": "https://github.com/robocode-dev/tank-royale/releases/download/v1.4.0/robocode-tankroyale-runner-1.4.0.jar",
+      "sha256": "02f6d1d8e9346a4aeae1b91e7abb278c98ac1f1d30c605f867758566f5f327cf",
+      "size": 13934184
+    },
+    "samples.zip": {
+      "url": "https://github.com/robocode-dev/tank-royale/releases/download/v1.4.0/sample-bots-Java-1.4.0.zip",
+      "sha256": "1707c1011a37c6b854fc79d68549ab204007bac6d33d803fa254152ac0765fe2",
+      "size": 733575
+    }
+  },
+  "bots": ["Walls", "SpinBot"],
+  "bot_identities": {
+    "Walls": {"name": "Walls", "version": "1.0"},
+    "SpinBot": {"name": "Spin Bot", "version": "1.0"}
+  },
+  "rounds": 5,
+  "preset": "classic"
+}

@@ -1,0 +1,49 @@
+name: Tank Royale - batalha real de referencia
+on:
+  pull_request:
+    paths:
+      - 'spikes/tank-royale/**'
+      - 'scripts/run_tank_spike.py'
+      - 'tests/tank_royale/**'
+      - 'specs/002-tank-royale/**'
+      - '.github/workflows/tank-spike.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: tank-spike-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+jobs:
+  reference-battle:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Regressao e contrato do spike
+        run: |
+          python3 scripts/render_planning.py
+          git diff --exit-code -- docs/planejamento
+          python3 scripts/verify_planning.py
+          python3 -m unittest discover -s tests/planning -v
+          python3 -m unittest discover -s tests/infra -v
+          python3 -m unittest discover -s tests/tank_royale -v
+      - name: Verificar estrutura nativa do Spec Kit
+        env:
+          SPECIFY_FEATURE_DIRECTORY: specs/002-tank-royale
+          SPECIFY_FEATURE_NO_PERSIST: '1'
+        run: python3 .specify/scripts/python/check_prerequisites.py --json --require-spec --require-tasks --include-tasks
+      - name: Batalha real 1 - construir imagem verificada e executar
+        run: python3 scripts/run_tank_spike.py
+      - name: Batalha real 2 - repetir sem colisoes nem reconstruir imagem
+        run: python3 scripts/run_tank_spike.py --skip-build
+      - name: Preservar somente evidencias sinteticas do spike
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: tank-royale-reference-evidence
+          path: .local/tank-royale/
+          include-hidden-files: true
+          retention-days: 30
+          if-no-files-found: warn

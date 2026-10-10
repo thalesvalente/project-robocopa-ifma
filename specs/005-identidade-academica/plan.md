@@ -1,38 +1,28 @@
-# Plano técnico da feature 005 — login acadêmico Google
+# Plano — Feature 005, Google OAuth misto e multiescola (D-011)
 
-**Data:** 2026-10-10; **estado:** PLANEJADO ANTES DE CÓDIGO. **Decisão:** D-010/ADR-007. **Dependências:** S03; esquema/RLS HYB-01/02, autenticação cloud I3-03, HYB-09 (Vercel), S08 (LGPD/termos), autorização Workspace e identidade real ainda sem prova. Feature 005 não é o serviço do worker, nem substitui a admissão RoboDSL.
+**Data:** 2026-10-10 · **Estado:** PLANEJADO ANTES DO CÓDIGO de política. Nenhum login OAuth/Supabase real configurado. D-011/ADR-008 **substituem exclusividade acadêmica da D-010/ADR-007**; histórico preservado.
 
-## Arquitetura
+## Separação de componentes
 
-1. PWA React/TypeScript Vercel, botão do Google acionando `supabase.auth.signInWithOAuth({provider:'google', options:{queryParams:{hd:DOMAIN}}})`; o `hd` de solicitação é apenas dica visual e deve vir de configuração **confirmada**, não do JSON do aluno.
-2. Google OIDC valida credenciais e identidade; Supabase Auth gerencia a sessão. Não solicitar escopos além de `openid,email,profile`, nem refresh token Google offline.
-3. Borda backend/API valida sessão Supabase pelo SDK e consulta inscrição/vínculo autorizado. Verificar identidade de provedor Google e **claim `hd` assinado ou prova autenticada equivalente**. **Não promover usuário** se `hd` não for comprovado. A aplicação não deve confiar no cliente para decidir papéis.
-4. Postgres privado: `profiles`, `campus`, `enrollments`/participações e papéis sob RLS; registrar apenas os identificadores minimamente necessários, tenant correto e situação ACTIVE/PENDING/SUSPENDED. `auth.users.id` e `identity.provider_id` estáveis; email não é PK.
-5. Before User Created Hook configurado para recusar cadastro por provider/domínio inelegível; política API/RLS independente cobre usuários já existentes, revogação e mudança de login.
-6. Gerenciamento de domínio/administrador Workspace: se conta Google Sala de Aula via SUAP não usar OAuth padrão, **retornar à clarificação/arquitetura antes de implementar fallback**.
+1. **Identidade Google:** login único "Continuar com Google" via Supabase Auth. Sem `hd` obrigatório no request; `hd` apenas hint opcional de UI para login Workspace, não prova. Nenhuma senha RoboCopa.
+2. **Verificação de identidade:** backend validará tokens/sessão Supabase e prova de Google OIDC (issuer/audience/expiry/signature/sub/email_verified) antes de produzir `VerifiedGoogleIdentity`. Integração verdadeira depende de projeto OAuth e Supabase de teste. `hd` autenticado **não** exigido de Gmail pessoal.
+3. **Política pura de elegibilidade (primeiro incremento ID-010):** receber **somente objeto de identidade já verificada por adaptador confiável**, com origem Google, Google sub, e-mail verificado, `hd` autenticado se aplicável; classificar `PERSONAL_GMAIL` ou `WORKSPACE` e decidir `PENDING` sem matrícula. Não validar assinatura criptográfica dentro desse objeto; tests com doubles não provam login Google. Não expor função como endpoint client; rejeitar parâmetros extras de role/school vindos do usuário.
+4. **Vínculo e autorização (incremento ID-011 e migrações posteriores):** `schools`, `school_memberships`, `classrooms`, `competition_entries`, papéis por vínculo sob RLS. Usuário PENDING pode consultar apenas próprio status. Aprovação somente por ator admin/professor verificado, com convite aprovado/TTL/uso único e auditoria; escola externa entra por fluxo administrativo.
+5. **Hooks e Edge/API:** Before User Created Hook pode impedir outros provedores, mas **não pode negar Gmail pessoal só por domínio nem exigir `hd` geral**. Hook não concede ACTIVE ou cobre usuários preexistentes; API/RLS revisam vínculos.
+6. **Worker:** não recebe tokens OAuth, acesso direto ao banco ou permissão de escola. O `owner_id` que chega ao I3 provém de `auth.users.id` + vínculo ativo validado pelo broker; nenhuma confiança em owner/role/school do navegador.
 
-## Testes antes de liberar estudantes
+## Ordem de execução com testes
 
-CI não precisa de contas escolares: testes de regras pura/hook/RLS com identidades e tokens sintéticos **rotulados mock**; casos positivos e negativos de dono, domínio, provider, `hd`, provider fake, identidade velha, revogação e acesso entre campus. **Integração OIDC real** só com conta de teste institucional e administrador aprovando a aplicação; nunca com dados de aluno real em GitHub, nunca fingir handshake Google.
+- Primeiro documentar D-011/ADR-008/spec/plan/tasks/contrato/pesquisa/índice; só então desenvolver **classificador de elegibilidade puro** com testes negativos e prova de que PENDING não autoriza operações. CI Linux sem rede ou contas reais.
+- Depois especificar migrações PostgreSQL/RLS por escola, política de convites e controle de abuso; testar concorrência, autorização cruzada e suspensão em runner descartável. Só marcar ID-011+ conforme aceites.
+- Configurar Google OAuth/Supabase em ambiente autorizado. Testar **Gmail pessoal sintético/teste** e conta Workspace de teste, `hd` quando existir, sub e callback PKCE, logout, JWT e limites. Nenhuma credencial em Git/CI aberto.
+- Validar LGPD, menores, governança de escola, consentimento e limites do plano gratuito antes de piloto; demonstrar diretoria com identidade sintética e escopo de avaliação transparente.
+- Após cada implementação, sincronizar `ESTADO-ATUAL`, task checkboxes/evidências e gate, com SHA/workflow real, sem marcar tarefa ampla ou G-PROD como concluído sem prova.
 
-Testar callback URL exata, `state`/PKCE/nonce conforme SDK, `email_verified`, clock/audience/issuer, provider sub, logout e revalidação de sessão. Documentar se `hd` aparece ou não em claims do fluxo Supabase real; se não, seguir decisão fail-closed e revisar implementação. Evitar configurar client secret no bundle da Vercel.
+## Casos negativos obrigatórios
 
-## Riscos e escolhas
+Gmail verificado não recebe escola/role automaticamente; `hd` ausente de Gmail é permitido; Workspace `hd` desconhecido pode fazer login PENDING mas não participar; email institucional sem `hd` comprovado não vira Workspace; Gmail com email_verified false é inelegível; provider ≠ Google/Google sub vazio é inelegível. PENDING/SUSPENDED/tenant divergente negam treino/inscrição, independentemente da origem. Regras de permissão não usam email como key. Usuário pode ter múltiplos vínculos ACTIVE sem vazamento entre escolas.
 
-- A conta `@acad.ifma.edu.br` pode **não corresponder** ao Google Workspace Google Sala de Aula configurado no SUAP. Sem prova, `hd` não é fixado.
-- Google Workspace for Education **bloqueia apps terceiros não aprovados de menores de 18 anos**. Necessita suporte do admin; não contornar com Gmail pessoal.
-- Domínio IFMA inclui campus/turnos além de Itapecuru e contas sem matrícula ativa. Participar exige vínculo explícito; domínio não é autorização.
-- Preço: Supabase Auth Google social é candidato ao Free, mas confirmar quotas (MAUs e limites). SAML enterprise é desnecessário para MVP.
-- Política de dados educacionais e consentimento institucional continuam por revisar antes de alunos reais.
+## Gates abertos
 
-## Ordem de engenharia
-
-1. Registrar D-010/ADR-007/spec/plan/tasks **antes do código**; sincronizar índice, ADR-005 e estado, sem marcar S03 concluída.
-2. Testar com DTI/admin uma conta Google acadêmica de teste e documentar **somente o domínio/claims sanitizados** e se app terceiro é liberado; resolver Q-ID01–03.
-3. Planejar migrações `profiles/enrollments/roles` e hooks RLS em PostgreSQL CI; implementar testes negativos.
-4. Configurar OAuth em ambiente de teste sob conta Google Cloud autorizada e Supabase de teste; segredos só em secret stores, nunca Git/CI artifacts.
-5. Implementar login PWA/Supabase Auth e autorização backend, negar todos os caminhos não aprovados. Integrar com vínculo de versão/owner do I3-03 após autenticação.
-6. Bateria de segurança, testes com telefone físico e logout; documentar custos, identidade/retorno e gates. Só então considerar acesso real de estudantes após S03/S08/I3/I4/I5.
-
-**Nenhuma credencial ou instituição foi conectada nesta etapa.**
-
+Confirmar IFMA Google Workspace/SUAP, admin para menores, consentimento, atribuição de escolas e convites, RLS, infraestrutura Vercel/Supabase real e worker. **Não usar conta Gmail pessoal para contornar política institucional de menores.**

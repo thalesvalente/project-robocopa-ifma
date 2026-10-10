@@ -1,4 +1,6 @@
-# ADR-007 — Google acadêmico do IFMA com Supabase Auth e autorização por vínculo
+# ADR-007 — Google acadêmico do IFMA com Supabase Auth e autorização por vínculo (histórico)
+
+**SUPERADA PARCIALMENTE POR [ADR-008](ADR-008-google-multiescolas.md) / [D-011](../planejamento/decisoes/D-011-google-pessoal-multiescolas.md):** esta era uma proposta de login acadêmico exclusivo e bloqueio de Gmail. A regra atual permite também **Google Gmail pessoal sem `hd`**, mas exige aprovação de vínculo escolar para participação. Preservam-se do desenho original autenticação Supabase, IDs estáveis e RLS; não seguir as antigas negativas de Gmail presentes no texto histórico abaixo.
 
 **Data:** 2026-10-10 · **Estado:** PROPOSTA TÉCNICA COERENTE COM D-010, sujeito a prova da identidade Google Workspace/gestão SUAP. **Rastreabilidade:** [D-010](../planejamento/decisoes/D-010-login-google-academico-ifma.md), [feature 005](../../specs/005-identidade-academica/spec.md), ADR-005, I3-03.
 

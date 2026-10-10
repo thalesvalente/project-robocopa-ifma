@@ -1,5 +1,7 @@
 import com.google.gson.*;
 import java.io.*;
+import org.java_websocket.handshake.HandshakeImpl1Client;
+import org.java_websocket.enums.HandshakeState;
 
 /** Executed before Docker integration; pure gateway state-machine tests. */
 public final class ContractTest {
@@ -11,11 +13,16 @@ public final class ContractTest {
     static String hello(){return "{\"type\":\"BotHandshake\",\"name\":\"Walls\",\"version\":\"1.0\",\"sessionId\":\"session\",\"secret\":\"front\",\"authors\":[\"fixture\"]}";}
     static ProtocolGate.Rule auth()throws Exception{var r=fresh();r.inbound(hello());return r;}
     public static void main(String[] args)throws Exception{
+        good(()->{
+            var h=new HandshakeImpl1Client();h.setResourceDescriptor("/");h.put("Sec-WebSocket-Version","13");
+            if(ProtocolGate.draft().acceptHandshakeAsServer(h)!=HandshakeState.MATCHED)throw new AssertionError("RFC6455_DEFAULT_PROTOCOL");
+        });
         good(()->{var x=fresh().inbound(hello());if(!x.get("secret").getAsString().equals("backend"))throw new AssertionError();});
         bad(()->fresh().inbound(hello().replace("front","wrong")));
         bad(()->fresh().inbound(hello().replace("session\"","other\"")));
         bad(()->fresh().inbound(hello().replace("Walls","Spin Bot")));
         bad(()->fresh().inbound(hello().replace("1.0","2.0")));
+        bad(()->fresh().inbound(hello().replace("\"authors\":[\"fixture\"]","\"isDroid\":\"false\"")));
         for(String type:new String[]{"ControllerHandshake","ObserverHandshake","StartGame","PauseGame","StopGame","ResumeGame","ChangeTps","NextTurn","EnableDebugMode","BotPolicyUpdate"}){
             bad(()->fresh().inbound("{\"type\":\""+type+"\"}"));
             bad(()->auth().inbound("{\"type\":\""+type+"\"}"));

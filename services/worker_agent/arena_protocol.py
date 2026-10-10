@@ -15,7 +15,7 @@ BOT_OUTPUT_TYPES = frozenset({'GameStartedEventForBot', 'GameEndedEventForBot',
     'SkippedTurnEvent', 'GameAbortedEvent'})
 HANDSHAKE_FIELDS = frozenset({'type','sessionId','name','version','authors','secret',
     'teamMemberName','description','homepage','countryCodes','gameTypes','platform',
-    'programmingLang','debuggerAttached','teamMessageBatchVersion'})
+    'programmingLang','debuggerAttached','teamMessageBatchVersion','isDroid'})
 NUMBERS = frozenset({'turnRate','gunTurnRate','radarTurnRate','targetSpeed','firepower'})
 BOOLEANS = frozenset({'adjustGunForBodyTurn','adjustRadarForBodyTurn',
     'adjustRadarForGunTurn','rescan','fireAssist'})
@@ -53,6 +53,8 @@ def handshake(raw: str, *, session: str, identities: dict[str, tuple[str,str]],
     data = decode(raw)
     if data['type'] != 'BotHandshake' or set(data) - HANDSHAKE_FIELDS:
         raise ProtocolDenied('BOT_HANDSHAKE_ONLY')
+    if 'isDroid' in data and data['isDroid'] is not False:
+        raise ProtocolDenied('REFERENCE_DROID_MODE_ONLY')
     token = data.get('secret')
     if not isinstance(token, str) or len(token) > 128 or not token.isascii():
         raise ProtocolDenied('CREDENTIAL_INVALID')

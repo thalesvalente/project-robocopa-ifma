@@ -53,3 +53,11 @@ class ArenaProtocolTests(unittest.TestCase):
         with self.assertRaises(p.ProtocolDenied) as e:
             p.handshake(hs(secret='private-token'),session='session',identities=IDENTITIES,upstream_secret='engine')
         self.assertNotIn('private-token',str(e.exception))
+    def test_official_sdk_false_droid_metadata(self):
+        name, normalized=p.handshake(hs(isDroid=False),session='session',identities=IDENTITIES,upstream_secret='engine')
+        self.assertEqual(name,'Walls')
+        self.assertNotIn('isDroid',normalized)
+    def test_non_reference_droid_metadata_rejected(self):
+        for value in (True,1,'false',None):
+            with self.subTest(value=value),self.assertRaises(p.ProtocolDenied):
+                p.handshake(hs(isDroid=value),session='session',identities=IDENTITIES,upstream_secret='engine')

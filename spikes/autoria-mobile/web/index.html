@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="pt-BR">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>RoboCopa IFMA · Laboratório de autoria</title><link rel="stylesheet" href="/style.css"><script defer src="/app.js"></script></head>
+<body>
+<a class="skip" href="#codigo">Ir para o editor</a>
+<header><div class="brand">RC<span>RoboCopa <b>IFMA</b></span></div><span class="tag">LABORATÓRIO · 03</span></header>
+<main>
+<section class="intro"><p class="eyebrow">DA SUA IDEIA PARA A ARENA</p><h1>O próximo movimento<br>é seu.</h1><p>Escreva a estratégia. Teste no motor real. Descubra o que mudou.</p><p class="notice">Experimento local do responsável. Ainda não é uma competição aberta a estudantes.</p></section>
+<div class="workspace">
+<section class="panel editor"><div class="section-head"><h2><span class="step">01</span> Programe seu robô</h2><span class="chip">RoboDSL 0.1</span></div>
+<p class="helper">Use um exemplo como ponto de partida. As instruções são executadas na ordem em que aparecem.</p>
+<div class="examples"><button id="sentinela" type="button">Exemplo: sentinela</button><button id="explorador" type="button">Exemplo: explorador</button></div>
+<label for="codigo">Código da estratégia</label>
+<textarea id="codigo" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off" aria-describedby="code-help" rows="15" maxlength="8192"></textarea>
+<p class="helper" id="code-help">“sempre” repete a cada turno. “ao detectar” reage ao radar. Cada bloco termina com “fim”.</p>
+<div class="insert-row" aria-label="Inserir instruções no cursor"><button data-insert="velocidade 6\n" type="button">+ Movimento</button><button data-insert="se distancia &lt; 250\n  atirar 3\nsenao\n  atirar 1\nfim\n" type="button">+ Condição</button></div>
+<div class="toolbar"><button id="save" type="button">Salvar rascunho</button><button id="validate" type="button">Verificar código</button><button class="primary" id="train" type="button">Testar no motor real</button></div>
+<p id="status" role="status" aria-live="polite" aria-atomic="true">Conectando ao laboratório local…</p>
+<details><summary>Referência de programação</summary><dl><dt>velocidade -8 até 8</dt><dd>Velocidade desejada em unidades por turno. Zero para; negativo anda de ré.</dd><dt>girar -10 até 10</dt><dd>Taxa desejada de giro do corpo em graus por turno, sujeita aos limites físicos do motor.</dd><dt>canhao -20 até 20</dt><dd>Taxa desejada de giro do canhão. O radar acompanha o conjunto neste protótipo.</dd><dt>atirar 0.1 até 3</dt><dd>Solicita um disparo; calor do canhão e energia podem impedi-lo.</dd><dt>se energia &gt; 20 / senao / fim</dt><dd>Escolhe uma sequência de ações conforme a energia.</dd><dt>se distancia &lt; 250 / senao / fim</dt><dd>Compara a distância do oponente detectado. Só vale em “ao detectar”.</dd></dl><p>Use ponto nos decimais. Comentários começam com #. São permitidas até 80 instruções/condições e três níveis de condições. Esta linguagem não aceita Java, JavaScript, comandos de sistema ou arquivos.</p></details>
+</section>
+<section class="panel output"><div class="section-head"><h2><span class="step">02</span> Observe a estratégia</h2><span class="chip">Tank Royale 1.4.0</span></div>
+<div class="arena"><canvas id="arena" width="800" height="600" aria-label="Replay resumido da batalha. O resultado e as métricas também estão disponíveis como texto."></canvas><p id="empty">Sua estratégia entra em campo após o primeiro teste.</p></div>
+<div class="playback"><button id="play" type="button" disabled>Reproduzir replay</button><span id="frame-label">Sem batalha carregada</span></div>
+<p class="helper">Replay resumido de posições reais do motor, não uma simulação do navegador. Não desenha tiros ou todos os eventos.</p>
+<div id="result" aria-live="polite"><h3>O que comparar?</h3><p>Não olhe só o placar: observe o movimento e a velocidade. A melhor estratégia exige experimentação.</p></div>
+</section>
+</div>
+<section class="next"><span class="step">03</span><div><h2>Mude uma decisão. Teste uma hipótese.</h2><p>Compare a sentinela parada com o explorador em movimento. Depois altere uma condição de disparo. Os placares podem variar: uma partida isolada não demonstra superioridade.</p></div></section>
+</main><footer>ROBOCOPA IFMA · PROTÓTIPO DE AUTORIA MÓVEL · EXECUÇÃO NO SERVIDOR LOCAL</footer>
+</body></html>

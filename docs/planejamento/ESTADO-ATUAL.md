@@ -47,3 +47,7 @@ Depois: I3-04 resultado/replay e efeito único; I3-05/06/07 quotas/polling/recov
 ## Restrições
 
 Nenhum deployVercel/Supabase/Cloudflare, serviço pago, dado real, aluno, VM pessoal ou main foi alterado nesta rodada. Não mexer emWindows/WSL/DockerDesktop/.env/Compose/banco/roteador/firewall/discos pessoais. O laboratório18081 com acesso à CLI Docker não deve ser exposto. Aprovação de recorte do CI não homologa esse servidor ou G-PROD.
+
+## D-010 — Login de estudantes Google acadêmico IFMA (planejado; 2026-10-10)
+
+O responsável decidiu que os estudantes devem acessar pela **conta Google acadêmica gerenciada pelo IFMA**, sem criar senha RoboCopa e sem aceitar Gmail pessoal como identidade de participante. A [D-010](decisoes/D-010-login-google-academico-ifma.md) e a [feature 005 Spec Kit](../../specs/005-identidade-academica/spec.md) foram registradas **antes de qualquer código**. Supabase Auth Google OAuth gerenciará a sessão; backend/RLS exigirão provedor/identidade Google confiáveis e vínculo campus/turma/competição aprovado. `@acad.ifma.edu.br` é domínio de e-mail acadêmico encontrado na pesquisa, **a confirmar como conta Google Workspace**: SUAP pode mostrar conta Google Sala de Aula distinta e login federado. Menores podem precisar de habilitação explícita do administrador Workspace para o app terceiro. **Nenhum OAuth, conta, credencial Google, aluno real ou acesso institucional foi configurado/testado ainda**. Documento de planejamento não fecha S03, I3 ou G-PROD.

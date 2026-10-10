@@ -7,6 +7,7 @@
 | [002-tank-royale](002-tank-royale/spec.md) | Batalha de referência | CI aprovado; reprodução Windows informada pelo responsável |
 | [003-autoria-mobile](003-autoria-mobile/spec.md) | RoboDSL e editor | CI/PC demonstrados; telefone físico e ratificação pendentes |
 | [004-isolamento-execucao](004-isolamento-execucao/spec.md) | Contratos, isolamento e controle | I1/I2 e recortes I3 demonstrados; cloud/VM/produção pendentes |
+| [005-identidade-academica](005-identidade-academica/spec.md) | Google OAuth da conta acadêmica IFMA, autorização por vínculo, RLS, proteção de menores | Planejado em D-010; domínio real/conta Workspace e autorização do admin pendentes |
 
 A feature004 mantém o catálogo amplo [T001–T039](004-isolamento-execucao/tasks.md), [I1](004-isolamento-execucao/iteration-1.md), [I2](004-isolamento-execucao/iteration-2.md), [guarda de protocolo](004-isolamento-execucao/i2-protocol-guard.md) e [reconciliação](004-isolamento-execucao/i2-reconciliation-plan.md). Só encerrar recorte com evidência, não gates amplos por documento ou CI verde.
 
@@ -19,3 +20,5 @@ A feature004 mantém o catálogo amplo [T001–T039](004-isolamento-execucao/tas
 **Direção vigente:** [D-009](../docs/planejamento/decisoes/D-009-carater-voluntario-vercel-hobby.md) mantém Vercel Hobby preferida para a PWA voluntária, Supabase com persistência remota e VM local só para computação; Cloudflare é contingência. [D-007](../docs/planejamento/decisoes/D-007-execucao-pos-revisao-mvp.md) e [ADR-006](../docs/arquitetura/ADR-006-demo-gratuita-plano-controle.md) conservam os demais trade-offs. Nada homologa implantação cloud/VM ou piloto estudantil.
 
 `spec.md` descreve problema/histórias/aceites; `plan.md`, decisões/interfaces/testes; `tasks.md`, execução. Requisitos ratificados na S03 serão baseline formal, sem catálogo concorrente. Fluxo constitution → specify → clarify → plan → checklist → tasks → analyze → implement → converge. Usar scripts versionados e checagem nativa; não alegar slash commands sem ferramenta. [Estado atual](../docs/planejamento/ESTADO-ATUAL.md).
+
+**Feature 005:** [spec](005-identidade-academica/spec.md), [plan](005-identidade-academica/plan.md), [tasks](005-identidade-academica/tasks.md) e [research](005-identidade-academica/research.md). **Nenhum login institucional implementado**; confirmar domínio Google Workspace e bloqueio de apps terceiros de menores antes de abrir contas de alunos. [D-010](../docs/planejamento/decisoes/D-010-login-google-academico-ifma.md).

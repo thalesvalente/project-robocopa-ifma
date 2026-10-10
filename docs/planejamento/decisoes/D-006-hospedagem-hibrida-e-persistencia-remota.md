@@ -25,3 +25,9 @@ O experimento de PostgreSQL local (Compose) permanece histórico e útil em test
 
 [ADR-005 — arquitetura híbrida](../../arquitetura/ADR-005-hospedagem-hibrida-mvp.md) · [Spec Kit de implantação híbrida](../../../specs/001-hosting-local/hybrid-mvp.md). Manter D-005 (VM independente/ensaios CI) e demais decisões sem alteração retroativa de suas evidências.
 
+
+## Esclarecimento posterior de hospedagem — D-008 (2026-10-10)
+
+A direção Vercel definida nesta D-006 **permanece válida**. A [D-008](D-008-revisao-hobby-vercel-ifma.md) formaliza que Vercel é a **primeira escolha de frontend**; Cloudflare Pages, fallback. A elegibilidade do Hobby para atividades do IFMA **não foi certificada**: os Terms admitem uso pessoal ou não comercial, mas as Fair Use Guidelines incluem ganho financeiro de pessoas envolvidas na produção (inclusive empregados pagos). Uma resposta do staff aceita projetos voluntários não remunerados para organizações sem fins lucrativos. Não interpretar a natureza pública/não lucrativa como dispensa automática. Antes da publicação institucional, obter confirmação adequada/avaliação de enquadramento; sem elegibilidade, trocar apenas a hospedagem estática.
+
+A revisão NÃO modifica a decisão de manter PostgreSQL/Auth/Storage no Supabase e execução exclusivamente segregada em VM local, nem autoriza deploy, dados de alunos, compras ou liberação G-PROD.

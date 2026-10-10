@@ -1,0 +1,40 @@
+name: I3-02 - mTLS e identidade do worker (laboratorio)
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/i3-worker-auth.yml'
+      - '.github/workflows/i3-control-plane.yml'
+      - 'services/execution_control/worker_channel.py'
+      - 'tests/security/test_i3_mtls.py'
+      - 'specs/004-isolamento-execucao/i3-02-auth-plan.md'
+      - 'specs/004-isolamento-execucao/contracts/worker-channel.md'
+      - 'docs/qualidade/evidencias/S04-T04-I3-02*'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  authenticated-loopback-probe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Fail closed unless disposable GitHub-hosted Linux runner
+        run: |
+          test "$GITHUB_ACTIONS" = "true"
+          test "$RUNNER_ENVIRONMENT" = "github-hosted"
+          test "$(uname -s)" = "Linux"
+          command -v openssl
+          openssl version
+      - name: Real TLS 1.3 mutual authentication, negative cases and rotation
+        run: python3 -m unittest discover -s tests/security -p test_i3_mtls.py -v
+      - name: Spec Kit native prerequisites
+        env:
+          SPECIFY_FEATURE_DIRECTORY: specs/004-isolamento-execucao
+          SPECIFY_FEATURE_NO_PERSIST: '1'
+        run: python3 .specify/scripts/python/check_prerequisites.py --json --require-spec --require-tasks --include-tasks
+      - name: No tracked secret/config written
+        run: git diff --exit-code
+# Only loopback in GitHub-hosted Ubuntu; temporary cert keys are not artifacts.
+# This is an I3-02 G-EXP probe, not production/VM/worker job dispatch.

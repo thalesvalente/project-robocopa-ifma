@@ -1,0 +1,43 @@
+name: Isolamento - contratos e provas limitadas
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/isolation-validation.yml'
+      - 'specs/004-isolamento-execucao/**'
+      - 'services/worker_agent/**'
+      - 'tests/security/**'
+      - 'spikes/isolamento/**'
+      - 'scripts/run_isolation_checks.py'
+      - 'docs/arquitetura/pesquisa-isolamento-2026-10-10.md'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  source-and-contracts:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Conferir baseline documental
+        run: |
+          python3 scripts/verify_security_spec.py
+          python3 -m unittest discover -s tests/planning -v
+      - name: Preparar fonte rastreada para revisão offline
+        run: |
+          mkdir -p "$RUNNER_TEMP/robocopa-source"
+          git archive --format=tar.gz HEAD -o "$RUNNER_TEMP/robocopa-source/source.tar.gz"
+          git rev-parse HEAD > "$RUNNER_TEMP/robocopa-source/commit.txt"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: isolation-review-source
+          path: ${{ runner.temp }}/robocopa-source/
+          retention-days: 7
+          if-no-files-found: error
+
+# Somente fontes Git rastreadas; nunca .env, .local, .git ou segredos de runtime.
+# As sondas e os contratos serão adicionados após revisão de pesquisa/plano.

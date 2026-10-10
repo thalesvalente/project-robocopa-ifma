@@ -76,6 +76,6 @@ jobs:
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add spikes/isolamento/i2/Dockerfile spikes/isolamento/i2/prepare.py spikes/isolamento/i2/upstream.lock.json spikes/isolamento/i2/gateway.py spikes/isolamento/i2/controller.py spikes/isolamento/i2/probe.py scripts/run_isolation_i2.py tests/security/test_i2_protocol.py
-          git rm -- spikes/isolamento/i2/.source-bundle.tar.xz
+          git rm -f -- spikes/isolamento/i2/.source-bundle.tar.xz
           git commit -m "feat(isolation): implementa separacao de juiz e bots com gateway por papeis"
           git push origin HEAD:refs/heads/feat/s04-i2-referee-isolation

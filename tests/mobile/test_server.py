@@ -40,6 +40,8 @@ class ServerTest(unittest.TestCase):
         self.assertEqual(self.request('POST','/api/validate',app.mobile.LANG.EXAMPLES['sentinela'],{'Origin':'http://evil.example'})[0],403)
     def test_bad_token_blocked(self):
         self.assertEqual(self.request('POST','/api/train',app.mobile.LANG.EXAMPLES['sentinela'],{'X-Robocopa-CSRF':'wrong'})[0],403)
+    def test_non_ascii_token_rejected(self):
+        self.assertEqual(self.request('POST','/api/train',app.mobile.LANG.EXAMPLES['sentinela'],{'X-Robocopa-CSRF':'é'})[0],403)
     def test_validate_never_executes(self):
         before=len(self.calls)
         self.assertEqual(self.request('POST','/api/validate',app.mobile.LANG.EXAMPLES['sentinela'])[0],200)

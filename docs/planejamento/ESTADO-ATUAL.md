@@ -1,53 +1,41 @@
-# Estado atual — fundação, laboratório local e prova do motor
+# Estado atual — fundação, motor e laboratório de autoria
 
-**Data:** 2026-10-09 · **Plano operacional:** 0.1.1 · **Trabalho corrente:** S04-T02 em revisão; gates anteriores pendentes.
+**Plano operacional:** 0.1.1 · **Trabalho técnico corrente:** S04-T03, candidato de autoria com CI aprovado e aceite físico pendente. Evidências deste avanço são registradas na feature 003; os gates formais anteriores continuam abertos.
 
-## Publicação e execução confirmadas
+## Fundação e acompanhamento
 
-Leitura e escrita no GitHub funcionaram. O repositório estava vazio. Commit inicial: `1cbc58a3a8c7c958c35b071332fbb8a5f0a5a1ae`. A base foi publicada em `02924287f87c48f114fc153fcf31d722c3a765e6`, na branch `chore/s00-fundacao-speckit`. A `main` permanece somente com a inicialização, até revisão e integração das branches.
+Leitura/escrita no GitHub confirmadas. Commit inicial `1cbc58a3a8c7c958c35b071332fbb8a5f0a5a1ae`; base `02924287f87c48f114fc153fcf31d722c3a765e6`. PR #11 contém governança e planejamento; PRs #12, #13 e #14 são incrementos empilhados. Não foi realizado merge na main por esta rodada.
 
-A execução real do Spec Kit terminou com sucesso no GitHub Actions: https://github.com/thalesvalente/project-robocopa-ifma/actions/runs/37884957842. O commit de geração é `51ee9727d8eda0f58c471262abcfc9d50eaeebb2`. O toolkit está fixado em v1.1.2 / `959e866caa3618bf3dc290d5dca33394365af9c6`, integração generic e scripts Python.
+O Spec Kit está fixado em v1.1.2 / `959e866caa3618bf3dc290d5dca33394365af9c6`, integração generic. Bootstrap no run https://github.com/thalesvalente/project-robocopa-ifma/actions/runs/37884957842; commit `51ee9727d8eda0f58c471262abcfc9d50eaeebb2`. A ferramenta é utilizada por arquivos/scripts versionados; não é uma conexão MCP nativa da conversa.
 
-O manifesto em `docs/qualidade/evidencias/SPECKIT-CI.json` registra 36 arquivos sob `.specify` e `.agents`, incluindo a constituição própria preservada. A validação do backlog e os 16 testes iniciais de planejamento/preservação foram executados naquele run. O ambiente foi GitHub-hosted Ubuntu, não a máquina que hospedará o MVP.
+O backlog JSON continua canônico para 10 sprints e 60 tarefas, com visões geradas por `scripts/render_planning.py`. S00-T01–T05 foram concluídas tecnicamente; S00-T06 aguarda ratificação humana. A tarefa macro S04-T02 permanece EM_REVISAO. A execução preparatória de S04-T03 não encerra o aceite físico, a revisão pedagógica ou seus pré-requisitos; os avanços verificáveis da feature 003 estão em `specs/003-autoria-mobile/tasks.md`. Não confundir entrega técnica parcial com encerramento da sprint.
 
-## Backlog e acompanhamento
+## Descoberta, BMC, projeto e requisitos
 
-10 sprints e 60 tarefas macro estão publicadas, com dependências, artefatos, executores e critérios de aceite. Issues #1 a #10 espelham as sprints; correspondência em `issues-map.json`.
-
-S00-T01 a S00-T05 estão concluídas tecnicamente com evidência. Inventários v1/v2/v3 e verificações Docker/WSL fornecidos pelo responsável confirmaram hardware e execução de contêineres: `docs/operacao/inventario-sanitizado.md`. S00-T06 continua **BLOQUEADA**, aguardando ratificação detalhada da constituição, plano e riscos. A sprint S00 não está homologada.
-
-**S04-T02 está EM_REVISAO.** O responsável autorizou antecipar o experimento de motor; duas batalhas reais e replays foram validados em CI. A dependência formal S04-T01/S03 não foi encerrada artificialmente. Registro: `decisoes/D-002-spike-antecipado.md`. O backlog JSON e as visões geradas contêm o mesmo estado/evidência.
-
-## Entregas de conteúdo preparadas
-
-Foram redigidas 12 minutas ligadas a S01/S02: problema, jornadas, referências, ideação, BMC, hipóteses, projeto, recursos/custos, plano pedagógico, governança/riscos, pitch e revisão de coerência. Entrada: `docs/descoberta/README.md`; registro em `entregas-preparatorias.json`.
-
-Esses documentos não comprovam entrevistas, validação de campo ou aprovação institucional. Requisitos detalhados e arquitetura final do produto ainda não estão homologados.
-
-## Verificação contínua
-
-O workflow `planejamento.yml` verifica projeções, testes, minutas, links e pré-requisitos da feature 000. `infra-local.yml` verifica o laboratório Compose. `tank-spike.yml` executa regressão de planejamento/infra, contratos do motor, pré-requisitos nativos da feature 002 e duas batalhas reais. São runners GitHub-hosted; CI não é uma sessão remota na máquina pessoal.
+Há 12 minutas S01/S02 (índice em `docs/descoberta/README.md`), sem pesquisa de campo ou aprovação institucional presumida. A baseline completa S03 e a arquitetura integral continuam sem homologação. A autorização de continuar experimentos não aprova automaticamente essas entregas.
 
 ## Infraestrutura local confirmada
 
-PR #12 (`feat/infra-local-compose`, baseado no PR #11) contém ADRs candidatos, Compose privado, PostgreSQL 17, sonda HTTP, credenciais locais, preflight e feature 001. CI: https://github.com/thalesvalente/project-robocopa-ifma/actions/runs/38001273168. Evidência: `docs/qualidade/evidencias/INFRA-LOCAL-CI.md`.
+PR #12: Docker Compose privado, PostgreSQL 17, sonda local, preflight e feature 001. A execução no Windows foi realizada pelo responsável e confirmada com serviços healthy e resposta /health; `docs/qualidade/evidencias/INFRA-LOCAL-HOST.md`. O assistente não possui sessão remota no host. A mudança de unidade da pasta Git não comprova migração do VHDX do Docker.
 
-O laboratório **foi iniciado e verificado no Windows pelo responsável**: PostgreSQL e sonda saudáveis, volume/redes criados e resposta local `/health` correta. Evidência separada: `docs/qualidade/evidencias/INFRA-LOCAL-HOST.md`. O caminho do repositório mudou para outra unidade; isso não comprova migração do VHDX Docker.
+## Motor real e reprodução no Windows
 
-## Motor real confirmado no CI
+PR #13: Tank Royale 1.4.0, Battle Runner JVM, amostras oficiais, checksums e imagem isolada. No lote CI https://github.com/thalesvalente/project-robocopa-ifma/actions/runs/38004097096: 63 testes unitários OK e duas batalhas de cinco rounds. Walls/Spin Bot: 495/229 e 465/141. Replays e resultados do CI foram inspecionados.
 
-PR #13 (`feat/s04-tank-royale-spike`, baseado no PR #12) contém Tank Royale 1.4.0 fixado, Battle Runner JVM, dois bots oficiais e comando Python de execução isolada. Lote de referência: https://github.com/thalesvalente/project-robocopa-ifma/actions/runs/38004097096.
+O responsável **também reproduziu o spike no Windows**: Walls 391 × Spin Bot 364, cinco rounds, 5255 ticks, 10718ms, término PASS no run `20261010T001533Z-5709ce1f`. Fonte: saída PowerShell compartilhada; `docs/qualidade/evidencias/TANK-ROYALE-HOST.md`. Os arquivos de manifesto/replay dessa execução local não foram anexados; não foi feita inspeção independente de seus bytes. A frase antiga que dizia faltar reprodução do motor no host está superada por essa evidência.
 
-**63 testes unitários OK** (27 planejamento, 13 infraestrutura, 23 spike), Spec Kit nativo PASS e **duas batalhas reais de cinco rounds**. Walls/Spin Bot: 495/229 e 465/141. Replays e resultados foram baixados e comparados; onze controles efetivos Docker passaram em cada execução. Evidência: `docs/qualidade/evidencias/TANK-ROYALE-CI.json`; análise em `docs/arquitetura/spike-motor.md`.
+## Autoria responsiva com motor real
 
-O código do spike **ainda não foi executado no Windows do responsável**. Instruções em `spikes/tank-royale/README.md`; a execução requer apenas Docker Linux e Python já disponíveis, sem alterar o Compose.
+PR #14 (`feat/s04-mobile-authoring`, base #13): editor HTML/CSS/JS, RoboDSL candidata em português, rascunho no navegador, validação por linha, treino local e replay resumido. A DSL permite ações ordenadas e condições; não apenas aparência. Nenhum Java/JavaScript livre recebido da interface é executado.
 
-## Limites explícitos
+Lote de referência https://github.com/thalesvalente/project-robocopa-ifma/actions/runs/38009658981, fonte `6c101094b75f212de5f65719234fd74614f29e51`: **97 testes unitários OK**, Spec Kit nativo PASS e dois treinos reais disparados pela UI em Chromium com viewport 390×844. Três viewports validados (360/390/1280), rascunho recuperado, erros preservados, sem overflow horizontal e sem erros JavaScript.
 
-O assistente não estabeleceu acesso remoto ao computador pessoal. O próprio responsável executou o laboratório local; as batalhas desta rodada ocorreram no GitHub. Não foram alterados roteador, firewall, DNS, túneis ou serviços de outros projetos.
+Aprendiz/sentinela: 44 × Walls 449, velocidade média 0. Aprendiz/explorador: 124 × Walls 243, velocidade média 5,7989. Cada treino teve três rounds. Artifact baixado e conferido quanto a hashes, replay oficial, placar final e métricas; screenshots reais desktop/móvel inspecionados. Evidência estruturada `docs/qualidade/evidencias/AUTORIA-MOBILE-CI.json`; análise `docs/arquitetura/spike-autoria.md`.
 
-Existe uma prova real do motor, mas ainda não há portal de alunos, autoria móvel, fila integrada, competição administrável, sandbox validado para código hostil, piloto ou MVP entregue. Não foi usado Codex nem R4 nesta rodada. Spec Kit é utilizado pelos arquivos e scripts do projeto, não por uma conexão MCP nativa com esta conversa.
+A execução em Chromium emulado **não é teste em telefone físico**. O novo servidor local ainda precisa ser iniciado pelo responsável no Windows, pelo comando `python scripts/serve_mobile_spike.py`. Manual: `spikes/autoria-mobile/README.md`. O serviço fica somente em 127.0.0.1:18081 e não altera o Compose existente.
 
-## Próximos aceites
+## Limites e próximos aceites
 
-Reproduzir o spike no Windows, registrar sua evidência separadamente e revisar o PR. Manter em paralelo a ratificação da base/requisitos. Os próximos experimentos previstos são autoria pelo celular e isolamento de código de participantes, sem abrir acesso externo. Backup, local físico do VHDX e hospedagem pública continuam pendentes.
+MOB-008: reproduzir o novo editor no Windows e avaliar em smartphone físico, por conexão controlada previamente autorizada. MOB-009: revisar a candidata RoboDSL com finalidade pedagógica e reconciliar a escolha à baseline. S04-T04: ensaios de isolamento para código não confiável ainda não realizados. Não há contas de estudantes, inscrição, fila durável, competição administrável ou MVP entregue.
+
+Nenhum roteador, firewall, DNS, túnel, VHDX ou serviço de outro projeto foi alterado. O servidor de laboratório tem acesso local à CLI Docker; as verificações de Host/Origin/token não o tornam seguro para exposição pública. Backups, restauração, acesso externo e capacidade real sob carga continuam pendentes. Não foi usado Codex nem R4 nesta rodada.

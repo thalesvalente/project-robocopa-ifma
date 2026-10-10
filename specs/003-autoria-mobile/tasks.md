@@ -1,13 +1,15 @@
 # Tarefas técnicas — Feature 003 / S04-T03
 
-- [x] MOB-001 Registrar a saída de reprodução S04-T02 fornecida pelo responsável, com limites da evidência.
-- [x] MOB-002 Implementar RoboDSL candidata: parser, limites, erros de linha e compilação por template fixo.
-- [x] MOB-003 Criar editor responsivo, rascunho local e mensagens recuperáveis.
-- [x] MOB-004 Integrar a submissão local a contêiner descartável e captura de BattleResults/replay.
-- [x] MOB-005 Criar testes unitários e de navegador; 34 testes locais passaram (não são batalhas reais).
-- [ ] MOB-006 Executar duas estratégias pela UI com motor real em CI e conferir seus artifacts.
-- [ ] MOB-007 Validar emulação móvel/desktop no navegador e inspecionar screenshots reais.
-- [ ] MOB-008 Reproduzir o novo laboratório no Windows e em smartphone físico.
-- [ ] MOB-009 Ratificar escolha pedagógica da autoria e integrar à baseline S03/S04.
+**Resultado:** protótipo técnico verificado no CI. Macro S04-T03 continua aberta; aparelho físico e ratificação pendentes. Os checks abaixo não são aceite global da sprint.
 
-Código criado não significa CI aprovado. Os itens MOB-006/MOB-007 só serão marcados depois de execução confirmada. A tarefa macro permanece em revisão após o experimento, sem fechar a sprint.
+- [x] MOB-001 Registrar a reprodução S04-T02 pelo responsável: Walls 391 × Spin Bot 364 em cinco rounds; não houve inspeção independente do replay/manifesto não anexados. Evidência: `docs/qualidade/evidencias/TANK-ROYALE-HOST.md`.
+- [x] MOB-002 Implementar RoboDSL candidata: parser, limites, erros de linha, AST/hash e compilação por template fixo.
+- [x] MOB-003 Criar editor responsivo, rascunho local, botões de inserção e mensagens recuperáveis.
+- [x] MOB-004 Ligar o treino local a contêiner descartável e capturar BattleResults/replay com vínculo de versão.
+- [x] MOB-005 Executar unitários: 34 testes de autoria e 63 anteriores no lote de referência, 97 OK. Regressão adicional de token não ASCII adicionada posteriormente.
+- [x] MOB-006 Executar duas estratégias pela UI e conferir artifacts reais: três rounds por treino; sentinela velocidade média 0; explorador 5,7989. Logs/resultados/replays e onze controles efetivos Docker por execução conferidos.
+- [x] MOB-007 Validar Chromium nos viewports 360/390/1280px; rascunhos recuperados, erros preservados, layout sem overflow e screenshots reais inspecionados. **Emulação**, não aparelho físico.
+- [ ] MOB-008 Reproduzir o novo laboratório no Windows e avaliar em smartphone físico, com conexão controlada autorizada.
+- [ ] MOB-009 Ratificar escolha pedagógica da autoria e reconciliar com a baseline S03/S04; nenhuma aprovação presumida.
+
+Evidência do lote: https://github.com/thalesvalente/project-robocopa-ifma/actions/runs/38009658981 e `docs/qualidade/evidencias/AUTORIA-MOBILE-CI.json`. Fonte testada `6c101094b75f212de5f65719234fd74614f29e51`. Não houve uso de Codex/R4, inscrições, participantes reais, modificação do Compose ou abertura de rede.

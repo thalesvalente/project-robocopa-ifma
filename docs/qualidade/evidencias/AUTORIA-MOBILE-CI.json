@@ -1,0 +1,61 @@
+{
+  "schema_version": 1,
+  "feature": "003-autoria-mobile",
+  "macro_task": "S04-T03",
+  "status": "TECHNICAL_PASS_PHYSICAL_PHONE_PENDING",
+  "source_commit": "6c101094b75f212de5f65719234fd74614f29e51",
+  "ci": {
+    "run_id": 38009658981,
+    "job_id": 114086472201,
+    "url": "https://github.com/thalesvalente/project-robocopa-ifma/actions/runs/38009658981",
+    "conclusion": "success",
+    "environment": "github-hosted-ubuntu-24.04",
+    "browser_test": "real Chromium with viewport/touch emulation; not a physical smartphone",
+    "playwright_python": "1.57.0",
+    "unit_tests": {"planning": 27, "infra": 13, "tank_royale": 23, "mobile": 34, "total": 97},
+    "spec_kit_native_prerequisites": "PASS"
+  },
+  "artifact": {
+    "id": 11652628410,
+    "name": "mobile-authoring-evidence",
+    "bytes": 1291267,
+    "sha256": "2ec0e06d8acf02d689e287d183e73b4ef298422a252ae31b56bb0248f03aad23",
+    "expires_at_utc": "2026-11-09T00:37:36Z",
+    "downloaded_and_independently_inspected": true,
+    "zip_crc": "PASS",
+    "screenshots_reviewed": ["viewport-1280.png", "mobile-explorador.png"],
+    "official_replays": "gzip, JSON events, identities, final exported score fields, movement statistics and hashes independently verified"
+  },
+  "viewports": [
+    {"width": 360, "height": 800, "touch_emulation": true, "horizontal_overflow": false, "draft_recovered": true, "invalid_code_preserved": true, "javascript_errors": []},
+    {"width": 390, "height": 844, "touch_emulation": true, "horizontal_overflow": false, "draft_recovered": true, "invalid_code_preserved": true, "javascript_errors": []},
+    {"width": 1280, "height": 900, "touch_emulation": false, "horizontal_overflow": false, "draft_recovered": true, "invalid_code_preserved": true, "javascript_errors": []}
+  ],
+  "battles": [
+    {
+      "strategy": "sentinela", "run_id": "20261010T003705Z-5c1b2e13",
+      "program_sha256": "38eae353b74a34c64a26a215f8f4a571f9788665d96f9ff7dbca5e5e4eecbf64",
+      "engine_version": "1.4.0", "rounds": 3, "ticks": 1507, "duration_ms": 12122,
+      "learner_score": 44, "walls_score": 449, "learner_first_places": 0,
+      "mean_abs_speed": 0.0, "moving_tick_fraction": 0.0,
+      "replay_sha256": "5717b694781f7c73f8256e183d96df3e44bf8ee721ca74e0bd4c33a4693a3119",
+      "runtime_policy_checks_passed": 11, "cleanup_completed": true
+    },
+    {
+      "strategy": "explorador", "run_id": "20261010T003720Z-b2185e3a",
+      "program_sha256": "f3bcb573598e4295578049e30910d12ac7f84e748f723744ce0ef326dc815761",
+      "engine_version": "1.4.0", "rounds": 3, "ticks": 2462, "duration_ms": 13851,
+      "learner_score": 124, "walls_score": 243, "learner_first_places": 1,
+      "mean_abs_speed": 5.7989, "moving_tick_fraction": 0.9777,
+      "replay_sha256": "0c6ab454f953c949c5cb9ed0970ab25ac09a27e986ad2bdd246cbdec989a008c",
+      "runtime_policy_checks_passed": 11, "cleanup_completed": true
+    }
+  ],
+  "limitations": [
+    "Only bounded DSL and known opponent; not a sandbox audit for hostile participant code.",
+    "Scores and timings are a historical observation, not a capacity benchmark or proof of a superior strategy.",
+    "No physical smartphone test, no participant study and no Windows reproduction of this new UI yet.",
+    "Reference evidence remains pinned to this run; later regressions can produce other scores.",
+    "Macro sprint and architecture ratification remain open; technical evidence does not close formal gates."
+  ]
+}

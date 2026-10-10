@@ -9,6 +9,6 @@
 - [x] TR-005 [US3] Executar 23 testes unitários do spike; regressão adicional de 27 testes de planejamento e 13 de infraestrutura, total 63 OK no CI.
 - [x] TR-006 [US1/US3] Executar e conferir duas batalhas reais, cinco rounds cada, pontuações e replays. Run: https://github.com/thalesvalente/project-robocopa-ifma/actions/runs/38004097096. Placares Walls/Spin Bot: 495/229 e 465/141. Não exigir placar idêntico nas repetições.
 - [x] TR-007 [US3] Registrar evidência e atualizar S04-T02 para EM_REVISAO sem encerrar gates. Arquivos: `docs/qualidade/evidencias/TANK-ROYALE-CI.json`, `docs/arquitetura/spike-motor.md`, backlog e projeções.
-- [ ] TR-008 [US2] Responsável reproduzir este spike no Windows com Docker. Registro separado; não confundir o laboratório PostgreSQL já confirmado com execução local do motor.
+- [x] TR-008 [US2] Responsável reproduziu no Windows com Docker: cinco rounds, Walls 391 × Spin Bot 364, 5255 ticks, 10718ms e término PASS. Evidência fornecida no terminal: `docs/qualidade/evidencias/TANK-ROYALE-HOST.md`. Os bytes de manifesto/replay desse run não foram anexados nem inspecionados independentemente nesta conversa.
 
-O artifact real foi baixado e conferido: hashes, gzip, eventos JSON e resultado final do replay concordam com `results.json`. Isso não autoriza executar submissões de estudantes; sandbox pertence à S04-T04.
+O artifact real do CI foi baixado e conferido: hashes, gzip, eventos JSON e resultado final do replay concordam com `results.json`. Isso não autoriza executar submissões de estudantes; sandbox pertence à S04-T04. A reprodução do host acrescenta a evidência de término informado, sem substituir a inspeção dos artifacts locais ausentes.

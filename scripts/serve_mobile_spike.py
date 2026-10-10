@@ -83,7 +83,7 @@ class LabHandler(BaseHTTPRequestHandler):
         if not self.host_ok():
             return
         if (self.headers.get('Origin') not in self.server.allowed_origins
-            or not secrets.compare_digest(self.headers.get('X-Robocopa-CSRF', ''), self.server.token)):
+            or not secrets.compare_digest(self.headers.get('X-Robocopa-CSRF', '').encode('utf-8'), self.server.token.encode('ascii'))):
             self.reply(403, {'error': 'Reabra esta página local para renovar a sessão.'})
             return
         if self.path not in ('/api/validate', '/api/train'):

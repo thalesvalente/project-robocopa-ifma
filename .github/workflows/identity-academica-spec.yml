@@ -1,4 +1,4 @@
-name: Feature 005 - Google academico IFMA (planejamento)
+name: Feature 005 - Google Workspace e Gmail pessoal (politica e Spec Kit)
 
 on:
   pull_request:
@@ -11,6 +11,7 @@ on:
       - 'docs/planejamento/decisoes/D-011-google-pessoal-multiescolas.md'
       - 'services/identity/**'
       - 'tests/identity/**'
+      - 'docs/qualidade/evidencias/S03-ID-010*'
       - 'docs/planejamento/ESTADO-ATUAL.md'
       - '.github/workflows/identity-academica-spec.yml'
   workflow_dispatch:

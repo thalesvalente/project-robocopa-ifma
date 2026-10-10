@@ -19,10 +19,19 @@ Integração Spec Kit previamente instalada/versionada na fundação: `tools/spe
 
 - `python3 scripts/verify_security_spec.py`;
 - `python3 -m unittest discover -s tests/planning -v`;
-- `python3 .specify/scripts/python/check-prerequisites.py --json --require-spec --require-tasks --include-tasks` (**nome real do arquivo: `check_prerequisites.py`**, conforme workflow);
+- `python3 .specify/scripts/python/check_prerequisites.py --json --require-spec --require-tasks --include-tasks`;
 - `python3 scripts/verify_planning.py` e verificação de projeções do backlog.
 
-**Estado do CI no momento deste registro:** aguardando execução e conferência do resultado real. Não declarar PASS antes do run terminar.
+**Validação efetivamente conferida (GitHub-hosted Ubuntu 24.04):** [GitHub Actions 38019520410](https://github.com/thalesvalente/project-robocopa-ifma/actions/runs/38019520410), commit `b59d47cad4f4b41db3f9916c6e2a615d506ea46a`, `completed/success`.
+
+- 20 FR, 8 SC, 16 TH, 12 Q, 5 user stories, 39 tarefas **não iniciadas**, 18 gates **não aprovados**.
+- Cobertura estrutural de FR/SC/TH nos textos das tarefas: **100%**; exclusão deliberada da tarefa transversal T036 para não mascarar lacunas.
+- **38 testes unitários de planejamento/preservação/verificador** executados, todos OK.
+- `check_prerequisites.py` nativo do Spec Kit concluiu com feature 004 reconhecida e documentos research, data-model, contracts, quickstart e tasks disponíveis.
+- Projeções do backlog canônico permaneceram idênticas após regeneração.
+- **Escopo:** testes de documentação e rastreabilidade, sem VM, contêiner ou ataque. Nenhum gate de segurança operacional foi marcado como concluído.
+
+O primeiro ensaio do workflow encontrou um problema **de formatação da tabela STRIDE** (ID TH e descrição na mesma célula) e foi corretamente reprovado. Os IDs foram separados em coluna própria; o run acima verifica a correção. Isso não foi falha de sandbox, pois nenhuma sandbox foi executada.
 
 ## Limitações
 

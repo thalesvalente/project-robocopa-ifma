@@ -21,6 +21,10 @@ ROLES=('referee','walls','spin')
 def command(args,*,data=None,timeout=25,limit=1024**2,check=True):
     result=capture(args,timeout=timeout,max_bytes=limit,input_bytes=data,cwd=ROOT)
     if check and result.returncode:
+        # Only fixed supervisor utility failures: no credentials or stdin content.
+        if args[0]=='sudo':
+            detail=result.output.decode('utf-8',errors='replace')[:400]
+            print('SUPERVISOR_FAILURE '+detail, file=sys.stderr, flush=True)
         raise RuntimeError('COMMAND_FAILED:'+args[0]+':'+str(result.returncode))
     return result
 

@@ -18,3 +18,7 @@
 **Regra de execução:** incluir lacuna no plano ANTES de qualquer patch de código; só marcar checkbox quando houver relatório e testes no SHA correto.
 
 **Evidência ID-010:** plano publicado primeiro no commit `4f4b911` e política offline implementada depois no commit `2dcea3c`. [Relatório S03-ID-010](../../docs/qualidade/evidencias/S03-ID-010.md) confirma **20 casos sintéticos PASS** no CI, além do planejamento e autoria. Os testes não representam login Google real nem autorização escolar; ID-001..009, ID-011/012, S03 e G-PROD permanecem abertos.
+
+## Priorização da apresentação à diretoria — D-012 (2026-10-10)
+
+**ID-011 e ID-012, bem como a conexão OAuth Google real ID-001..009, NÃO fazem parte do caminho crítico da demonstração controlada (Marco A)**. Permanecem **[ ]** e são planejadas para o **Marco B**, piloto com estudantes e expansão para outras escolas, conforme [D-012](../../docs/planejamento/decisoes/D-012-prioridade-demonstracao-diretoria.md). **A D-011 de aceitar Google acadêmico OU Gmail pessoal continua válida para o produto**. O classificador ID-010 testado no CI permanece prova offline, não login. O MARCO A usa identidades sintéticas, acesso estritamente restrito, sem liberação de estudantes.

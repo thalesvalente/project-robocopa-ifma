@@ -193,6 +193,10 @@ class I3ControlPlaneTests(unittest.TestCase):
         self.assertNotIn("student", str(ctx.exception))
         self.assertEqual(self.queue.count(), 0)
 
+    def test_pathlib_posixpath_accepted_on_linux(self):
+        self.assertIsInstance(self.path, Path)
+        self.assertIsInstance(self.queue, SQLiteQueue)
+
     def test_missing_directory_denied(self):
         with self.assertRaisesRegex(QueueError, "^STORE_CONFIG_INVALID$"):
             SQLiteQueue(Path(self.tmp.name) / "absent" / "queue.sqlite3")

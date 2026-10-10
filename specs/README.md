@@ -13,3 +13,5 @@ A feature004 mantém catálogo amplo [T001–T039](004-isolamento-execucao/tasks
 `spec.md` descreve problema/histórias/aceite, `plan.md` decisões/interfaces/testes e `tasks.md` execução. Cada incremento referencia tarefa macro Sxx-Tyy. Requisitos aprovados na S03 serão a fonte de verdade; artefatos no Spec Kit não criam baseline concorrente.
 
 Fluxo: constitution → specify → clarify → plan → checklist → tasks → analyze → implement → converge. Usar os arquivos/scripts versionados e verificar a feature selecionada; não alegar execução nativa dos slash commands nem segurança aprovada por ter documentos.
+
+A reconciliação dos PRs I2 foi [planejada e encerrada no recorte experimental](004-isolamento-execucao/i2-reconciliation-plan.md), com [matriz de decisão](004-isolamento-execucao/i2-reconciliation-decision.md) e [relatório](../docs/qualidade/evidencias/S04-T04-I2-RECONCILIACAO.md). G-PROD e tarefas amplas continuam bloqueados/abertos.

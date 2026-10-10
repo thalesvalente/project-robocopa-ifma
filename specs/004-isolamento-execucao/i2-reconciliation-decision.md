@@ -50,3 +50,15 @@ Atualizar os pontos canônicos existentes e um registro estruturado de achados/c
 Toda correção precisa de teste que falhe sem a proteção e passe com ela, além das regressões do I1/editor/motor/Spec Kit e duas batalhas reais, dois abortos e um timeout real. Resultado final documentará fonte, versão, ambiente, comandos, runs, artifacts e limitações. I3 permanece NÃO INICIADO nesta rodada.
 
 Fontes consultadas para conferir semântica, sem adotar APIs de versões diferentes: https://docs.docker.com/engine/network/ ; https://docs.docker.com/engine/network/drivers/bridge/ ; https://websockets.readthedocs.io/en/15.0.1/reference/sync/server.html ; código upstream fixado citado em `i2-protocol-guard.md`. Bridge interna sozinha não significa inacessibilidade do host/pares; a implementação escolhida conserva ACLs e provas efetivas.
+
+## R03–R10 — Resultado e encerramento de achados (2026-10-10)
+
+| Achado | Correção e prova | Estado do recorte |
+|---|---|---|
+| C01 timeout/cleanup de #18 | Fixture iniciada, deadline externo real de 0,5s, motivo TIMEOUT específico e limpeza owned; negativos impedem aprovação por erro genérico | FECHADO |
+| C02 integridade/vínculo | Perfil `I2_RECONCILED_CI_V1`, hashes de 12 arquivos, fonte `e7afd8a2ac7cb1ab45eeec2146ae828e56f93e0a`, run 38059207968, imagens e cinco IDs únicos; análise reproduzida fora do runner | FECHADO |
+| C03 protocolo/ciclo de vida | Mensagens administrativas/inesperadas negadas antes e depois do handshake, limites cumulativos, validação upstream, drenagem e negativas em testes; partida legítima passou | FECHADO |
+| C04 roster/bots | Nomes e versões oficiais, pares endereço/porta, futures e terminação controlada de bots preservados; duas partidas reais passaram | FECHADO |
+| C05 rastreabilidade/alternativas | #18 e #21 fechados como superados sem merge, #19 canônico; plano, iteração, estado e evidências vinculados; coletor temporário retirado | FECHADO |
+
+**R10:** zero achados I2 pendentes no escopo delimitado. Ver [relatório de reconciliação](../../docs/qualidade/evidencias/S04-T04-I2-RECONCILIACAO.md). A verificação própria fora do runner não constitui auditoria externa independente, nem valida segurança de código de estudantes, VM real, filas, quotas operacionais, recuperação durável ou liberação ao público.

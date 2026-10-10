@@ -77,3 +77,7 @@ Os módulos Python concretos estão em `services/worker_agent/`; `services/worke
 [Contrato](contracts/job-protocol.md) · [Dados](data-model.md) · [Ameaças](../../docs/arquitetura/ameacas-sandbox.md) · [ADR004](../../docs/arquitetura/ADR-004-isolamento-execucao.md).
 
 Em falha, negar execução e registrar incerteza, sem fallback ao Docker pessoal. Limpeza apenas owned; nenhuma orientação de prune global/down-v, migração VHDX, abertura de firewall ou drives compartilhados. Critérios finais: [security-gates.md](checklists/security-gates.md).
+
+## Reconciliação de I2 encerrada no recorte (2026-10-10)
+
+O plano [R01–R10](i2-reconciliation-plan.md) e a [matriz C01–C05](i2-reconciliation-decision.md) antecederam o código corretivo. PR #19 permaneceu como única implementação canônica; PRs #18 e #21 encerrados sem merge e com históricos preservados. [Relatório final](../../docs/qualidade/evidencias/S04-T04-I2-RECONCILIACAO.md): quatro workflows PASS, duas batalhas reais, dois abortos, timeout efetivo com cleanup, 320 regressões reproduzidas, 12 arquivos auditados fora do runner. Zero lacunas I2 abertas no recorte experimental. Isso **não conclui** T001–T039, G-PROD, I3, I4 ou I5; requisitos amplos continuam abertos.

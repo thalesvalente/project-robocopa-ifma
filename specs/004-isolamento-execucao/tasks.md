@@ -106,3 +106,7 @@ Formato: `- [ ] T### [P?] [US#] objetivo, caminho(s), requisitos (FR/SC), ameaç
 ChatGPT Pro prepara, revisa e executa mudanças delimitadas. **Codex apenas para implementação pesada**, por exemplo separação de booter/árbitro, worker, testes intensivos e operações de concorrência, e somente após G0/G1. O handoff deve registrar branch/commit, arquivos permitidos, sandbox estritamente descartável, limites de recursos, testes esperados, riscos e como não afetar Docker Desktop existente.
 
 **Regra irrevogável para este documento:** nenhum item marcado [x] apenas por existir um design, mock ou checklist; status de implementação inicia totalmente pendente.
+
+## Controle da reconciliação do recorte I2
+
+Subtarefas [R01–R10 concluídas](i2-reconciliation-plan.md), com decisão [C01–C05 fechada](i2-reconciliation-decision.md), [evidências técnicas](../../docs/qualidade/evidencias/S04-T04-I2-RECONCILIACAO.md) e [manifesto legível por máquina](../../docs/qualidade/evidencias/S04-T04-I2-RECONCILIACAO.json). O encerramento é **somente experimental**; as 39 caixas amplas permanecem abertas até seus critérios integrais, inclusive I3/I4/I5 e revisão independente. Não liberar submissões de estudantes.

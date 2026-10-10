@@ -50,3 +50,9 @@ Realizar duas batalhas reais com Tank Royale 1.4.0: árbitro/controlador em um c
 6. Não houve implantação da VM doméstica, cliente público, fila durável, identidade de alunos, Java livre, benchmark de capacidade ou prova formal de inexistência de escape.
 
 A ordem permanece planejamento → implementação/testes → evidências. Qualquer nova lacuna exige adendo antes do código. Próxima etapa: detalhar I3 (broker/autorização/fila/ledger) a partir do catálogo amplo, mantendo a camada já comprovada e a regressão.
+
+## Reconciliação #18/#19/#21 e fechamento experimental antes de I3
+
+O [plano R01–R10](i2-reconciliation-plan.md) e a [decisão C01–C05](i2-reconciliation-decision.md) foram publicados antes das correções. PR #19 é a implementação canônica; PRs #18/#21 foram encerrados sem merge, preservando seus commits. Adicionados timeout real/cleanup, vínculos de fonte e eventos e negativos de protocolo/roster/processos. A implementação `e7afd8a2ac7cb1ab45eeec2146ae828e56f93e0a` passou quatro workflows; 320 testes de regressão reproduzidos fora do runner. Duas batalhas de três rounds, dois abortos e um timeout real concluídos; 12 arquivos e sua semântica auditados externamente ao runner. Zero pendências abertas do recorte I2; macro S04-T04 e G-PROD continuam pendentes.
+
+[Relatório final de I2](../../docs/qualidade/evidencias/S04-T04-I2-RECONCILIACAO.md) · [Manifesto](../../docs/qualidade/evidencias/S04-T04-I2-RECONCILIACAO.json). Não alterar os placares dos lotes históricos acima.

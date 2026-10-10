@@ -42,3 +42,7 @@ Interface do participante, autenticação, programação e execução de bots, i
 ## Restrições
 
 Não executar código de participantes nesta configuração. Não executar `down -v` ou `docker system prune` no computador pessoal por instrução automatizada. Não declarar a infraestrutura pronta para alunos com base na resposta de uma sonda HTTP.
+
+## Adendo ao escopo da Feature 001 — direção do MVP híbrido (2026-10-10)
+
+As histórias US1..US3 acima descrevem o **experimento local já executado**, não o alvo definitivo de banco/worker. A decisão [D-006](../../docs/planejamento/decisoes/D-006-hospedagem-hibrida-e-persistencia-remota.md) aprovou **a direção**, sem implantar: PostgreSQL cloud no Supabase para todo estado canônico; Storage cloud para arquivos; Vercel para a PWA; VMs Linux dedicadas no PC somente para computação e staging temporário. As histórias, aceites e tarefas adicionais do MVP estão em [hybrid-mvp.md](hybrid-mvp.md), ainda não concluídas. O Compose PostgreSQL local não será promovido automaticamente para banco de produção nem apagado. A ratificação institucional e os gates de segurança continuam exigidos.

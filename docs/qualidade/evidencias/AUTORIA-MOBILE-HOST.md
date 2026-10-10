@@ -18,12 +18,38 @@
 
 - A captura não foi publicada no repositório público; somente seus dados técnicos não identificáveis foram resumidos.
 - Não foram anexados ou inspecionados os arquivos locais `results.json`, `manifest.json` e `*.battle.gz` dessa execução. Os placares são os **exibidos na UI**, não uma auditoria independente do replay.
-- Não foi demonstrada a execução do **Explorador** no PC nem a alteração de código pelo responsável e nova medição nessa mesma sessão.
+- O **Explorador foi posteriormente demonstrado no PC** em segunda captura, com programa e métricas diferentes; não houve inspeção independente dos arquivos nem teste de edição livre de um terceiro programa.
 - Não houve teste em smartphone físico (toque, teclado virtual, rede, ergonomia).
 - Não houve acesso LAN/remoto, inscrições de estudantes, isolamento aprovado para código não confiável nem aprovação pedagógica da linguagem candidata.
 
 ## Estado e próximos aceites
 
-MOB-008 parcialmente atendida: **interface e treino observados no PC**, pendente teste físico e conferência opcional dos artefatos locais. MOB-009 segue pendente. A tarefa macro S04-T03 permanece em revisão/preparação, sem ratificação de S03/S04.
+## Segunda captura — Explorador
 
-**Próximo teste recomendado:** no próprio PC, carregar `Exemplo: explorador`, executar novamente, observar movimento efetivo e comparar métricas. Em seguida, preparar forma *controlada e autorizada* de acesso a um telefone físico, sem simplesmente publicar a porta do servidor local que tem acesso à CLI Docker.
+Uma nova captura de tela compartilhada pelo responsável mostra o exemplo **Explorador** carregado e o painel após a execução de três rounds no computador hospedeiro:
+
+- Bloco `sempre`: `velocidade 6`, `girar 8`, `canhao 20`.
+- Bloco `ao detectar`: `se energia > 20`, `atirar 2`, alternativa `atirar 1`.
+- Painel do motor: **Walls em primeiro com 188 pontos; Aprendiz em segundo com 188 pontos**.
+- Indicadores do Aprendiz: **velocidade média absoluta 5,47** e **94,3% dos turnos observados em movimento**.
+- Replay apresentado no **round 3, turno 748, amostra 289/289**.
+- Interface informa conclusão da batalha e exibe identificador de versão do programa.
+
+### Comparação de comportamento local
+
+| Exemplo | Aprendiz | Walls | Velocidade média absoluta do Aprendiz | Turnos em movimento |
+|---|---:|---:|---:|---:|
+| Sentinela | 536 | 226 | 0,00 | 0,0% |
+| Explorador | 188 | 188 | 5,47 | 94,3% |
+
+As duas capturas são resultados de **execuções separadas**, sujeitos a condições dinâmicas do motor. O contraste de movimento é coerente com os códigos exibidos. Os placares não permitem concluir superioridade estatística de qualquer estratégia.
+
+**Ponto aberto de regra/classificação:** na segunda captura há empate no total de pontos exibidos (188 × 188), mas a interface mostra posições 1º e 2º. É necessário verificar a política efetiva de ranking/desempate do motor e definir regras explícitas da competição na S03-T03. Não presumir erro nem desempate correto sem examinar resultado estruturado e implementação.
+
+## Estado e próximos aceites
+
+MOB-008 parcialmente atendida: **ambos os exemplos, os dois treinamentos e o replay foram observados no PC por capturas**. Permanecem pendentes teste em smartphone físico, inspeção independente de `results.json`/`manifest.json`/`*.battle.gz` das execuções locais e avaliação pedagógica da autoria. MOB-009 segue pendente. A tarefa macro S04-T03 permanece em revisão/preparação, sem ratificação de S03/S04.
+
+As imagens compartilhadas **não foram incluídas no repositório público**; somente os resultados técnicos necessários foram descritos.
+
+**Próximos testes recomendados:** conferir o comportamento ao modificar uma condição por conta própria, reproduzir em telefone físico através de acesso controlado sem expor o servidor de laboratório (ele tem acesso à CLI Docker) e esclarecer a ordenação do empate no sistema de classificação.

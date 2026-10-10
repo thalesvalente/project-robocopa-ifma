@@ -8,6 +8,10 @@ import java.util.concurrent.*;
 /** Only bounded synthetic checks against this invocation's own endpoints. */
 public final class Probe {
     static boolean connect(String host,int port){try(Socket s=new Socket()){s.connect(new InetSocketAddress(host,port),700);return true;}catch(IOException e){return false;}}
+    static Map<String,String> officialEnvironment(String url,String frontSecret) {
+        // The official 1.4.0 API expects SERVER_*, not our harness BOT_* names.
+        return Map.of("SERVER_URL",url,"SERVER_SECRET",frontSecret);
+    }
     static JsonObject botHello(JsonObject server){JsonObject h=Wire.obj("BotHandshake");h.add("sessionId",server.get("sessionId"));
         h.addProperty("name",Wire.env("BOT_NAME"));h.addProperty("version","1.0");h.addProperty("secret",Wire.env("BOT_SECRET"));
         JsonArray a=new JsonArray();a.add("fixture");h.add("authors",a);return h;}
@@ -59,9 +63,12 @@ public final class Probe {
         canary.close();t.join(1000);String name=Wire.env("BOT_NAME");
         String cls=name.equals("Walls")?"Walls":name.equals("Spin Bot")?"SpinBot":null;
         if(cls==null)throw new IOException("FIXED_BOT_REQUIRED");
-        Process p=new ProcessBuilder("java","-Xmx128m","-cp","/opt/i2/api.jar:/opt/i2/bots/"+cls,cls)
-            .directory(new File("/opt/i2/bots/"+cls)).inheritIO().start();
-        Runtime.getRuntime().addShutdownHook(new Thread(p::destroyForcibly));p.waitFor();
+        ProcessBuilder builder=new ProcessBuilder("java","-Xmx128m","-cp","/opt/i2/api.jar:/opt/i2/bots/"+cls,cls)
+            .directory(new File("/opt/i2/bots/"+cls)).inheritIO();
+        builder.environment().putAll(officialEnvironment(Wire.env("BOT_SERVER_URL"),Wire.env("BOT_SECRET")));
+        builder.environment().remove("BOT_SERVER_URL");builder.environment().remove("BOT_SECRET");
+        Process p=builder.start();Runtime.getRuntime().addShutdownHook(new Thread(p::destroyForcibly));
+        if(p.waitFor()!=0)throw new IOException("BOT_PROCESS_EXIT");
     }
     public static void main(String[] args)throws Exception{
         switch(args[0]){

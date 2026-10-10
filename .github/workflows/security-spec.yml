@@ -1,0 +1,50 @@
+name: Spec Kit - planejamento isolamento S04-T04
+
+on:
+  push:
+    branches:
+      - docs/s04-t04-isolamento-speckit
+  pull_request:
+    paths:
+      - 'specs/004-isolamento-execucao/**'
+      - 'docs/arquitetura/ameacas-sandbox.md'
+      - 'docs/arquitetura/ADR-004-isolamento-execucao.md'
+      - 'docs/planejamento/decisoes/D-003-preparacao-isolamento.md'
+      - 'scripts/verify_security_spec.py'
+      - 'tests/planning/test_security_spec.py'
+      - '.github/workflows/security-spec.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  consistencia-documental:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - name: Obter branch de revisao sem credenciais persistidas
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: Conferir backlog canonico e geracao de visoes
+        run: |
+          python3 scripts/render_planning.py
+          git diff --exit-code -- docs/planejamento/PLANO-MESTRE.md docs/planejamento/sprints/
+          python3 scripts/verify_planning.py
+      - name: Conferir requisitos, cobertura e riscos ainda bloqueados
+        run: |
+          python3 scripts/verify_security_spec.py
+          python3 scripts/verify_security_spec.py --json
+      - name: Testes de regressao documental
+        run: python3 -m unittest discover -s tests/planning -v
+      - name: Checagem nativa dos pre-requisitos Spec Kit
+        env:
+          SPECIFY_FEATURE_DIRECTORY: specs/004-isolamento-execucao
+          SPECIFY_FEATURE_NO_PERSIST: '1'
+        run: python3 .specify/scripts/python/check_prerequisites.py --json --require-spec --require-tasks --include-tasks
+      - name: Sem mudancas rastreadas
+        run: git diff --exit-code
+
+# Nao inicia Docker, VM, rede externa ou testes adversariais.
+# PASS indica CONSISTENCIA DOCUMENTAL, nao seguranca operacional.

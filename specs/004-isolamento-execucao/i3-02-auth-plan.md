@@ -35,3 +35,9 @@ Todos os testes de mTLS devem usar handshake **real** TLS1.3 no runner, sem mock
 - OWASP, Microservices Security: https://cheatsheetseries.owasp.org/cheatsheets/Microservices_Security_Cheat_Sheet.html
 - OWASP ASVS 5.0 comunicação interna: https://github.com/OWASP/ASVS/blob/master/5.0/en/0x21-V12-Secure-Communication.md
 - RFC 8705 (padrão de mTLS em outro contexto, não protocolo implementado aqui): https://www.rfc-editor.org/rfc/rfc8705
+
+## Adendo H01 — provas negativas de TLS/certificados (planejado antes do patch)
+
+Após a primeira execução `38066685575` (29 testes PASS), a revisão encontrou **lacuna de cobertura**, não um bypass comprovado: a restrição TLS1.3 era verificada por propriedades do contexto, sem um handshake negativo real usando TLS1.2. O teste de CA incorreta configurava também o cliente para confiar na CA errada e, portanto, podia reprovar por desconfiança do servidor, sem demonstrar a rejeição do certificado do cliente no lado broker.
+
+Antes do patch de testes: **(1)** abrir socket real com cliente TLS1.2 e confirmar falha de negociação/recusa no broker; **(2)** fazer o cliente confiar na CA correta enquanto apresenta certificado de outra CA, comprovando rejeição pelo broker; **(3)** testar separadamente servidor assinado por CA não confiável; **(4)** negar chaves privadas de teste permissivas (0644) e symlink para a chave. Não mudar a política TLS, o runtime de jobs nem considerar nova prova aprovada sem CI. Acrescentar regressão dos cinco casos, mantendo o código de emissão de certificados exclusivamente na fixture CI.

@@ -77,6 +77,12 @@ def intent(raw: str) -> dict:
         return data
     if data['type'] != 'BotIntent':
         raise ProtocolDenied('BOT_MESSAGE_ONLY')
+    # The SDK serializes an empty team list on every intent. It has no action.
+    # Actual team messaging remains rejected rather than expanding the scope.
+    if 'teamMessages' in data:
+        if type(data['teamMessages']) is not list or data['teamMessages']:
+            raise ProtocolDenied('TEAM_MESSAGES_DENIED')
+        data.pop('teamMessages')
     if set(data) - (NUMBERS | BOOLEANS | COLORS | TEXT | {'type'}):
         raise ProtocolDenied('INTENT_FIELD_DENIED')
     for key,value in data.items():

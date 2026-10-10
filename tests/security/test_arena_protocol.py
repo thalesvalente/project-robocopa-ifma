@@ -61,3 +61,9 @@ class ArenaProtocolTests(unittest.TestCase):
         for value in (True,1,'false',None):
             with self.subTest(value=value),self.assertRaises(p.ProtocolDenied):
                 p.handshake(hs(isDroid=value),session='session',identities=IDENTITIES,upstream_secret='engine')
+    def test_empty_sdk_team_array_normalized(self):
+        self.assertEqual(p.intent('{"type":"BotIntent","teamMessages":[],"targetSpeed":6}'),{'type':'BotIntent','targetSpeed':6})
+    def test_actual_team_messages_still_denied(self):
+        for value in (None,{},'', [{'message':'anything'}]):
+            with self.subTest(value=value),self.assertRaises(p.ProtocolDenied):
+                p.intent(json.dumps({'type':'BotIntent','teamMessages':value}))

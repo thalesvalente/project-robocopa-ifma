@@ -1,0 +1,35 @@
+name: I2 - árbitro e bots separados
+on:
+  pull_request:
+    paths:
+      - 'specs/004-isolamento-execucao/iteration-2.md'
+      - 'spikes/isolamento/engine-separation/**'
+      - 'scripts/run_engine_separation.py'
+      - 'tests/security/test_game_separation.py'
+      - '.github/workflows/engine-separation.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  inspect-upstream:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Exportar fontes upstream fixadas, sem executá-las
+        run: |
+          mkdir -p "$RUNNER_TEMP/upstream" "$RUNNER_TEMP/review"
+          git -C "$RUNNER_TEMP/upstream" init
+          git -C "$RUNNER_TEMP/upstream" remote add origin https://github.com/robocode-dev/tank-royale.git
+          git -C "$RUNNER_TEMP/upstream" fetch --depth 1 origin c8ad3a8d19a843f6258d6f6f9db7f29229963903
+          test "$(git -C "$RUNNER_TEMP/upstream" rev-parse FETCH_HEAD)" = "c8ad3a8d19a843f6258d6f6f9db7f29229963903"
+          git -C "$RUNNER_TEMP/upstream" archive --format=tar.gz FETCH_HEAD -o "$RUNNER_TEMP/review/upstream-source.tar.gz"
+          printf '%s\n' c8ad3a8d19a843f6258d6f6f9db7f29229963903 > "$RUNNER_TEMP/review/upstream-commit.txt"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: i2-upstream-review
+          path: ${{ runner.temp }}/review/
+          if-no-files-found: error
+          retention-days: 7

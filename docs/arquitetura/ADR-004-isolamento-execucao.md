@@ -1,6 +1,6 @@
 # ADR-004 — Fronteira de execução não confiável (candidata)
 
-**Status:** PROPOSTA — aguarda ratificação humana, baseline de requisitos e spikes de isolamento.  
+**Status:** direção de VM dedicada aprovada pelo responsável (D-005). Instalação, rede, árbitro e homologação permanecem pendentes; I1 testa controles em CI, não Hyper-V do host.  
 **Vinculação:** S04-T04; ameaça prioritária TH-01/TH-02/TH-05/TH-15; feature 004 do Spec Kit.
 
 ## Problema
@@ -54,7 +54,7 @@ flowchart LR
 - Modelo de credenciais/identidade da interface worker/broker; necessidade de persistência e attestation.
 - Quotas, timeout, tratamento de crash e verificação de cleanup calibrados.
 - Local do disco virtual Docker Desktop, backup independente, disponibilidade e conservação de evidências.
-- Ratificação da RoboDSL T1 e da rejeição de linguagens T2 no MVP.
+- D1 resolvida: RoboDSL básica no MVP, linguagens gerais pós-MVP. Detalhamento funcional/pedagógico e liberação de alunos ainda pendentes.
 - Em caso de empate (issue #15), regra de ranking externa ao motor deve ser definida na S03-T03.
 
 ## Efeitos e alternativa de segurança imediata

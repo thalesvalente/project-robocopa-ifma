@@ -40,3 +40,7 @@ Qualquer `claim`, `start`, `complete`, `cancel`, `list`, `owner_ref`, `job_id`, 
 ## Aceites e limites
 
 A verificação deve ocorrer com `ssl` real + certificados efêmeros + testes de integração; simulação de certificados/dicionários não será contada como autenticação. O laboratório não implementa PKI real, revogação persistente, reconexão operacional, seleção de workers, autorização de usuário final, ledger ou política de produção. A decisão sobre autenticação está resolvida somente como **opção experimental**, Q-07 continua aberta para operação real.
+
+## Evidência posterior à especificação (2026-10-10)
+
+O protocolo de `probe` foi implementado em `services/execution_control/worker_channel.py` e testado em TLS real, OpenSSL 3.0.13 no CI. Fonte `7819c90`, 33 negativos/positivos PASS; código não possui `claim` nem endpoint externo. A revisão H01 adicionou handshake TLS1.2 realmente recusado, cadeia em ambos sentidos e testes de proteção de chave. [Relatório](../../../docs/qualidade/evidencias/S04-T04-I3-02.md). **Este contrato continua restrito ao laboratório; não contém PKI operacional ou worker remoto apto.**

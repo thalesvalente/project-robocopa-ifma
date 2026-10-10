@@ -69,3 +69,7 @@ PR [#23](https://github.com/thalesvalente/project-robocopa-ifma/pull/23) em bran
 ## I3-02 — planejamento específico antes da implementação (2026-10-10)
 
 Em branch empilhada `feat/s04-i3-02-mtls-identity` sobre PR #23: [plano](../../specs/004-isolamento-execucao/i3-02-auth-plan.md), [contrato](../../specs/004-isolamento-execucao/contracts/worker-channel.md) e decisões experimentais publicados ANTES do código. A hipótese de canal é mTLS TLS1.3 worker→broker com certificados sintéticos de CI, sem transitar job ou liberar worker real. Q-07 continua aberta para produção e a tarefa macro S04-T04 EM_EXECUCAO; G-PROD BLOQUEADO. A prova I3-02 ainda não foi executada nesta linha de planejamento.
+
+## I3-02 — evidência de autenticação experimental (2026-10-10)
+
+A branch empilhada `feat/s04-i3-02-mtls-identity` (PR #24, base PR #23) implementou **apenas o probe mTLS TLS1.3 e autorização de certificado/escopo**, com CA sintética e listener loopback do runner GitHub-hosted. 33 testes reais e 6 workflows PASS no commit `7819c901`; 379 testes reproduzidos fora do CI; I2 real voltou a completar duas batalhas, abortos e timeout/cleanup sem regressão. [Relatório I3-02](../qualidade/evidencias/S04-T04-I3-02.md). I3-02a..f fechados no G-EXP; I3-03..07 e PKI/identidade de produção continuam abertos. Nenhuma conexão de worker real, dados/alunos, credenciais de produção, VM pessoal, alteração no host ou merge na main. Q-07 continua ABERTA para G-PROD; S04-T04 EM_EXECUCAO; G-PROD BLOQUEADO.

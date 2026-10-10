@@ -17,3 +17,5 @@ Fluxo: constitution → specify → clarify → plan → checklist → tasks →
 A reconciliação dos PRs I2 foi [planejada e encerrada no recorte experimental](004-isolamento-execucao/i2-reconciliation-plan.md), com [matriz de decisão](004-isolamento-execucao/i2-reconciliation-decision.md) e [relatório](../docs/qualidade/evidencias/S04-T04-I2-RECONCILIACAO.md). G-PROD e tarefas amplas continuam bloqueados/abertos.
 
 **I3:** [plano de implementação por subincrementos](004-isolamento-execucao/iteration-3.md) e [decisões de segurança/pendências](004-isolamento-execucao/i3-design-decisions.md), elaborados após I1/I2, com código de broker/fila apenas experimental. I3 completo e G-PROD seguem pendentes.
+
+**I3-02:** [plano autenticacão TLS de laboratório](004-isolamento-execucao/i3-02-auth-plan.md), [contrato worker↔broker](004-isolamento-execucao/contracts/worker-channel.md), [evidências](../docs/qualidade/evidencias/S04-T04-I3-02.md). Gate completo I3/produção não foi aprovado.

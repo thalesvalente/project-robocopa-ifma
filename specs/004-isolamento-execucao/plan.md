@@ -93,3 +93,7 @@ O [plano I3](iteration-3.md) decompõe a execução em I3-01..I3-07, com [decis�
 ## Plano específico I3-02 — identity channel (2026-10-10)
 
 [Plano detalhado I3-02](i3-02-auth-plan.md) registrado antes de código e [contrato do canal](contracts/worker-channel.md). Para ensaio restrito, mTLS TLS1.3 bidirecional e autorização de URI SAN/leaf SHA-256, escopo e operação `probe` (sem claim, fila/score, API pública ou VM). Worker inicia conexão; fixture CI vincula `127.0.0.1:0`. Q-07 segue aberta na implantação real. Nenhum aceite de G-PROD, S00-T06 ou S04-T04 integral é antecipado.
+
+## I3-02 — canal mTLS de identidade, sem jobs (2026-10-10)
+
+[Plano](i3-02-auth-plan.md) e [contrato](contracts/worker-channel.md) publicados antes do runtime. `worker_channel.py` usa TLSv1.3 obrigatório, CA restrita, hostname + SAN/pin de broker no cliente e SAN/pin + scope/op do worker no broker. A única operação `probe` não alcança a fila/VM/árbitro. Registros de autorização em memória permitem rotação e revogação na próxima conexão, mas **não** demonstram recuperação ou revogação durável. 33 casos reais PASS; 6 workflows do commit `7819c90` PASS; 379 testes reproduzidos sobre fonte exportada. [Evidências](../../docs/qualidade/evidencias/S04-T04-I3-02.md). Próximo I3-03 depende de planejamento próprio de leases/fencing, e Q-07 de produção ainda exige PKI, identidade do operador, secrets e rede alvo.

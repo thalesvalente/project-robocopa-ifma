@@ -120,3 +120,5 @@ Subtarefas [R01–R10 concluídas](i2-reconciliation-plan.md), com decisão [C01
 ## Decomposição I3-02 (não altera as 39 caixas amplas)
 
 O [plano I3-02a..f](i3-02-auth-plan.md) cobre T008/T010/T011/T012/T015/T016/T027/T037 em contexto estritamente G-EXP, com provas mTLS e autorização por certificado/escopo. As caixas T001..T039 seguem abertas: não existe worker remoto apto a receber job, PKI operacional ou homologação de produção.
+
+**Controle experimental I3-02 (2026-10-10):** [I3-02a..f concluídas no escopo G-EXP](i3-02-auth-plan.md), 33 testes TLS reais e regressões I1/I2/autoria/Spec Kit PASS; [evidência](../../docs/qualidade/evidencias/S04-T04-I3-02.md). A conclusão NÃO marca quaisquer T001–T039 amplas como [x]. A autenticação e revogação em produção, jobs reais e I3-03..07 permanecem pendentes.

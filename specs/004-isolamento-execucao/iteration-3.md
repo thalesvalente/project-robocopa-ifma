@@ -28,7 +28,7 @@ O catálogo macro define objetivos de broker, credenciais, fila, idempotência e
 
 ## Entregas seguintes — não implementar sem planejar o contrato detalhado
 
-- [ ] **I3-02** [US1/US2] Escolher e provar identidade confiável de broker/worker, rotação/revogação, canal autenticado e autorização por função/objeto, sem inventar criptografia ou aceitar `owner_ref` sem autenticação. Q-07 deve ser resolvida **antes** de qualquer claim remoto. T010/T011/T014/T015/T016.
+- [x] **I3-02** [US1/US2] Escolher e provar identidade confiável de broker/worker, rotação/revogação, canal autenticado e autorização por função/objeto, sem inventar criptografia ou aceitar `owner_ref` sem autenticação. Q-07 deve ser resolvida **antes** de qualquer claim remoto. T010/T011/T014/T015/T016.
 - [ ] **I3-03** [US3] Implementar claim/lease curto por worker autorizado, fencing token monotônico, worker heartbeat, deduplicação por tentativa, estados atômicos, cancelamento e expiração. T011/T023–T025/T027.
 - [ ] **I3-04** [US4] Validar resposta do árbitro, ligar identidade/programa/política à tentativa vigente e lançar evento de resultado e efeito de pontuação **exatamente uma vez** no ledger transacional. Não consumir stdout do bot como placar. T028–T032.
 - [ ] **I3-05** [US3] Quotas por dono e global, concorrência, rate-limit e overflow; medição e limites progressivos do motor, sem tratar quota experimental como produção. T023/T027.
@@ -69,3 +69,7 @@ Após resolver F01, a revisão manual detectou um **risco de quota global**: dua
 ## Preparação I3-02 antes de implementar
 
 O [plano de execução detalhado I3-02](i3-02-auth-plan.md) e o [contrato experimental de canal](contracts/worker-channel.md) estabelecem mTLS TLS1.3 com certificado bilateral, URI SAN + fingerprint, escopo autorizado, revogação/rotação em memória, e apenas `probe` sem job. Q-07 resolvida **apenas para prova G-EXP**, não há PKI/VM/credencial ou autorização de worker de produção. O I3-02 continua [ ] até testes e evidências reais.
+
+## Resultado experimental do I3-02 (2026-10-10)
+
+O [plano detalhado I3-02a..f](i3-02-auth-plan.md), contrato e Q-07 experimental precederam o código. **33 testes de TLS1.3 mútuo/negativos e rotação/revogação no CI PASS**, além de 379 testes locais sobre fonte exportada e seis workflows no commit `7819c90`, inclusive regressão de batalha/cleanup I2. A ligação segura a um **worker operacional real NÃO existe**: o canal `probe` só responde `job_claim_enabled=false`. A marca [x] acima encerra **apenas a prova G-EXP I3-02**, não resolve PKI, revogação durável, API de produção, lease ou os demais I3-03..I3-07. [Evidências](../../docs/qualidade/evidencias/S04-T04-I3-02.md).

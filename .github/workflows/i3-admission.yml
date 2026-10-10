@@ -25,8 +25,6 @@ jobs:
     env:
       RC_PG_CONTAINER: robocopa-i3pg-${{ github.run_id }}-${{ github.run_attempt }}
       RC_PG_VOLUME: robocopa-i3pg-data-${{ github.run_id }}-${{ github.run_attempt }}
-      RC_ADMISSION_ROOT: ${{ runner.temp }}/robocopa-admission-${{ github.run_id }}-${{ github.run_attempt }}
-      RC_PG_SOCKET: ${{ runner.temp }}/robocopa-admission-${{ github.run_id }}-${{ github.run_attempt }}/socket
       RC_SOURCE_COMMIT: ${{ github.event.pull_request.head.sha || github.sha }}
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
@@ -39,6 +37,8 @@ jobs:
           test "$GITHUB_ACTIONS" = true
           test "$RUNNER_ENVIRONMENT" = github-hosted
           test "$(uname -s)" = Linux
+          echo "RC_ADMISSION_ROOT=$RUNNER_TEMP/robocopa-admission-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" >> "$GITHUB_ENV"
+          echo "RC_PG_SOCKET=$RUNNER_TEMP/robocopa-admission-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT/socket" >> "$GITHUB_ENV"
           docker info >/dev/null
           sudo apt-get update -qq
           sudo apt-get install -y -qq libpq5
@@ -88,6 +88,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          RC_ADMISSION_ROOT="$RUNNER_TEMP/robocopa-admission-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
           FOUND="$(docker ps -a --filter "name=^/${RC_PG_CONTAINER}$" --format '{{.Names}}')"
           if [ -n "$FOUND" ]; then
             test "$(docker inspect -f '{{index .Config.Labels "org.robocopa.i3pg.run"}}' "$RC_PG_CONTAINER")" = "$GITHUB_RUN_ID"

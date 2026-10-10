@@ -210,8 +210,8 @@ class AdmissionUnitTests(unittest.TestCase):
         connect.assert_called_once_with()
 
     def test_compilation_does_not_launch_a_bot_or_network(self):
-        with patch('subprocess.Popen',side_effect=AssertionError('no process')),
-             patch('socket.create_connection',side_effect=AssertionError('no network')):
+        with (patch('subprocess.Popen',side_effect=AssertionError('no process')),
+              patch('socket.create_connection',side_effect=AssertionError('no network'))):
             self.assertEqual(self.submit().state,'QUEUED')
 
     def test_snapshot_contract_rejects_invalid_types(self):

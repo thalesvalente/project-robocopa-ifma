@@ -30,7 +30,7 @@ class SQLiteQueue:
     """Transactional, bounded lab enqueue; no consumer or score writer."""
 
     def __init__(self, path: Path, *, capacity: int = 8) -> None:
-        if (type(path) is not Path or not path.is_absolute()
+        if (not isinstance(path, Path) or not path.is_absolute()
                 or path.is_symlink() or not path.parent.is_dir()
                 or path.parent.is_symlink()
                 or type(capacity) is not int or not 1 <= capacity <= 256):

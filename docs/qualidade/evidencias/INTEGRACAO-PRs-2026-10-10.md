@@ -35,3 +35,17 @@ As dez PRs registradas no GitHub estão `closed`. #18, #20 e #21 foram fechadas 
 - `G-PROD` BLOQUEADO; sem endpoint público, estudantes, credenciais reais, instalação de VM, mudanças em Docker Desktop/WSL/.env/Compose/Postgres/firewall/VHDX/roteador ou serviços pessoais.
 
 Registro de processo: [plano de integração](../../docs/planejamento/INTEGRACAO-PRs-2026-10-10.md).
+
+## Validação suplementar do PR de registro (2026-10-10)
+
+O PR [#22](https://github.com/thalesvalente/project-robocopa-ifma/pull/22) executou novamente sobre a base consolidada, no head `989bf6abcbf1f82e6ceaf082ca5d60c025ca7765`, os cinco workflows abaixo. **Todos terminaram `completed/success`:**
+
+| Workflow | Run | Estado |
+|---|---|---|
+| Planejamento canônico | [38061014782](https://github.com/thalesvalente/project-robocopa-ifma/actions/runs/38061014782) | PASS |
+| Spec Kit de isolamento | [38061014777](https://github.com/thalesvalente/project-robocopa-ifma/actions/runs/38061014777) | PASS |
+| I1 — contratos e sondas | [38061014766](https://github.com/thalesvalente/project-robocopa-ifma/actions/runs/38061014766) | PASS |
+| Autoria móvel/editor/motor | [38061014795](https://github.com/thalesvalente/project-robocopa-ifma/actions/runs/38061014795) | PASS |
+| I2 — arena real/cleanup | [38061014844](https://github.com/thalesvalente/project-robocopa-ifma/actions/runs/38061014844) | PASS |
+
+As verificações do I2 incluíram execução real no GitHub runner descartável, duas batalhas oficiais, dois abortos e um timeout com limpeza. O auditor de evidências executou no CI exigindo a fonte e o run; não alegamos uma segunda auditoria independente fora do runner para esse lote suplementar. Os lotes I2 anteriores já tinham sido conferidos fora do CI. Esta atualização contém somente documentação; CI deve ser novamente conferido caso o head mude.

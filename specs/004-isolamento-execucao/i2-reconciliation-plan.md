@@ -51,3 +51,5 @@ Este documento deve estar em commit remoto anterior às correções. R01→R02�
 ## Incorporação à main após gate I2 — 2026-10-10
 
 O PR #19 foi integrado via merge commit `dfd9148d104bb016b5ee4082ef59849afc3109e9`, com árvore idêntica à fonte revisada `518a6709dd9b411beb64a23bd21b32f3c0d4d46b`. Revisão de integração: [plano](../../docs/planejamento/INTEGRACAO-PRs-2026-10-10.md), [relatório](../../docs/qualidade/evidencias/INTEGRACAO-PRs-2026-10-10.md). Sem alteração dos resultados históricos, sem homologação da VM, produção ou aluno. A validação adicional do PR documental será avaliada antes do encerramento dessa integração.
+
+**Regressão suplementar após os sete merges:** cinco workflows PASS no PR #22, commit documental `989bf6ab` (I2 [38061014844](https://github.com/thalesvalente/project-robocopa-ifma/actions/runs/38061014844), I1 [38061014766](https://github.com/thalesvalente/project-robocopa-ifma/actions/runs/38061014766), autoria [38061014795](https://github.com/thalesvalente/project-robocopa-ifma/actions/runs/38061014795), Spec Kit e planejamento). O aceite experimental não se transforma em aceite de produção por efeito dessa regressão.

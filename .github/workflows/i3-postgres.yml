@@ -39,13 +39,18 @@ jobs:
             --network none --memory 512m --cpus 1 --pids-limit 128 \
             --mount "type=volume,source=$RC_PG_VOLUME,target=/var/lib/postgresql/data" \
             -e POSTGRES_DB=robocopa_i3_ci -e "POSTGRES_PASSWORD=$PASSWORD" \
-            postgres:17-alpine postgres -c shared_buffers=32MB -c max_connections=20
+            postgres:17-alpine@sha256:b0f9560a2de083e2cc7382e75f808c7381a32852a7ec49117deedb300e552b24 \
+            postgres -c shared_buffers=32MB -c max_connections=20
           unset PASSWORD
+          # The image's temporary initialization server has no TCP listener.
+          # This probe is INSIDE the network-none container, not a host port.
           for i in $(seq 1 60); do
-            if docker exec "$RC_PG_CONTAINER" pg_isready -U postgres -d robocopa_i3_ci; then break; fi
+            if docker exec "$RC_PG_CONTAINER" pg_isready -h 127.0.0.1 -U postgres -d robocopa_i3_ci; then break; fi
             sleep 1
           done
-          docker exec "$RC_PG_CONTAINER" pg_isready -U postgres -d robocopa_i3_ci
+          docker exec "$RC_PG_CONTAINER" pg_isready -h 127.0.0.1 -U postgres -d robocopa_i3_ci
+          # Readiness alone does not prove the database/user exists. Test real SQL.
+          test "$(docker exec --user postgres "$RC_PG_CONTAINER" psql -XqAt -v ON_ERROR_STOP=1 -U postgres -d robocopa_i3_ci -c 'SELECT 1')" = 1
       - name: Transacoes, races, acesso negado, leases e restart reais
         run: python3 tests/postgres/test_control.py
       - name: Regressao de planejamento e Spec Kit nativo

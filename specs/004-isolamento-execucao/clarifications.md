@@ -30,3 +30,5 @@
 **G-EXP** permite engenharia para produzir evidência; **G-PROD** exige a arquitetura alvo validada antes de alunos. I2 não homologa S00/S03 nem o laboratório público. [D-005](../../docs/planejamento/decisoes/D-005-vm-e-experimentos-controlados.md).
 
 **Complemento Q-07 (2026-10-10):** o [plano I3](iteration-3.md) e [decisões G-EXP](i3-design-decisions.md) autorizam SOMENTE implementação offline de fila de laboratório com gate desligado. Isso não resolve a decisão sobre identidade mútua, credenciais de serviço e transporte do broker↔worker. I3-02 deve resolver e testar Q-07 ANTES da primeira entrega de jobs remota; nenhuma autenticação de estudantes é presumida.
+
+**Adendo Q-07 / I3-02 (2026-10-10, planejamento ANTES de código):** selecionado para G-EXP um canal de prova mTLS TLS1.3 worker→broker, com CA sintética efêmera, URI SAN + pin de folha, autorização de objeto/escopo e operação `probe` (sem job). A decisão resolve o **protocolo de laboratório**, não autenticação real de serviço, gestão de PKI/revogação persistente ou acesso de aluno. Q-07 conserva classificação **ABERTO para G-PROD** até I3-03/I3-07/I4/I5. Ver [plano I3-02](i3-02-auth-plan.md).

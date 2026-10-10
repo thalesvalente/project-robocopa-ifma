@@ -116,3 +116,7 @@ Subtarefas [R01–R10 concluídas](i2-reconciliation-plan.md), com decisão [C01
 [Plano I3 por entregas](iteration-3.md) e [decisões](i3-design-decisions.md) são a decomposição autorizada experimental para subconjuntos de T008–T016/T023–T025/T027–T030/T033–T035/T037. O check de cada I3-01a..I3-01e só muda com evidência; **as caixas T001–T039 acima seguem abertas** até o aceite macro. I3-01 não implementa API, worker ou autenticação, nem satisfaz o gate G2 em produção. Os próximos I3-02..I3-07 dependem de decisões/testes próprios antes de execução de código de estudantes.
 
 **Estado do recorte I3-01 (2026-10-10):** [I3-01a..e concluídos experimentalmente](iteration-3.md), [relatório CI/negativos](../../docs/qualidade/evidencias/S04-T04-I3-01.md). Permanecem **todas as 39 T001–T039 amplas como abertas**: o protótipo offline NÃO entrega broker de produção, autenticação worker, fila Postgres, ledger, VM nem liberação. I3-02..I3-07 [ ] exigem desenho e implementação próprios.
+
+## Decomposição I3-02 (não altera as 39 caixas amplas)
+
+O [plano I3-02a..f](i3-02-auth-plan.md) cobre T008/T010/T011/T012/T015/T016/T027/T037 em contexto estritamente G-EXP, com provas mTLS e autorização por certificado/escopo. As caixas T001..T039 seguem abertas: não existe worker remoto apto a receber job, PKI operacional ou homologação de produção.

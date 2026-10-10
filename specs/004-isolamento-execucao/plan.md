@@ -89,3 +89,7 @@ O [plano I3](iteration-3.md) decompõe a execução em I3-01..I3-07, com [decis�
 ## I3-01 implementado e testado no recorte G-EXP (2026-10-10)
 
 `services/execution_control/{broker.py,store.py}` implementa broker interno e armazenamento SQLite em arquivo de laboratório, sem endpoint, sem worker, sem Docker, sem código de estudante. Gate padrão OFF, `owner_ref` confiável apenas em fixture, versão T1 aprovada por I1, transações `BEGIN IMMEDIATE`, unicidade/idempotência, schema 2/capacidade persistida. F01/F02 corrigidos após registro no [plano I3](iteration-3.md). CI `4d89fc5` com seis workflows PASS e 346 testes de regressão reexecutados offline, sendo 26 I3-01. [Relatório](../../docs/qualidade/evidencias/S04-T04-I3-01.md). I3-02 autenticação real, I3-03 leases, I3-04 ledger, I3-05 quotas operacionais, I3-06 recuperação e I3-07 integração seguem pendentes; G-PROD BLOQUEADO.
+
+## Plano específico I3-02 — identity channel (2026-10-10)
+
+[Plano detalhado I3-02](i3-02-auth-plan.md) registrado antes de código e [contrato do canal](contracts/worker-channel.md). Para ensaio restrito, mTLS TLS1.3 bidirecional e autorização de URI SAN/leaf SHA-256, escopo e operação `probe` (sem claim, fila/score, API pública ou VM). Worker inicia conexão; fixture CI vincula `127.0.0.1:0`. Q-07 segue aberta na implantação real. Nenhum aceite de G-PROD, S00-T06 ou S04-T04 integral é antecipado.

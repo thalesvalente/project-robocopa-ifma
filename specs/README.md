@@ -4,12 +4,12 @@
 |---|---|---|
 | [000-governanca](000-governanca/spec.md) | Fundação, rastreabilidade e bootstrap | Base técnica entregue; ratificação pendente |
 | [001-hosting-local](001-hosting-local/spec.md) | PostgreSQL e sonda local | CI e primeira execução no host confirmados; não é MVP |
-| [002-tank-royale](002-tank-royale/spec.md) | Batalha real de referência | CI aprovado; reprodução no Windows informada pelo responsável |
-| [003-autoria-mobile](003-autoria-mobile/spec.md) | RoboDSL e editor com treino real | CI e observações no PC; celular físico e ratificação pendentes |
-| [004-isolamento-execucao](004-isolamento-execucao/spec.md) | Ameaças, arquitetura candidata, gates e plano de implementação | **Documentação em revisão; nenhum teste adversarial ou aprovação de sandbox** |
+| [002-tank-royale](002-tank-royale/spec.md) | Batalha de referência | CI aprovado; reprodução Windows informada pelo responsável |
+| [003-autoria-mobile](003-autoria-mobile/spec.md) | RoboDSL e editor com treino real | CI/PC demonstrados; telefone físico e ratificação pendentes |
+| [004-isolamento-execucao](004-isolamento-execucao/spec.md) | Segurança, contratos e provas de isolamento | I1 e I2 técnicos comprovados no CI; VM real, broker, revisão e produção pendentes |
 
-`000-governanca/` contém a primeira especificação de execução: fundação do repositório, rastreabilidade, bootstrap e limites operacionais. Não confundir essas features preparatórias com as funcionalidades finais do produto.
+A feature004 mantém catálogo amplo [T001–T039](004-isolamento-execucao/tasks.md) e incrementos vinculados: [I1](004-isolamento-execucao/iteration-1.md), [I2](004-isolamento-execucao/iteration-2.md), [adendo de protocolo](004-isolamento-execucao/i2-protocol-guard.md) e [plano da revisão](004-isolamento-execucao/i2-audit-plan.md). Detalhar novas necessidades antes do código; só marcar concluído o recorte realmente evidenciado.
 
-Para cada feature: `spec.md` descreve problema, histórias e aceite; `plan.md` descreve decisões, interfaces e testes; `tasks.md` detalha execução. Cada tarefa técnica referencia uma tarefa macro Sxx-Tyy. Requisitos aprovados na S03 serão a fonte de verdade; projeções no Spec Kit não criam baseline concorrente.
+`spec.md` descreve problema/histórias/aceite, `plan.md` decisões/interfaces/testes e `tasks.md` execução. Cada incremento referencia tarefa macro Sxx-Tyy. Requisitos aprovados na S03 serão a fonte de verdade; artefatos no Spec Kit não criam baseline concorrente.
 
-Fluxo: constitution → specify → clarify → plan → checklist → tasks → analyze → implement → converge. Revisar a cada etapa. A CLI e o estado de feature devem ser verificados no ambiente de execução; trocar branch não substitui a seleção de feature.
+Fluxo: constitution → specify → clarify → plan → checklist → tasks → analyze → implement → converge. Usar os arquivos/scripts versionados e verificar a feature selecionada; não alegar execução nativa dos slash commands nem segurança aprovada por ter documentos.

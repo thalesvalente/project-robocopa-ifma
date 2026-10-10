@@ -1,51 +1,52 @@
 # S04-T04 — Incremento I2: árbitro e bots separados
 
-**Data:** 2026-10-10. **Base:** I1, commit 668d82b034cf5e0fab909e13552399c2de7213d5. **Estado inicial:** PLANEJADO, antes da implementação. Continuação autorizada pelo responsável: implementar tarefas planejadas; registrar novas necessidades primeiro. G-EXP permanece autorizado em GitHub-hosted efêmero; G-PROD bloqueado. Não alterar o Windows nem instalar VM.
+**Data:** 2026-10-10. **Base:** I1, commit `668d82b034cf5e0fab909e13552399c2de7213d5`. **Plano original publicado antes do código:** `c24f34f8b9c17e169efa55bceb7501fe4486fd73`. **Estado atual:** implementação e prova técnica do recorte no CI concluídas; G-PROD e VM pessoal continuam pendentes.
+
+Continuação autorizada pelo responsável: implementar tarefas planejadas e registrar novas necessidades primeiro. G-EXP permanece autorizado em GitHub-hosted efêmero. Nenhuma alteração no Windows, instalação de VM ou exposição para alunos.
 
 ## Objetivo e limite
 
-Realizar duas batalhas reais com Tank Royale 1.4.0: árbitro/controlador em um contêiner; cada bot oficial conhecido em seu próprio contêiner, com filesystem, PIDs e namespace de rede distintos. Não usar BattleRunner.externalServer como falsa externalização dos bots: controlar explicitamente o protocolo WebSocket oficial e iniciar JVMs somente nos contêineres dos bots. Usar Walls e Spin Bot fixados; não adicionar linguagem nem receber código de estudantes.
+Realizar duas batalhas reais com Tank Royale 1.4.0: árbitro/controlador em um contêiner; cada bot oficial conhecido em seu contêiner, com filesystem, PIDs e namespace de rede distintos. Não usar BattleRunner.externalServer como falsa externalização dos bots: controlar explicitamente o protocolo WebSocket oficial e iniciar JVMs somente nos contêineres dos bots. Usar Walls e Spin Bot fixados; não adicionar linguagem nem receber código de estudantes.
 
-## Necessidades novas identificadas e planejadas antes do código
+## Necessidades identificadas e planejadas antes do código
 
-**N1 — Transporte independente do booter:** cliente controlador/observador usando o protocolo oficial, dependência WebSocket fixada com hash; preserva a versão do motor. Server JAR poderá ser extraído do runner.jar já verificado, se a estrutura oficial confirmar isso. Não implementar física ou pontuação própria.
+**N1 — Transporte independente do booter:** cliente controlador/observador usando o protocolo oficial e dependência WebSocket fixada com hash. Server JAR extraído do runner.jar previamente verificado. Não implementar física ou pontuação própria.
 
-**N2 — Rede com comunicação permitida:** network=none não permite bots em namespaces distintos. Criar bridge Docker internal exclusiva da rodada e, antes de executar Java, aplicar regras INPUT/OUTPUT/FORWARD no namespace de cada contêiner. O supervisor confiável do runner usa nsenter apenas em PID/namespace de contêiner confirmado por ID, label e inode distinto do host. Não tocar nas tabelas do namespace do host. Runtime do bot continua sem NET_ADMIN/NET_RAW, sem host mounts/socket/dispositivos e sem portas publicadas. Destino permitido: IP numérico do árbitro e porta TCP de jogo. IPv6 negado; DNS e gateway/LAN/pares não permitidos. Se regra não puder ser instalada ou inspecionada, abortar sem iniciar batalha. Remoção dos contêineres elimina seus namespaces/regras; apagar somente bridge com ownership da rodada.
+**N2 — Rede com comunicação permitida:** network=none não permite bots em namespaces distintos. Bridge Docker internal exclusiva, com regras INPUT/OUTPUT/FORWARD nos namespaces de cada contêiner antes das JVMs. O supervisor confiável usa nsenter apenas em PID/namespace confirmado por ID, label e inode distinto do host. Não instalar ACL manual no namespace do host; Docker administra as regras de sua bridge no runner. Bot permanece sem NET_ADMIN/NET_RAW, host mounts, socket, dispositivos ou portas publicadas. Destino permitido: IP numérico do árbitro e porta de jogo. IPv6/DNS/gateway/pares negados; falha de política aborta a batalha, sem fallback.
 
-**N3 — Papéis e segredos:** credencial do controlador/observador distinta de credenciais de bots, efêmeras por batalha, nunca no build/imagem ou artefato. Credenciais entram por stdin, não por docker environment/CLI pública. Bots não recebem o segredo administrativo. Validar handshake errado, bot tentando controlador/observador e comando administrativo em sessão de bot. Tokens por papel não equivalem a autenticação multiusuário nem binding criptográfico de identidade; registrar limites do upstream.
+**N3 — Papéis e segredos:** segredo administrativo de Controller/Observer distinto dos tokens efêmeros dos bots. Observer e Controller compartilham a classe de segredo segundo o upstream, não três chaves independentes. Credenciais entram por stdin e não são gravadas em imagens ou artefatos. Validar identidade, handshake inválido e tentativa de comando administrativo na conexão do bot. Não é autenticação multiusuário.
 
-**N4 — Evidência e subprocesso:** estender captura limitada para stdin pequeno sem bloquear o watchdog, com testes. Capturar eventos oficiais/replay em canal do árbitro, esquema/identidades/rounds, hash e limpeza. Bytes de stdin/segredos não entram em erro/log. Limitar saída enquanto lida. Dados sintéticos apenas.
+**N4 — Evidência e subprocesso:** stdin pequeno e limitado sem bloquear watchdog; saída/tempo limitados durante leitura; resultado e replay originados no árbitro. Nenhum segredo em logs/erros. Limpeza exclusiva por execução.
 
-## Tasks do incremento (subconjuntos das 39 tarefas amplas)
+**N5 — Filtro por mensagem:** [i2-protocol-guard.md](i2-protocol-guard.md) foi publicado antes do gateway após revisão do upstream. A checagem de segredo no handshake não demonstrava autorização de todos os comandos posteriores. A prova benigna e a mitigação estão registradas abaixo.
 
-- [ ] I2-01 [US2] Conferir fontes oficiais versionadas (server CLI, handshakes, tipos de eventos/controle, inicialização de bots), dependência WebSocket e hashes; documentar pesquisa e NOTICE em spikes/isolamento/arena/. T007/T017/T020; FR-006/012/015; TH-10/13/15.
-- [ ] I2-02 [US2] Definir política de contêiner/namespace/rede por papel em services/worker_agent/arena_policy.py e testes de mutações negativas. T018/T019/T022; FR-005/006/007/018; TH-02/03/04/05/15.
-- [ ] I2-03 [US3] Acrescentar stdin limitado ao coletor POSIX em bounded.py, sem shell e sem bloqueio fora do timeout; testar saída, erro, stdin cheio, timeout e limpeza. T024/T025; FR-009/010/014; TH-07/08/12.
-- [ ] I2-04 [US2] Construir imagens por papel, servidor e bots com entrypoints fixos; iniciar em espera e instalar ACLs antes do primeiro payload. Supervisor só em CI descartável, sem Docker remoto/Desktop/WSL/local. scripts/run_separated_arena.py; T005/T006/T007/T011; FR-005/006/007/019; TH-01/02/03/04/05.
-- [ ] I2-05 [US2] Implementar cliente controlador/observador e partidas usando bot IDs oficialmente listados, sem processos bot no árbitro. T007/T020; FR-005/006/012; TH-09/10/15.
-- [ ] I2-06 [US2] Executar controles positivos/negativos: handshake válido; token errado; credencial de bot em controlador/observador; comando de controle por bot; TCP permitido ao árbitro; host gateway, peer, porta indevida, DNS/IPv6/TEST-NET negados; arquivos canário do árbitro invisíveis e PIDs distintos. T019/T021/T022; FR-005/006/007/018; TH-03/04/05/09/15. Não varrer LAN nem explorar kernel.
-- [ ] I2-07 [US4] Validar e exportar eventos oficiais, resultados, fim dos três rounds, identidades e hashes; corrupção e divergência rejeitadas; não usar stdout do bot como placar. T020/T029/T031/T032; FR-011/012/014/015; TH-10/12/13/15.
-- [ ] I2-08 [US3] Rodar duas batalhas e provar cleanup somente de contêineres/bridge da rodada, sem credenciais em artefatos; executar regressões I1, motor, editor e Spec Kit. T025/T026/T036/T037; FR-009/010/018/019; TH-07/08/12/14.
-- [ ] I2-09 [US5] Inspecionar artifact baixado, registrar resultados e limitações, atualizar tasks/estado/PR sem encerrar gates amplos e sem habilitar alunos. T035/T039; FR-018/019/020; TH-01/14/15.
+**H01–H06 — Revisão posterior:** [i2-audit-plan.md](i2-audit-plan.md), commit `69ee9c9`, detalhou auditoria estrita, redes efetivas, quotas por sessão, falhas/cleanup, provas nos dois bots e documentação antes das correções. [Resultados da revisão](i2-audit-results.md).
 
-## Critérios de aceite do experimento
+## Tasks do incremento — escopo concluído, tarefas amplas preservadas
 
-1. Cada batalha conclui 3 rounds reais, com duas identidades oficiais e resultado oficial preservado. Duas execuções no CI, sem exigir placar constante.
-2. Contêineres possuem roots e PID/network namespaces diferentes; nenhum bot recebe segredo controlador, mount de host, socket Docker, NET_ADMIN ou porta publicada.
-3. Políticas de rede efetivas conferidas, com teste positivo que evita falso PASS por indisponibilidade geral. Negativos de rede/protocolo precisam observar rejeição; timeout isolado não é prova suficiente de autenticação.
-4. Fonte de resultados é o canal observador do motor. Hash demonstra integridade dos bytes, não honestidade de um árbitro comprometido.
-5. Zero órfãos/bridge próprios após execução ou falha; nenhuma limpeza global. Logs/artefatos verificados contra segredos efêmeros antes de upload.
-6. Não há implantação da VM doméstica, cliente público, fila durável, identidade de alunos, liberação de Java livre, benchmark de capacidade ou prova formal de inexistência de escape.
+- [x] I2-01 [US2] Fontes fixadas, server CLI/protocolo, dependência WebSocket e hashes conferidos; [NOTICE](../../spikes/isolamento/arena/NOTICE.md) documenta origem e limitações. T007/T017/T020; FR-006/012/015; TH-10/13/15.
+- [x] I2-02 [US2] Política `services/worker_agent/arena_policy.py`, mutações negativas e 24 invariantes efetivas por papel, incluindo redes anexadas. T018/T019/T022; FR-005/006/007/018; TH-02/03/04/05/15.
+- [x] I2-03 [US3] Captura POSIX aceita stdin limitado sem shell; testes de saída, erro, buffer de stdin, timeout e grupo de processos. T024/T025; FR-009/010/014; TH-07/08/12.
+- [x] I2-04 [US2] Imagens por papel, espera controlada e ACL antes do payload; supervisor somente em CI descartável. `scripts/run_separated_arena.py`. T005/T006/T007/T011; FR-005/006/007/019; TH-01/02/03/04/05.
+- [x] I2-05 [US2] Cliente controlador/observador e três rounds oficiais, bot IDs oficiais e nenhum processo de bot no árbitro; gateway planejado em N5. T007/T020; FR-005/006/012; TH-09/10/15.
+- [x] I2-06 [US2] Controles positivos/negativos nos dois bots: 19 verificações por bot, credencial inválida, troca de papel, controle, porta bruta, host/peer canários, DNS/IPv6/TEST-NET e arquivos protegidos. Políticas aplicadas e contadores de rejeição observados. Sem scan de LAN ou exploração de kernel. T019/T021/T022; FR-005/006/007/018; TH-03/04/05/09/15.
+- [x] I2-07 [US4] Eventos oficiais, três fins de round, tipos, identidades, hashes e resultado final conferidos; negativos de corrupção; nova CLI somente leitura. Fonte é GameEndedEventForObserver, não stdout dos bots. T020/T029/T031/T032; FR-011/012/014/015; TH-10/12/13/15.
+- [x] I2-08 [US3] Duas batalhas reais e duas falhas parciais controladas, limpeza owned sem órfãos; regressões de contratos, motor, autoria, I1 e Spec Kit aprovadas no lote de referência. Falha de daemon na limpeza de imagem tem regressão adicional própria. T025/T026/T036/T037; FR-009/010/018/019; TH-07/08/12/14.
+- [x] I2-09 [US5] Artifact baixado, ZIP/gzip/eventos e manifestos relidos; [relatório](../../docs/qualidade/evidencias/S04-T04-I2.md), estado e limites registrados. Não encerra os gates amplos nem habilita alunos. T035/T039; FR-018/019/020; TH-01/14/15.
 
-## Sequência e dependências
+## Evidência de referência
 
-I2-01 → I2-02/I2-03 → I2-04 → I2-05 → I2-06/I2-07 → I2-08 → I2-09. O plano do I1/39 tarefas permanece fonte de rastreabilidade; esta iteração não substitui backlog macro. Se o upstream não garantir uma permissão esperada, registrar achado, planejar mitigação (proxy/filtro/gate) antes de alterar código e não enfraquecer silenciosamente o aceite.
+[Run 38048459272](https://github.com/thalesvalente/project-robocopa-ifma/actions/runs/38048459272), fonte `9dd75a8`, completed/success. **Walls 223 × Spin Bot 193** e **Walls 159 × Spin Bot 186**, três rounds cada. 286 testes automatizados (275 unitários/contratos/regressão e 11 transportes WebSocket com engine falso), distintos das batalhas reais. A correção posterior de consulta de imagem acrescenta um teste, sem alterar os resultados históricos.
 
-## Fontes externas iniciais
+24 invariantes por contêiner; 19 verificações em cada bot; abortos after_containers/after_ready descartaram os recursos. Manifestos não autorizam alunos/VM. Resultado do último commit e regressões seguintes devem ser consultados no PR #19; os placares deste lote não são reescritos.
 
-- Docker networking e container namespaces: https://docs.docker.com/engine/network/
-- Tank Royale WebSocket: https://robocode.dev/articles/tank-royale.html
-- Papéis: https://github.com/robocode-dev/tank-royale/blob/c8ad3a8d19a843f6258d6f6f9db7f29229963903/docs/decisions/0007-client-role-separation.md
-- Server CLI 1.4.0: https://github.com/robocode-dev/tank-royale/blob/c8ad3a8d19a843f6258d6f6f9db7f29229963903/server/src/main/kotlin/dev/robocode/tankroyale/server/cli/ServerCli.kt
+## Critérios e alcance
 
-Sem implementação ou teste operacional comprovado no momento inicial de publicação deste plano.
+1. Cada batalha concluiu três rounds com identidades oficiais, saída e registro de eventos do motor.
+2. Contêineres possuem roots e PID/net/mnt namespaces distintos do host e entre si; sem segredo administrativo no bot, montagens de host ou portas publicadas.
+3. Os testes de negação possuem controles positivos; timeout isolado não é tratado como autorização recusada. Captura dos contadores reforça a aplicação efetiva da ACL.
+4. Hash demonstra integridade dos bytes, não honestidade de árbitro comprometido. Gravação dos eventos oficiais feita pelo controlador não significa compatibilidade testada com visualizador oficial.
+5. Duas falhas parciais e duas batalhas demonstram cleanup nesse recorte; não equivalem a vinte ciclos, recuperação durável ou reboot da VM.
+6. Não houve implantação da VM doméstica, cliente público, fila durável, identidade de alunos, Java livre, benchmark de capacidade ou prova formal de inexistência de escape.
+
+A ordem permanece planejamento → implementação/testes → evidências. Qualquer nova lacuna exige adendo antes do código. Próxima etapa: detalhar I3 (broker/autorização/fila/ledger) a partir do catálogo amplo, mantendo a camada já comprovada e a regressão.

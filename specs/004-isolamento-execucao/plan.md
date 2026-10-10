@@ -1,76 +1,79 @@
 # Implementation Plan — Isolamento de execução não confiável
 
-**Data de revisão:** 2026-10-10 · **Feature:** [spec.md](spec.md) · **Branch:** `feat/s04-isolation-validation`.
+**Revisão:** 2026-10-10 · **Feature:** [spec.md](spec.md) · **Branch de I2:** `feat/s04-i2-separated-arena`.
 
-**Status:** implementação experimental autorizada por D-005. **NÃO IMPLEMENTAR em produção nem liberar alunos antes de G-PROD.** O antigo bloqueio genérico foi separado em G-EXP (experimentos autorizados) e G-PROD (liberação pendente), evitando exigir testes aprovados antes de construir os testes.
+**Status:** implementação experimental autorizada por D-005, I1 e recorte I2 verificados no CI. **NÃO IMPLEMENTAR em produção nem liberar alunos antes de G-PROD.** G-EXP permite construir provas; G-PROD exige a arquitetura alvo validada e aceites humanos.
 
 ## Summary e decisões
 
-O MVP aceita apenas RoboDSL básica. A direção de uma VM Linux dedicada foi aprovada pelo responsável, com sistema, disco e daemon independentes; não é simplesmente outra distribuição WSL. Não houve instalação no host. Broker público sem Docker socket, worker segregado, sandbox por job e árbitro fora do ambiente do robô continuam o desenho alvo.
+MVP somente RoboDSL básica. VM Linux dedicada, sistema/daemon/disco próprios e sem drives pessoais é direção aprovada, não outra distribuição WSL. Não houve instalação no host. API pública sem socket Docker, broker autenticado, worker segregado, isolamento por job e árbitro independente continuam o alvo completo.
 
-A pesquisa externa confirmou a direção e corrigiu premissas: mount/socket ausentes não eliminam outros acessos ao daemon; rede `internal` não é garantia de afastamento do host; `externalServer()` do Battle Runner 1.4.0 ainda inicia bots pelo BooterManager local; hashes consistentes não autenticam um árbitro comprometido. Fontes e distinção entre documentação e inferência estão em [pesquisa oficial](../../docs/arquitetura/pesquisa-isolamento-2026-10-10.md).
+A [pesquisa oficial](../../docs/arquitetura/pesquisa-isolamento-2026-10-10.md) já demonstrou que rede internal e ausência de mounts/socket não bastam; externalServer do BattleRunner ainda inicia bots localmente; hashes não autenticam árbitro comprometido. I2 acrescentou prova controlada do protocolo fixado e filtro de mensagens planejado antes do código em [N5](i2-protocol-guard.md).
 
 ## Technical Context
 
 | Elemento | Recorte atual |
 |---|---|
-| Ambiente de testes | Ubuntu 24.04 GitHub-hosted descartável; sem virtualização aninhada, dados pessoais ou credenciais da plataforma nos contêineres |
-| Linguagem | Python stdlib para contratos/provas; RoboDSL 0.1 existente preservada |
-| Motor | Tank Royale 1.4.0 e código upstream fixados; nova separação bot/árbitro ainda não implementada |
-| Estado operacional | Laboratório Python pessoal continua somente localhost; novos módulos NÃO foram ligados à UI pública |
-| Limites da bateria | 64 MiB RAM, sem swap extra, 0,5 CPU, 16 PIDs, 4 MiB tmpfs, saída de até 8 KiB; são limites das sondas, não quotas de jogos |
-| Armazenamento | Sem migração de banco; relatórios sintéticos limitados e exclusivos por execução |
-| Implantação futura | VM Linux dedicada aprovada como direção; patching, discos, switches, guest networking e recuperação ainda precisam de prova no host |
+| Testes | Ubuntu24.04 GitHub-hosted descartável; sem dados/credenciais pessoais, sem VM aninhada |
+| Linguagem | Python para supervisor/contratos; websockets15.0.1 fixado no gateway; RoboDSL básica inalterada |
+| Motor | Tank Royale1.4.0 fixado; servidor extraído de runner oficial; controlador recebe eventos oficiais sem booter local de bots |
+| Separação I2 | Árbitro, Walls e Spin Bot em contêineres distintos; bridge internal owned e ACLs em seus namespaces; gateway7654, motor bruto7655 inacessível aos bots |
+| Operação | Novos módulos não foram ligados à UI pública/pessoal. O laboratório Python existente continua localhost |
+| Limites I1 | Sondas pequenas:64MiB,0,5CPU,16PIDs,tmpfs4MiB,saída8KiB; não dimensionam jogos |
+| Limites I2 | 1CPU por papel, árbitro1GiB/bots512MiB,128PIDs,tmpfs128MiB; quotas de sessão finitas e timeout externo; orçamentos experimentais |
+| Dados | Resultados/replay/manifestos sanitizados por execução; nenhum banco migrado; sem ledger de produção |
+| Host futuro | VM independente ainda exige patches, discos, switches, rede guest, backup e recuperação verificados |
 
 ## Constitution Check
 
-- Inclusão/pedagogia e escopo preservados: RoboDSL básica; intermediário/avançado pós-MVP.
-- **G-EXP autorizado:** somente módulos offline e sondas fixas em runner descartável, com orçamento finito, sem teste adversarial na máquina pessoal.
-- **GATE BLOQUEADO — G-PROD:** faltam VM real, isolamento bot/árbitro, broker, autenticação, limites de partidas calibrados, backup, recuperação e aceite humano.
-- Teste de CI não comprova Hyper-V do host. Configuração declarada não substitui inspeção de runtime nem prova negativa. Uma prova aprovada não demonstra ausência de vulnerabilidades desconhecidas.
-- A aprovação D1/D2 e o início de experimentos não homologam a constituição S00-T06 ou os requisitos S03.
+- Inclusão e escopo mantidos: RoboDSL básica, intermediário/avançado pós-MVP.
+- **G-EXP autorizado:** referências conhecidas, fixtures finitas e runner descartável. Nenhum teste adversarial no computador pessoal.
+- **GATE BLOQUEADO — G-PROD:** ainda faltam VM alvo, broker/autenticação/fila/ledger, quotas calibradas, vinte ciclos, backup/restauração, revisão e aceite. A prova de separação no CI não substitui implantação segura.
+- Configuração declarada não substitui inspeção/runtime/negativos. Um conjunto de testes aprovado não prova inexistência de vulnerabilidades.
+- D1/D2 e experimentos não homologam S00-T06, S03 ou o MVP.
 
 ## Planejamento completo e dependências
 
-O catálogo [tasks.md](tasks.md) preserva 39 tarefas T001–T039 com IDs FR/SC/TH. [iteration-1.md](iteration-1.md) foi publicado antes do primeiro código e detalha o incremento autorizado. Os checkboxes amplos continuam abertos enquanto houver escopo de produção não entregue; a evidência parcial é vinculada em I1.
+O catálogo [tasks.md](tasks.md) mantém39 tarefas T001–T039 com FR/SC/TH, abertas onde o aceite amplo ainda não foi atendido. [I1](iteration-1.md) e [I2](iteration-2.md) registram subconjuntos concluídos com evidência. A revisão extra de I2 foi planejada em [i2-audit-plan.md](i2-audit-plan.md) antes das correções, com [resultados](i2-audit-results.md).
 
-| Etapa | Tarefas | Critério de saída e dependência |
+| Etapa ampla | Tarefas | Situação e aceite restante |
 |---|---|---|
-| 0. Fontes, autorização e ameaças | T001–T004 | Registrar D1/D2 e G-EXP; riscos/limites explícitos. Demais ratificações de produto permanecem em paralelo. |
-| 1. Fronteira e compatibilidade | T005–T007 | VM própria e canal bot/árbitro demonstrados. I1 apenas testa contenção de contêiner no CI e verifica o contrato upstream. |
-| 2. Plano de controle | T008–T012 | Contratos estritos, broker autenticado e política desligada por padrão. I1 implementa o contrato puro, não o broker. |
-| 3. Admissão | T013–T016 | Entradas/AST/versões inválidas negadas antes de execução; autorização de usuário precisa da plataforma. |
-| 4. Sandbox por job | T017–T022 | Imagens verificadas, mounts/privilégios bloqueados, redes efetivas e árbitro segregado. Sem publicar rede por conveniência. |
-| 5. Recursos e falhas | T023–T027 | Quotas reais, cancelamento, recuperação durável, 20 ciclos sem órfãos e controle de fila/abuso. |
-| 6. Integridade | T028–T032 | Resultado do árbitro independente, hashes/identidades/rounds e ledger idempotente; hash sozinho não é autenticação. |
-| 7. Suspensão e operação | T033–T035 | Fail-closed, nenhum fallback ao host e runbook de rollback específico. |
-| 8. Homologação | T036–T039 | Matriz de ameaças, regressões, smoke da VM por ação autorizada do responsável e revisão dos riscos; só então decidir liberação. |
+| Fontes/autorização/ameaças | T001–T004 | D1/D2/G-EXP registrados; baselines e aprovações de produto continuam pendentes |
+| Fronteira/compatibilidade | T005–T007 | I1 prova contenção e I2 separa bots/árbitro no runner. Falta VM alvo e revisão de rede/host |
+| Plano de controle | T008–T012 | Contrato puro I1 pronto; broker autenticado e integração com fila ainda não existem |
+| Admissão | T013–T016 | Negativos da DSL/versão implementados; falta autorização multiusuário e ligação com plataforma |
+| Sandbox/árbitro | T017–T022 | Imagens/isolamento por papel, rede e gateway comprovados no recorte I2; não é implantação de alunos |
+| Recursos/recuperação | T023–T027 | Limites finitos e dois abortos/cleanup testados; não é recuperação durável, cotas de produção ou20 ciclos |
+| Integridade | T028–T032 | I2 audita origem lógica, campos, sequência, replay e hashes; ledger/idempotência de produção ainda necessário |
+| Suspensão/operação | T033–T035 | Falha fechada nos harnesses; chave operacional do broker e runbook da VM ainda pendentes |
+| Homologação | T036–T039 | Matriz completa, revisão, smoke da VM por ação autorizada e liberação permanecem em aberto |
 
-**Caminho de experimentação:** pesquisa → contrato/política → provas descartáveis → separação bot/árbitro → worker/broker → VM real e recuperação → revisão/liberação. Contratos e testes sintéticos podem ser construídos antes da prova final da VM; não são autorização de uso por alunos.
+## I1 entregue
 
-## Incremento I1 — código e medição
+Admissão estrita desabilitada por padrão, política com20 invariantes de perfil diagnóstico, subprocesso sem shell e limites durante leitura,9 sondas reais finitas.55 testes iniciais do novo código, distintos das provas Docker. [Evidência](../../docs/qualidade/evidencias/S04-T04-I1.md). Não autentica usuários nem executa ledger.
 
-- `services/worker_agent/contracts.py`: envelope estrito, JSON sem campos duplicados/NaN, IDs/hashes/deadline, lista de versões autorizadas fornecida pelo plano de controle, RoboDSL básica e descritor imutável. Desabilitado por padrão. Não autentica usuário nem mantém ledger.
-- `services/worker_agent/policy.py`: perfil de teste e 20 invariantes pré-start de Docker; imagem content-ID, ownership, mounts, redes, capabilities, RAM/swap/CPU/PIDs/logs/tmpfs.
-- `services/worker_agent/bounded.py`: subprocesso sem shell, limite de saída durante leitura, prazo externo e limpeza do grupo de processo da invocação; é componente POSIX, não sandbox por si.
-- `spikes/isolamento/probes/`: nove sondas sintéticas com controles positivos/negativos, cgroups e seccomp efetivos, memória/processos/disco pequenos. Sem código de estudantes, kernel exploits ou varredura externa.
-- `scripts/run_isolation_checks.py`: recusa Windows/WSL/Desktop/local; exige contexto descartável, não encaminha credenciais, verifica ownership antes de remover somente seus recursos. Essa trava evita uso acidental, não é atestado criptográfico do host.
-- `tests/security/`: 55 testes iniciais dos módulos, separados das nove provas Docker reais.
+## I2 entregue no recorte
 
-## Complementos necessários encontrados na pesquisa
+- `arena_policy.py`:24 verificações por contêiner, conjunto de redes anexadas, namespaces/ownership; regras somente no namespace owned, sem privilégios de administração no bot.
+- `arena_protocol.py` e `gateway.py`: handshake exato e allowlist de BotReady/BotIntent, sem canais administrativos; tokens do bot não são segredo do controlador. Limites por sessão e11 testes de transporte contra engine falso, separados da prova real.
+- `run_separated_arena.py`: duas batalhas de3 rounds oficiais, testes positivos/negativos nos dois bots, manifestos, dois abortos controlados e limpeza específica. Falha do daemon não é interpretada como recurso ausente.
+- `arena_evidence.py` e `verify_arena_evidence.py`: auditoria somente leitura de esquema, tipos, identidades, eventos/rounds, hash, flags e cleanup; nenhum processo ou rede iniciados.
+- Lote referência: [run38048459272](https://github.com/thalesvalente/project-robocopa-ifma/actions/runs/38048459272), duas batalhas reais,24 invariantes por papel e19 verificações por bot. [Relatório](../../docs/qualidade/evidencias/S04-T04-I2.md).
 
-- Antes da VM: inventário de versões do **produto Docker Desktop**, Windows/WSL/Hyper-V e Linux guest; Engine 28.1.1 não informa a versão Desktop. Revisar avisos oficiais e backups antes de qualquer atualização.
-- Definir switch/ACLs do Hyper-V: Internal permite host↔VM; Private impede esse canal e exige solução própria para o controle. A topologia precisa permitir só o necessário, não simplesmente esconder portas publicadas.
-- Investigar inicialização de bots sem dar Docker socket ao booter. `externalServer()` não externaliza processos de bot. Provar segredos de bots e de controlador distintos contra versão 1.4.0.
-- Revisar SBOM/artefatos/runtime; digest fixa bytes, não ausência de CVE. Rootless/gVisor são camadas opcionais sujeitas à compatibilidade, não um requisito de complexidade por si.
-- Medir memória+swap, stdout/stderr e espaço do arquivo de VM; testes de 64 MiB não definem recursos de partidas.
+As ACLs manuais só são instaladas nos namespaces verificados; o Docker cria as regras da bridge no runner. Não afirmar ausência de qualquer regra de host ao longo de toda a execução. O host pessoal não é acessado.
 
-## Estrutura de documentação e implementação
+## Próximos incrementos a detalhar antes do código
 
-Feature 004 mantém spec, clarifications, research, data-model, contracts, tasks, analysis e checklists. O mapeamento de caminhos do plano anterior para o incremento é explícito: `services/worker-agent/` era destino proposto; o módulo Python deste incremento usa `services/worker_agent/`. Nenhum serviço de produção foi substituído silenciosamente.
+**I3:** broker autenticado, admissão multiusuário, fila e estado duráveis, ledger/idempotência, retry, cotas e suspensão. O catálogo T já prevê esses temas, mas contratos e casos de falha concretos devem virar plano do incremento antes de implementar. A API não recebe socket Docker.
 
-[Contrato](contracts/job-protocol.md) · [Modelo de dados](data-model.md) · [Ameaças](../../docs/arquitetura/ameacas-sandbox.md) · [ADR-004](../../docs/arquitetura/ADR-004-isolamento-execucao.md).
+**I4:** inventário de versões do produto Docker Desktop/Windows/Hyper-V/Linux, disco e capacidade; instalação e rede da VM somente sob procedimento específico e ação do responsável. Switch Internal permite host↔VM, não é isolamento automático; a rede guest exige prova própria.
 
-## Rollback e limites de aceite
+**I5:** quotas calibradas do motor,20 ciclos, matriz integral TH, backup/restauração, resposta a incidentes, revisão independente e liberação. Rootless/gVisor são camadas opcionais sujeitas à compatibilidade, não pretexto para ampliar o MVP.
 
-Em falha, negar novas execuções; não usar Docker Desktop pessoal como fallback. Limpeza apenas dos recursos com identidade/label da execução. Nenhum prune global, down -v, ajuste de firewall, VHDX ou compartilhamento de drives faz parte desta rodada. A VM preferida e os controles de CI reduzem riscos específicos, mas não aprovam a recepção de alunos. Critérios finais continuam em [security-gates.md](checklists/security-gates.md).
+## Estrutura e invariantes
+
+Os módulos Python concretos estão em `services/worker_agent/`; `services/worker-agent/` era caminho candidato do desenho inicial. Não substituímos serviço de produção. Feature004 conserva spec/clarifications/research/data-model/contracts/tasks/analysis/checklists e iterações vinculadas.
+
+[Contrato](contracts/job-protocol.md) · [Dados](data-model.md) · [Ameaças](../../docs/arquitetura/ameacas-sandbox.md) · [ADR004](../../docs/arquitetura/ADR-004-isolamento-execucao.md).
+
+Em falha, negar execução e registrar incerteza, sem fallback ao Docker pessoal. Limpeza apenas owned; nenhuma orientação de prune global/down-v, migração VHDX, abertura de firewall ou drives compartilhados. Critérios finais: [security-gates.md](checklists/security-gates.md).

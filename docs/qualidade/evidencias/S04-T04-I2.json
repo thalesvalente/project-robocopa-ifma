@@ -1,0 +1,63 @@
+{
+  "schema_version": 1,
+  "scope": "I2_TRUSTED_REFERENCE_BOTS_AND_CONTROLLED_TIMEOUT_CI",
+  "status": "PASS_LIMITED_EXPERIMENT",
+  "production_approved": false,
+  "host_vm_tested": false,
+  "student_submission_enabled": false,
+  "reference_run": 38026424513,
+  "source_commit": "b003e599ce17ade1af15cf3b8e50123b4b34dfae",
+  "tested_checkout": "ceb6f22050838cb0c81086e30ac10ead94c4565c",
+  "tested_checkout_is_main_merge": false,
+  "upstream_commit": "c8ad3a8d19a843f6258d6f6f9db7f29229963903",
+  "engine_version": "1.4.0",
+  "artifact": {
+    "id": 11659104616,
+    "bytes": 355572,
+    "sha256": "64fc29fae684a027b7c90c60e38e0df9d0a55ddaf37f872725f6184ac25e8653",
+    "verified_download": true,
+    "zip_crc_ok": true,
+    "expires_at": "2026-11-09T05:08:54Z"
+  },
+  "python_tests": {"planning": 41, "infra": 13, "reference_engine": 23, "mobile": 35, "security": 96, "total": 208, "failed": 0},
+  "jvm_contract_cases": 40,
+  "scenarios": [
+    {
+      "run_id": "5e81acecaaf34e538f4aef45",
+      "scenario": "separated-battle",
+      "status": "PASS",
+      "battle_completed": true,
+      "rounds": 3,
+      "ticks": 3515,
+      "duration_ms": 10968,
+      "score_source": "GameEndedEventForObserver",
+      "scores": [{"name": "Spin Bot", "version": "1.0", "rank": 1, "score": 253}, {"name": "Walls", "version": "1.0", "rank": 2, "score": 154}],
+      "replay": {"bytes": 343937, "uncompressed_bytes": 4375508, "sha256": "9cc224c70e8b46371729a10285379d851c0f7ffa679d14c6d9a3f581514be084", "results_equal": true},
+      "forwarded_intents": 7048,
+      "containers": 4,
+      "runtime_checks_per_container": 26,
+      "isolated_networks": 3,
+      "distinct_namespaces": ["pid", "mount", "network"],
+      "protocol_denials_per_bot": 9,
+      "protocol_denials_total": 18,
+      "cleanup": {"containers_removed": 4, "networks_removed": 3, "verified": true, "errors": []}
+    },
+    {
+      "run_id": "d59aae06f5fc4d0ea6b3026c",
+      "scenario": "deadline-cleanup",
+      "status": "PASS",
+      "battle_completed": false,
+      "timeout_observed": true,
+      "external_deadline_seconds": 0.5,
+      "fixture_wait_seconds": 5,
+      "results_or_replay_generated": false,
+      "containers": 4,
+      "runtime_checks_per_container": 26,
+      "isolated_networks": 3,
+      "protocol_denials_per_bot": 9,
+      "protocol_denials_total": 18,
+      "cleanup": {"containers_removed": 4, "networks_removed": 3, "verified": true, "errors": []}
+    }
+  ],
+  "limitations": ["not a Hyper-V/host VM test", "trusted official bots only", "gateway remains trusted code requiring review", "not a kernel escape proof", "not a twenty-cycle recovery campaign", "not a public endpoint or student authentication", "no integration with operator UI", "no durable queue or result ledger"]
+}

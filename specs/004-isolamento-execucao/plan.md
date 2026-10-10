@@ -1,142 +1,76 @@
-# Implementation Plan: Isolamento de execução não confiável
+# Implementation Plan — Isolamento de execução não confiável
 
-**Branch:** `docs/s04-t04-isolamento-speckit` | **Date:** 2026-10-09 | **Spec:** [spec.md](spec.md)  
-**Input:** especificação S04-T04; [clarifications.md](clarifications.md), [research.md](research.md), [modelo de ameaças](../../docs/arquitetura/ameacas-sandbox.md).  
-**Status:** **PLANO CANDIDATO, NÃO IMPLEMENTAR** até gates/decisões definidos.
+**Data de revisão:** 2026-10-10 · **Feature:** [spec.md](spec.md) · **Branch:** `feat/s04-isolation-validation`.
 
-## Summary
+**Status:** implementação experimental autorizada por D-005. **NÃO IMPLEMENTAR em produção nem liberar alunos antes de G-PROD.** O antigo bloqueio genérico foi separado em G-EXP (experimentos autorizados) e G-PROD (liberação pendente), evitando exigir testes aprovados antes de construir os testes.
 
-Separar a execução de robôs T1 (RoboDSL restrita) do computador pessoal e dos serviços da RoboCopa: broker tipado, executor em fronteira Linux independente, sandbox por job com limites e negação de rede/arquivos, árbitro distinto do código do aluno, validação de replay/resultado e recuperação idempotente. **Não aceitar Java/JS arbitrário nem usar diretamente o daemon Docker Desktop compartilhado como fronteira final.**
+## Summary e decisões
 
-Este documento descreve **como validar a viabilidade** da abordagem; não instala VM, daemon, worker, regras de rede ou endpoint. A S04-T04 formal depende de S04-T02 e T03 e, indiretamente, da baseline S03. Os spikes anteriores avançaram de forma preparatória autorizada, sem encerrar os gates.
+O MVP aceita apenas RoboDSL básica. A direção de uma VM Linux dedicada foi aprovada pelo responsável, com sistema, disco e daemon independentes; não é simplesmente outra distribuição WSL. Não houve instalação no host. Broker público sem Docker socket, worker segregado, sandbox por job e árbitro fora do ambiente do robô continuam o desenho alvo.
+
+A pesquisa externa confirmou a direção e corrigiu premissas: mount/socket ausentes não eliminam outros acessos ao daemon; rede `internal` não é garantia de afastamento do host; `externalServer()` do Battle Runner 1.4.0 ainda inicia bots pelo BooterManager local; hashes consistentes não autenticam um árbitro comprometido. Fontes e distinção entre documentação e inferência estão em [pesquisa oficial](../../docs/arquitetura/pesquisa-isolamento-2026-10-10.md).
 
 ## Technical Context
 
-| Elemento | Estado atual e decisão preliminar |
+| Elemento | Recorte atual |
 |---|---|
-| Language/Version | Python 3.13 para automação do protótipo; gerador Java/JDK 21 e Tank Royale 1.4.0 fixados; linguagem do API final ainda depende da S03/S04-T01. |
-| Primary Dependencies | Docker Engine API/CLI apenas **do worker segregado** (candidato); Tank Royale Battle Runner oficial; broker tipado em tecnologia a definir. Avaliar `runsc`/rootless como camadas adicionais. |
-| Storage | PostgreSQL 17 existe no laboratório, mas não fica acessível ao sandbox; dados do job no plano de controle, armazenamento efêmero na VM. |
-| Testing | Python `unittest`, contratos, provas negativas com dados sintéticos em GitHub Actions efêmero e futura VM descartável; inspeção efetiva do runtime. |
-| Target Platform | Windows 11 Pro / Docker Desktop/WSL2 pessoal existente; **worker alvo em VM Linux dedicada**, a validar antes de uso. |
-| Project Type | Arquitetura distribuída em plano de controle, broker/worker, isolamento por job e evidências. |
-| Performance Goals | Medir simultaneidade, latência, limpeza e limites; não declarar valores de capacidade sem teste. |
-| Constraints | Sem socket Docker na API, sem mount pessoal, sem egress genérico, sem acesso a segredos, sem fallback; operação local/privada até aprovação. |
-| Scale/Scope | Piloto limitado; alvo inicial de **uma execução por vez** como hipótese operacional a medir e ratificar, não garantia. |
-| Impact | Isolamento tem custo de CPU/RAM/disco/complexidade; nunca comprometer proteção do host para cumprir desempenho. |
+| Ambiente de testes | Ubuntu 24.04 GitHub-hosted descartável; sem virtualização aninhada, dados pessoais ou credenciais da plataforma nos contêineres |
+| Linguagem | Python stdlib para contratos/provas; RoboDSL 0.1 existente preservada |
+| Motor | Tank Royale 1.4.0 e código upstream fixados; nova separação bot/árbitro ainda não implementada |
+| Estado operacional | Laboratório Python pessoal continua somente localhost; novos módulos NÃO foram ligados à UI pública |
+| Limites da bateria | 64 MiB RAM, sem swap extra, 0,5 CPU, 16 PIDs, 4 MiB tmpfs, saída de até 8 KiB; são limites das sondas, não quotas de jogos |
+| Armazenamento | Sem migração de banco; relatórios sintéticos limitados e exclusivos por execução |
+| Implantação futura | VM Linux dedicada aprovada como direção; patching, discos, switches, guest networking e recuperação ainda precisam de prova no host |
 
-## Constitution Check (gate anterior à implementação)
+## Constitution Check
 
-| Princípio | Evidência documental | Situação |
+- Inclusão/pedagogia e escopo preservados: RoboDSL básica; intermediário/avançado pós-MVP.
+- **G-EXP autorizado:** somente módulos offline e sondas fixas em runner descartável, com orçamento finito, sem teste adversarial na máquina pessoal.
+- **GATE BLOQUEADO — G-PROD:** faltam VM real, isolamento bot/árbitro, broker, autenticação, limites de partidas calibrados, backup, recuperação e aceite humano.
+- Teste de CI não comprova Hyper-V do host. Configuração declarada não substitui inspeção de runtime nem prova negativa. Uma prova aprovada não demonstra ausência de vulnerabilidades desconhecidas.
+- A aprovação D1/D2 e o início de experimentos não homologam a constituição S00-T06 ou os requisitos S03.
+
+## Planejamento completo e dependências
+
+O catálogo [tasks.md](tasks.md) preserva 39 tarefas T001–T039 com IDs FR/SC/TH. [iteration-1.md](iteration-1.md) foi publicado antes do primeiro código e detalha o incremento autorizado. Os checkboxes amplos continuam abertos enquanto houver escopo de produção não entregue; a evidência parcial é vinculada em I1.
+
+| Etapa | Tarefas | Critério de saída e dependência |
 |---|---|---|
-| I. Inclusão e pedagogia | RoboDSL candidata permite lógica, sem exigir web/mobile | Condição mantida; avaliação física pendente |
-| II. Escopo do MVP | Uma linguagem T1 candidata; T2 negada | Compatível, depende de ratificação |
-| III. Execução não confiável | VM separada, controles e teste de abuso exigidos | **GATE BLOQUEADO**: arquitetura ainda não validada |
-| IV. Rastreabilidade | FR/SC/TH → tarefas → testes planejados | Conferência estrutural automatizável |
-| V. Qualidade e evidências verdadeiras | Testes sintéticos separados de CI e host | Compatível; sem PASS de segurança |
-| VI. Operação própria reversível | VM e rollback candidatos; sem mudança no host | **GATE BLOQUEADO**: backup/snapshot/recuperação ainda não testados |
-| VII. IA e dados | Sem dados pessoais/credenciais no plano | Compatível; política de retenção ainda aberta |
+| 0. Fontes, autorização e ameaças | T001–T004 | Registrar D1/D2 e G-EXP; riscos/limites explícitos. Demais ratificações de produto permanecem em paralelo. |
+| 1. Fronteira e compatibilidade | T005–T007 | VM própria e canal bot/árbitro demonstrados. I1 apenas testa contenção de contêiner no CI e verifica o contrato upstream. |
+| 2. Plano de controle | T008–T012 | Contratos estritos, broker autenticado e política desligada por padrão. I1 implementa o contrato puro, não o broker. |
+| 3. Admissão | T013–T016 | Entradas/AST/versões inválidas negadas antes de execução; autorização de usuário precisa da plataforma. |
+| 4. Sandbox por job | T017–T022 | Imagens verificadas, mounts/privilégios bloqueados, redes efetivas e árbitro segregado. Sem publicar rede por conveniência. |
+| 5. Recursos e falhas | T023–T027 | Quotas reais, cancelamento, recuperação durável, 20 ciclos sem órfãos e controle de fila/abuso. |
+| 6. Integridade | T028–T032 | Resultado do árbitro independente, hashes/identidades/rounds e ledger idempotente; hash sozinho não é autenticação. |
+| 7. Suspensão e operação | T033–T035 | Fail-closed, nenhum fallback ao host e runbook de rollback específico. |
+| 8. Homologação | T036–T039 | Matriz de ameaças, regressões, smoke da VM por ação autorizada do responsável e revisão dos riscos; só então decidir liberação. |
 
-**Bloqueio explícito:** a existência de plan.md não desbloqueia `/speckit.implement`. Consultar [analysis.md](analysis.md) e [checklists/security-gates.md](checklists/security-gates.md) antes de qualquer execução.
+**Caminho de experimentação:** pesquisa → contrato/política → provas descartáveis → separação bot/árbitro → worker/broker → VM real e recuperação → revisão/liberação. Contratos e testes sintéticos podem ser construídos antes da prova final da VM; não são autorização de uso por alunos.
 
-## Phases (ordem obrigatória)
+## Incremento I1 — código e medição
 
-### F0 — Revisão e autorização
+- `services/worker_agent/contracts.py`: envelope estrito, JSON sem campos duplicados/NaN, IDs/hashes/deadline, lista de versões autorizadas fornecida pelo plano de controle, RoboDSL básica e descritor imutável. Desabilitado por padrão. Não autentica usuário nem mantém ledger.
+- `services/worker_agent/policy.py`: perfil de teste e 20 invariantes pré-start de Docker; imagem content-ID, ownership, mounts, redes, capabilities, RAM/swap/CPU/PIDs/logs/tmpfs.
+- `services/worker_agent/bounded.py`: subprocesso sem shell, limite de saída durante leitura, prazo externo e limpeza do grupo de processo da invocação; é componente POSIX, não sandbox por si.
+- `spikes/isolamento/probes/`: nove sondas sintéticas com controles positivos/negativos, cgroups e seccomp efetivos, memória/processos/disco pequenos. Sem código de estudantes, kernel exploits ou varredura externa.
+- `scripts/run_isolation_checks.py`: recusa Windows/WSL/Desktop/local; exige contexto descartável, não encaminha credenciais, verifica ownership antes de remover somente seus recursos. Essa trava evita uso acidental, não é atestado criptográfico do host.
+- `tests/security/`: 55 testes iniciais dos módulos, separados das nove provas Docker reais.
 
-Ratificar Q-02/Q-03/Q-04/Q-05/Q-06/Q-07/Q-08/Q-09/Q-10; revisar riscos críticos e delimitar ambiente efêmero sem dados pessoais. Sem autorização, executar somente verificações documentais, testes unitários estáticos e análise de contratos.
+## Complementos necessários encontrados na pesquisa
 
-**Checkpoint G0:** escopo T1 aprovado, VM/worker aprovados e nenhuma execução em host pessoal prevista.
+- Antes da VM: inventário de versões do **produto Docker Desktop**, Windows/WSL/Hyper-V e Linux guest; Engine 28.1.1 não informa a versão Desktop. Revisar avisos oficiais e backups antes de qualquer atualização.
+- Definir switch/ACLs do Hyper-V: Internal permite host↔VM; Private impede esse canal e exige solução própria para o controle. A topologia precisa permitir só o necessário, não simplesmente esconder portas publicadas.
+- Investigar inicialização de bots sem dar Docker socket ao booter. `externalServer()` não externaliza processos de bot. Provar segredos de bots e de controlador distintos contra versão 1.4.0.
+- Revisar SBOM/artefatos/runtime; digest fixa bytes, não ausência de CVE. Rootless/gVisor são camadas opcionais sujeitas à compatibilidade, não um requisito de complexidade por si.
+- Medir memória+swap, stdout/stderr e espaço do arquivo de VM; testes de 64 MiB não definem recursos de partidas.
 
-### F1 — Prova de fronteira e compatibilidade
+## Estrutura de documentação e implementação
 
-Criar **somente em runner efêmero ou VM descartável autorizada** ambiente Linux segregado. Testar runtime, snapshots, redes, ausência de drives do host, usuário, namespaces, cgroups, seccomp/AppArmor e política real de conexões. Executar exemplos **confiáveis**, não submissões de alunos.
+Feature 004 mantém spec, clarifications, research, data-model, contracts, tasks, analysis e checklists. O mapeamento de caminhos do plano anterior para o incremento é explícito: `services/worker-agent/` era destino proposto; o módulo Python deste incremento usa `services/worker_agent/`. Nenhum serviço de produção foi substituído silenciosamente.
 
-Testar especificamente Tank Royale 1.4.0 com **árbitro fora do ambiente de processo do bot**, canal de comunicação restrito, inicialização e coleta de replay. Se esse arranjo for inviável, documentar e comparar worker externo antes de seguir.
+[Contrato](contracts/job-protocol.md) · [Modelo de dados](data-model.md) · [Ameaças](../../docs/arquitetura/ameacas-sandbox.md) · [ADR-004](../../docs/arquitetura/ADR-004-isolamento-execucao.md).
 
-**Checkpoint G1:** compatibilidade demonstrada e artefatos medidos; se falhar, **sem bypass para o Docker Desktop pessoal**.
+## Rollback e limites de aceite
 
-### F2 — Plano de controle e entrada
-
-API recebe pedidos autorizados, valida AST e gera `ExecutionRequest` imutável, com quota e idempotência. Worker separado recebe contrato restrito; **sem caminho de usuário que chame CLI Docker nem shell**. Rejeição T2, falha fechada e feature flag desligada por padrão.
-
-**Checkpoint G2:** testes negativos de bypass e adulteração aprovados; binários gerais continuam negados.
-
-### F3 — Sandbox por job e ensaios
-
-Provisionar sandbox efêmero por tentativa na fronteira VM. Restringir mounts, redes, socket, capacidades, dispositivos, processos e recursos. Inspecionar política efetiva. Testar cargas sintéticas (sem arquivos pessoais), timeout, cancelamento, recuperação e ausência de órfãos. Logs e artefatos sanitizados.
-
-**Checkpoint G3:** cobertura de TH-01..TH-16 com resultados, inclusive falhas tratadas; riscos críticos não mitigados bloqueiam avanço.
-
-### F4 — Integridade, corrida e saída
-
-Vincular fonte/versão do programa, motor e política aos resultados; validar esquema do `BattleResults`/replay oficial, rejeitar corrupção e serialização anômala; persistir idempotente e limitar retry e abuso de fila.
-
-**Checkpoint G4:** regressão de 100% de fixtures inválidas negadas e métricas propostas revisadas.
-
-### F5 — Revisão e fechamento
-
-Consolidar artefatos, confronto real CI/VM, testes de segurança e decisão. O responsável ratifica riscos/limites e, se necessário, solicita parecer de segurança independente. Atualizar ADR, backlog e issue **somente após evidências**. Antes de acesso público haverá outro gate S08 de identidade, TLS, backups, dados e operação.
-
-## Project Structure
-
-### Documentação desta feature
-
-```text
-specs/004-isolamento-execucao/
-├── spec.md
-├── clarifications.md
-├── research.md
-├── plan.md
-├── data-model.md
-├── contracts/job-protocol.md
-├── quickstart.md
-├── tasks.md
-├── analysis.md
-└── checklists/
-    ├── requirements.md
-    └── security-gates.md
-```
-
-### Estrutura planejada para implementação futura (AINDA NÃO EXISTE)
-
-```text
-services/
-├── execution-control/       # API/broker tipado, nunca Docker socket
-├── worker-agent/             # agente da VM segregada
-├── execution-sandbox/        # política job por tentativa
-└── engine-adapter/           # árbitro e integração com Tank Royale
-packages/
-├── job-contracts/            # esquemas validados e versão imutável
-└── result-validation/        # replay e ledger idempotente
-tests/
-├── security/                 # negativos de política, quotas e fronteiras (CI/VM efêmero)
-└── contract/                 # schema job, resultado e rejeições
-docs/
-├── arquitetura/ameacas-sandbox.md
-└── qualidade/evidencias/S04-T04-*.md
-```
-
-A implementação deverá escolher a estrutura final após revisão. Os caminhos em `tasks.md` são **destinos planejados**, não arquivos já criados.
-
-## Dados, interfaces e orquestração
-
-Ver [data-model.md](data-model.md), [contrato interno](contracts/job-protocol.md) e [quickstart](quickstart.md). Nenhum esquema é API pública aprovada. Todos os eventos e campos recebidos do sandbox são tratados como dados não confiáveis.
-
-## Estrutura de validação e monitoramento
-
-| Camada | Onde executar | O que mede | O que não comprova |
-|---|---|---|---|
-| Análise estática Spec Kit | GitHub Actions, sem segredo | IDs, mapeamento FR/SC/TH, templates e inconsistências | Segurança da VM e isolamento real |
-| Fixtures de contrato | CI efêmero | Rejeições de schema, duplicidade, erros de parsing | Privacidade de host |
-| Spike de worker/judge | Runner efêmero/VM descartável | WebSocket mínimo, separação de processo, isolamento de network/mount | Host residencial sem teste específico |
-| Provas negativas | Somente ambiente isolado autorizado | Limites, negação observada, cleanup e fail-closed | Ausência de vulnerabilidades desconhecidas |
-| Smoke da VM dedicada | Somente por ação humana explícita no host | Compatibilidade da fronteira e operação | Liberação de acesso externo |
-| Pilotagem S08 | Etapa posterior | Carga real, recuperação e acesso autorizado | Eficácia pedagógica sem estudo |
-
-## Rollback e segurança operacional
-
-Habilitar novas execuções somente com evidência de gate e **flag desligada por padrão**. Em falha, negar novos jobs, cancelar/controlar os existentes, preservar somente logs/manifestos sanitizados e eliminar os recursos temporários **da VM**, sem modificar volumes de outros projetos. Nunca sugerir `docker system prune`, `down -v`, edição de daemon, firewall, DNS, roteador, runner local ou migração de VHDX como parte automática desta feature.
-
-## Complexity Tracking
-
-A VM dedicada introduz sobrecarga deliberada. **Justificativa:** o requisito III da constituição exige proteger o host pessoal e demais projetos. Uma única sandbox Docker no daemon compartilhado deixa dependência forte do mesmo plano de controle; a opção simples não atende ao objetivo proposto sem prova adicional. Revisar após medições, mantendo a possibilidade de um executor externo em vez de afrouxar limites.
+Em falha, negar novas execuções; não usar Docker Desktop pessoal como fallback. Limpeza apenas dos recursos com identidade/label da execução. Nenhum prune global, down -v, ajuste de firewall, VHDX ou compartilhamento de drives faz parte desta rodada. A VM preferida e os controles de CI reduzem riscos específicos, mas não aprovam a recepção de alunos. Critérios finais continuam em [security-gates.md](checklists/security-gates.md).

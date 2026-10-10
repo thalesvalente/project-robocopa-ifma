@@ -1,45 +1,41 @@
 # S04-T04 — Incremento 1: pesquisa, admissão e contenção verificável
 
-**Data:** 2026-10-10. **Estado:** planejado antes de implementar. Base: PR #16 / commit af6e0a08c1e51069c7ee8ec4c03168f0351c170d.
+**Data:** 2026-10-10. Plano inicial publicado no commit 0ecca28288ba9f71f754f618bbf2cae3d4226223, antes do primeiro código. **Estado atual:** incremento de código e provas de contenção aprovado no CI; integração de produção não concluída.
 
-## Autorização e fronteira desta rodada
+## Autorização e limites
 
-O responsável aprovou a VM Linux dedicada como direção preferencial, pediu pesquisa web para validar a decisão, planejamento com Spec Kit e início das implementações/testes. D1 permanece RoboDSL básica no MVP; níveis intermediário/avançado são pós-MVP. D2 está aprovada como **direção de arquitetura**, não como infraestrutura instalada, segura ou homologada.
+D1: RoboDSL básica no MVP; intermediário/avançado pós-MVP. D2: o responsável aprovou VM Linux independente como direção preferencial. A instalação e a prova do Hyper-V/guest/rede do host não ocorreram.
 
-A autorização permite componentes locais/offline e sondas sintéticas limitadas em runner GitHub-hosted descartável, sem executar programas recebidos de estudantes. Não instala VM, altera WSL/Docker Desktop, abre portas, muda firewall/roteador ou habilita produção no computador pessoal. CI não será descrito como teste do Hyper-V do responsável.
+D-005 separa G-EXP (módulos e sondas sintéticas finitas em CI descartável autorizados agora) de G-PROD (alunos e exposição bloqueados). Não instala VM nem altera Docker Desktop/WSL, .env, Compose, banco, firewall, VHDX ou projetos pessoais.
 
-A regra antiga que exigia provar a segurança antes de implementar qualquer teste gerava um ciclo. Separar: G-EXP autoriza desenvolvimento e experimentos descartáveis nesta rodada; G-PROD continua bloqueado até testes, VM real, autenticação, backup e aceite humano. A constituição não é alterada.
+## Tasks e evidências
 
-## Sequência e tasks deste incremento
+Os 39 IDs T001–T039 permanecem o catálogo de entregas amplas da feature 004. Os I1 abaixo detalham subconjuntos; não criam outro backlog macro nem encerram o restante de cada T.
 
-Os 39 IDs T001–T039 do plano anterior permanecem como catálogo macro de implementação da feature. Os itens I1 abaixo detalham um subconjunto, não substituem o backlog S00–S09. Todos começam pendentes.
+| ID | Entrega e vínculo | Resultado verificável |
+|---|---|---|
+| I1-01 | Pesquisa oficial e revisão de premissas; T002,T003,T005; FR-005,FR-018 | CONCLUIDA: fontes Docker/Microsoft/GitHub/gVisor e upstream Tank Royale lidas; `docs/arquitetura/pesquisa-isolamento-2026-10-10.md` |
+| I1-02 | Reconciliar D1/D2, plano e autorização; T001,T002; FR-020 | CONCLUIDA quanto ao incremento: D-005, clarifications e plan revisados. Não é ratificação geral S00/S03. |
+| I1-03 | Contrato de admissão puro; T008,T009,T013,T014; FR-001,FR-002,FR-011 | CONCLUIDA no recorte: 32 testes; envelope estrito, registry de versões autorizadas, DSL básica, prazo/hash e descritor imutável. Não há autenticação pública/ledger. |
+| I1-04 | Política de runtime antes de iniciar; T017,T018,T022; FR-005,FR-007,FR-008 | CONCLUIDA para perfil diagnóstico: 15 testes unitários e 20 invariantes verificadas em cada um dos 9 contêineres do CI. Não é perfil definitivo do motor. |
+| I1-05 | Saída limitada durante leitura, timeout e cleanup; T024,T025,T031; FR-009,FR-010,FR-014 | CONCLUIDA no recorte: 8 testes de subprocesso e probes de OUTPUT_LIMIT/TIMEOUT; limpeza dos contêineres da invocação observada. Sem recovery durável. |
+| I1-06 | Provas positivas/negativas sintéticas; T021,T022,T026; FR-018,FR-019 | CONCLUIDA para 9 cenários descritos abaixo, sem executar exploits ou usar dados pessoais; não equivale a todas TH-01..TH-16 ou aos 20 ciclos de homologação. |
+| I1-07 | Verificar contrato upstream de separação bot/árbitro; T007,T020; FR-006,FR-012 | CONCLUIDA como pesquisa: externalServer não evita BooterManager local. A batalha com bot/árbitro separados continua tarefa pendente. |
+| I1-08 | Regressões, inspeção e registro; T036,T037,T039; FR-020 | Lote de referência PASS: 164 testes unitários totais (55 novos), Spec Kit nativo e nove probes. Artifact baixado e conferido. Reconciliação de progresso possui regressão adicional separada. |
 
-| ID | Entrega verificável | Vínculo | Pré-requisito | Estado inicial |
-|---|---|---|---|---|
-| I1-01 | Pesquisar Docker/WSL/Hyper-V, privilégios, rede, recursos e fontes Tank Royale; registrar confirmação, ajustes e limites | T002,T003,T005; FR-005,FR-018 | Fonte primária | A_FAZER |
-| I1-02 | Reconciliar D1/D2, Spec Kit, critérios e caminho de execução sem homologar produção | T001,T002; FR-020 | I1-01 | A_FAZER |
-| I1-03 | Implementar contrato estrito de job de treino RoboDSL e rejeição de campos/linguagens/versões inesperadas | T008,T009,T013,T014; FR-001,FR-002,FR-011 | I1-02 | A_FAZER |
-| I1-04 | Implementar política de sandbox e verificação antes de iniciar: usuário, mounts, rede, seccomp, limites e ausência de privilégios | T017,T018,T022; FR-005,FR-007,FR-008 | I1-02 | A_FAZER |
-| I1-05 | Implementar transporte de saída com limite durante leitura, timeout e limpeza de recursos de sua própria invocação | T024,T025,T031; FR-009,FR-010,FR-014 | I1-04 | A_FAZER |
-| I1-06 | Executar controles positivos/negativos sintéticos de arquivos, rede e quotas em contêineres descartáveis do CI, recusando Docker Desktop/WSL/local | T021,T022,T026; FR-018,FR-019 | I1-04,I1-05 | A_FAZER |
-| I1-07 | Verificar contrato da separação bot/árbitro no upstream fixado e preparar prova de compatibilidade sem presumir suporte | T007,T020; FR-006,FR-012 | I1-01 | A_FAZER |
-| I1-08 | Rodar regressão, conferir evidências, atualizar tasks/relatório e preservar aceites restantes | T036,T037,T039; FR-020 | I1-03..I1-07 | A_FAZER |
+## Lote real de referência
 
-## Aceite e não objetivos
+[Run 38021817642](https://github.com/thalesvalente/project-robocopa-ifma/actions/runs/38021817642), fonte bc82edbcb425ab0977635e891e536e46ae8fa66e; checkout sintético do PR f83eb616ccb8df8602de574d8ba44274775c10a8. Isso não significa merge na main. Ambiente: runner Ubuntu, Docker Engine 28.0.4/cgroups v2/kernel 6.17.0-1022-azure, não Windows pessoal.
 
-PASS de I1-06 deve indicar casos exatos, observações reais, versão/commit, quotas pequenas, timeout total e limpeza. Fixture que apenas imita negação não comprova contenção. Uma política lida por docker inspect não basta: controles positivos devem funcionar e negativos falhar por causa conhecida. Não testar exploits de kernel, acesso à rede residencial ou consumo ilimitado.
+**Nove casos:** baseline efetiva; filesystem; network=none; throttling CPU; limite PIDs; limite tmpfs; OOM de memória; timeout externo; volume de saída. Política reduzida: 64 MiB, swap extra zero, 0,5 CPU, 16 PIDs, tmpfs4MiB, coletor8KiB. Ver [relatório](../../docs/qualidade/evidencias/S04-T04-I1.md).
 
-Mesmo com I1 concluído, permanecem: provisionar e testar a VM real; separar árbitro/bots em rede de jogo restrita; integrar broker autenticado; recuperação durável/idempotência; teste no telefone; avaliação de dependências; backup/restore; produção. Nenhuma dessas entregas será marcada PASS automaticamente.
+## Próximos incrementos necessários — não implementados
 
-## Pesquisa inicial — fontes oficiais a conferir
+| Ordem | Escopo | Tarefas amplas / aceite |
+|---|---|---|
+| I2 | Bot e árbitro em fronteiras distintas; booter e segredos por papel; canal WebSocket mínimo e negativos de rede | T007,T011,T019,T020,T029; provar batalha real e impedir uso do canal controlador pelo bot |
+| I3 | Broker autenticado, admissão multiusuário, fila, ledger/idempotência, retry e suspensão | T008–T016,T023–T025,T027–T035; não usar socket Docker na API, não duplicar pontuação |
+| I4 | Preparação da VM real: versões/patches Windows/Desktop/Hyper-V/guest, VHDX e capacidade, switches/ACLs, drives ausentes, bootstrap e recuperação | T005,T006,T017,T022,T032,T035,T038; comandos de alteração dependem de execução/autorização consciente do responsável |
+| I5 | Calibrar quotas de jogos, provar 20 ciclos/falhas, backup/restore, rastreabilidade, revisão de riscos e aceite | T026,T036–T039; sem liberar dados de alunos enquanto controles críticos pendentes |
 
-- Docker Engine security: https://docs.docker.com/engine/security/
-- WSL e isolamento: https://docs.docker.com/desktop/features/wsl/
-- Alertas de segurança: https://docs.docker.com/security/security-announcements/
-- Recursos/swap: https://docs.docker.com/engine/containers/resource_constraints/
-- Redes bridge: https://docs.docker.com/engine/network/drivers/bridge/
-- Hyper-V redes: https://learn.microsoft.com/en-us/windows-server/virtualization/hyper-v/plan/plan-hyper-v-networking-in-windows-server
-- gVisor: https://gvisor.dev/docs/architecture_guide/security/
-- Battle Runner: https://robocode.dev/api/battle-runner.html
-
-Conclusões e implementação serão acrescentadas somente depois de leitura/testes efetivos.
+A ordem I2/I3 pode usar CI descartável antes da instalação da VM. I4 não é substituído por resultados de contêiner no GitHub. Teste de telefone físico e requisitos pedagógicos continuam em S04-T03/S03. O intermediário/avançado não entra nesses incrementos do MVP.

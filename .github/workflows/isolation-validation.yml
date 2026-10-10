@@ -9,7 +9,10 @@ on:
       - 'tests/security/**'
       - 'spikes/isolamento/**'
       - 'scripts/run_isolation_checks.py'
+      - 'scripts/reconcile_isolation_backlog.py'
+      - 'tests/planning/test_isolation_progress.py'
       - 'docs/arquitetura/pesquisa-isolamento-2026-10-10.md'
+      - 'docs/qualidade/evidencias/S04-T04-I1.md'
   workflow_dispatch:
 
 permissions:
@@ -68,6 +71,33 @@ jobs:
           retention-days: 30
           if-no-files-found: warn
 
-# Nao usa self-hosted, nao recebe codigo de aluno, nao monta paths do host.
-# Somente codigo de sondas conhecido; sem pull_request_target ou segredos.
-# PASS desta bateria nao homologa Hyper-V, host pessoal ou acesso publico.
+  publish-canonical-progress:
+    needs: bounded-runtime-probes
+    if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.head.ref == 'feat/s04-isolation-validation'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    steps:
+      - name: Obter exatamente a fonte testada para atualizar somente planejamento
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: true
+      - name: Reconciliar somente a tarefa autorizada e suas projecoes
+        run: |
+          python3 scripts/reconcile_isolation_backlog.py --apply
+          python3 scripts/verify_planning.py
+          python3 scripts/verify_security_spec.py
+          python3 -m unittest discover -s tests/planning -v
+          git add -- docs/planejamento/backlog.json docs/planejamento/PLANO-MESTRE.md docs/planejamento/sprints/S04.md specs/004-isolamento-execucao/spec.md specs/004-isolamento-execucao/tasks.md docs/arquitetura/ADR-004-isolamento-execucao.md
+          if git diff --cached --quiet; then
+            echo 'Planejamento ja reconciliado; nenhum commit necessario.'
+            exit 0
+          fi
+          git -c user.name='github-actions[bot]' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' commit -m 'docs(plano): registra S04-T04 em execucao e sincroniza Spec Kit apos evidencias'
+          git push origin HEAD:refs/heads/feat/s04-isolation-validation
+
+# Somente o job publicador possui token de escrita; nao executa probes/Docker.
+# Push sem force e apenas na branch autorizada, nunca main. Nenhuma tarefa encerrada.
+# Probes em jobs descartaveis separados, sem segredos e sem pull_request_target.

@@ -1,31 +1,32 @@
-# Clarify — decisões, pressupostos e dúvidas de S04-T04
+# Clarify — decisões e lacunas de isolamento
 
-**Data:** 2026-10-09 · **Status:** pré-esclarecimento técnico para revisão, não entrevista nem ratificação do responsável.  
-**Origem:** constituição proposta, ADRs 001–003, scripts e evidências das features 001–003 e pedido atual.
+**Revisão:** 2026-10-10. Fontes: decisões do responsável, código do projeto e [pesquisa oficial](../../docs/arquitetura/pesquisa-isolamento-2026-10-10.md).
 
-Regra: `RESOLVIDO_PELA_FONTE` significa que o projeto já estabelece o limite; `CANDIDATO` é proposta ainda não aprovada; `ABERTO` exige investigação/decisão antes da execução.
+`DECIDIDO_ESCOPO` e `DIRECAO_APROVADA` registram decisões do responsável; `CANDIDATO` e `ABERTO` não são aprovação. Nenhuma decisão declarada aprovada por existência do documento.
 
-| ID | Questão | Proposta ou evidência | Estado | Responsável / gate |
+| ID | Questão | Estado e encaminhamento | Classificação | Referência |
 |---|---|---|---|---|
-| Q-01 | Podemos expor o servidor de laboratório Python aos alunos? | **Não**: porta 127.0.0.1, processo do host com acesso à CLI Docker; não é autenticação pública. | RESOLVIDO_PELA_FONTE | Constituição III e ADR-002 |
-| Q-02 | Qual código de estudante é autorizado no primeiro MVP? | **Decisão de escopo:** somente RoboDSL básica; níveis intermediário/avançado e linguagens gerais ficam após o MVP. Detalhes pedagógicos/gramática permanecem sujeitos à baseline S03. | DECIDIDO_ESCOPO | Responsável; D-004; S03, S04-T03 |
-| Q-03 | Docker Desktop/WSL 2 compartilhado pode ser fronteira final? | **Não assumir**. Propor VM Linux exclusiva do executor, com daemon e credenciais independentes; avaliar alternativa externa caso falhe. | CANDIDATO | Responsável; S04-T01/T05 |
-| Q-04 | Como executar Tank Royale com tráfego WebSocket sem rede externa? | Medir comunicação árbitro↔bot em rede isolada do worker, com regras de saída estritas. O `--network none` do spike não comprova essa nova topologia. | ABERTO | Equipe técnica; T011 |
-| Q-05 | Engine e bot podem compartilhar a mesma fronteira? | Risco à integridade do árbitro. Preferir processos/contêineres distintos dentro da VM; verificar possibilidade de usar servidor externo e controlar inicialização dos bots. | ABERTO | Equipe técnica; T010–T012 |
-| Q-06 | Quais quotas de CPU/RAM/PIDs/disco/tempo/concorrência? | Usar as quotas do laboratório apenas como **pontos iniciais de medição**, nunca SLA ou limite final. | ABERTO | Responsável após testes de carga |
-| Q-07 | Como o plano de controle solicita execução sem conceder acesso ao Docker? | Worker segregado recebe contrato tipado por broker autenticado, sem socket nem comando livre nas rotas públicas. Transporte concreto depende da arquitetura de deployment. | CANDIDATO | S03/S04; T008–T010 |
-| Q-08 | Quais dados e logs podem ser retidos? | Mínimo técnico sem identificação de alunos; prazos de retenção, LGPD e operação institucional a validar. | ABERTO | Responsável/instituição, S03/S08 |
-| Q-09 | Que tipo de evidência comprova resultados honestos? | Hash de versão+motor+política, replay verificado e transições idempotentes; apuração de empates em issue #15/S03-T03. | CANDIDATO | Requisitos de competição |
-| Q-10 | É possível usar rootless Docker, userns-remap ou gVisor? | Testar compatibilidade no Linux segregado; não instalar no Docker Desktop existente por decisão implícita. Não confundir camada extra com segurança absoluta. | ABERTO | Prova de viabilidade, T005 |
-| Q-11 | Podemos fazer ataques controlados na sua máquina pessoal? | **Não nesta rodada**. Somente em runner/VM descartável sem dados pessoais, com autorização específica para o ambiente alvo. | RESOLVIDO_PELA_FONTE | Constituição, AGENTS |
-| Q-12 | Quando liberar alunos e rede externa? | Somente após gates de segurança, identidade/autorizações, backup, TLS e aceite humano; se falhar, manter apenas demonstração com referências confiáveis. | RESOLVIDO_PELA_FONTE | S04-T04, S08 e responsável |
+| Q-01 | Expor o servidor Python local? | Não: processo pessoal acessa Docker; manter em localhost, sem túnel/LAN. | RESOLVIDO_PELA_FONTE | Constituição, laboratório 003 |
+| Q-02 | Linguagem do primeiro MVP? | Apenas RoboDSL básica. Intermediário, avançado e blocos depois do MVP. Gramática/aceite pedagógico ainda precisam da baseline. | DECIDIDO_ESCOPO | D-004 |
+| Q-03 | Qual fronteira preferida? | VM Linux independente, daemon e discos próprios, sem drives pessoais. O responsável aprovou a direção; não foi instalada. Outra distribuição WSL não equivale a VM independente. | DIRECAO_APROVADA | D-005; fonte Docker WSL |
+| Q-04 | WebSocket sem expor host/LAN? | Definir rede de jogo e canal de controle com destinos mínimos, testar positivos/negativos. Provas network=none não validam essa futura rede. | ABERTO | T007,T011,T019 |
+| Q-05 | Separar bot e árbitro? | Sim como objetivo técnico; BattleRunner 1.4.0 ainda usa BooterManager local com servidor externo. Prova de inicialização e segredo de controlador inacessível ao bot é necessária. | ABERTO | T007,T020; upstream fixado |
+| Q-06 | CPU/RAM/swap/PIDs/tmpfs/tempo? | Sondas I1 usam 0,5 CPU/64 MiB/sem swap/16 PIDs/4 MiB para testar enforcement, não dimensionar jogos. Quotas finais dependem de medição. | CANDIDATO | T023–T027 |
+| Q-07 | Como pedir execução? | Contrato puro implementado no I1; futuro broker autenticado entrega somente versão aprovada, sem comando shell, Docker flags ou socket. Transporte e autenticação continuam pendentes. | ABERTO | T008–T012 |
+| Q-08 | Retenção de dados/logs? | Dados sintéticos no CI. Retenção institucional e dados de alunos a definir antes do piloto. | ABERTO | FR-014; S03/S08 |
+| Q-09 | Resultado honesto? | Hash e replay verificam consistência, não autenticidade se o bot controlar árbitro/manifesto. Separação, identidade e ledger ainda são necessários; issue #15 trata empate. | CANDIDATO | T020,T028–T032 |
+| Q-10 | Rootless/userns/gVisor? | Camadas opcionais a medir dentro da VM, sem complexidade automática no MVP; fixar digest não elimina revisão de CVEs. | ABERTO | T005,T017,T032 |
+| Q-11 | Onde testar? | Módulos offline e sondas sintéticas finitas em GitHub-hosted descartável autorizados agora. Não testar no Docker pessoal nem instalar VM automaticamente. | EXPERIMENTO_AUTORIZADO | D-005, G-EXP |
+| Q-12 | Quando liberar alunos? | Somente após VM real, rede/árbitro/broker, identidade, backup/recuperação e aceite. Nenhum dos nove testes isolados dá essa liberação. | RESOLVIDO_PELA_FONTE | G-PROD; S08 |
 
-## Decisões que bloqueiam implementação
+## D1–D5 e separação de gates
 
-1. **D1:** escopo da linguagem básica no MVP **decidido** em `docs/planejamento/decisoes/D-004-escopo-mvp-seguranca.md`; detalhamento da gramática, aceites pedagógicos e testes ainda pendentes.
-2. **D2:** aprovar a fronteira de isolamento (VM exclusiva, worker externo ou alternativa comprovada).
-3. **D3:** decidir a separação efetiva bot/árbitro e o canal WebSocket permitido.
-4. **D4:** validar limites, testes de abuso autorizados e plano de recuperação.
-5. **D5:** ratificar critérios para liberar produção com estudantes — após S03 e revisão independente.
+1. **D1:** decidido o recorte de linguagem básica; sem ampliação de sintaxe nesta rodada.
+2. **D2:** direção VM dedicada aprovada. Instalação e verificação do Hyper-V/guest/rede/discos permanecem pendentes.
+3. **D3:** objetivo de separar árbitro e bot; viabilidade técnica ainda em investigação. Não precisa transformar toda escolha de implementação em nova aprovação conceitual, mas não homologar topologia sem teste.
+4. **D4:** testes pequenos e descartáveis autorizados; quotas de jogos e recuperação de produção só após medição.
+5. **D5:** liberação pública continua bloqueada. Nenhum aceite de alunos ou dados institucionais foi inferido.
 
-**Estado:** o responsável decidiu o recorte inicial D1 e a prioridade de segurança. **D2–D5 ainda não foram aprovadas**, e os detalhes pedagógicos de D1 continuam dependentes da baseline; a implementação de executor para entradas não confiáveis continua bloqueada.
+**G-EXP** permite implementar e testar controles para produzir evidência. **G-PROD** exige que a evidência demonstre a arquitetura alvo antes de alunos. Assim eliminamos o ciclo de exigir segurança já testada antes de iniciar testes, mantendo a proteção da máquina pessoal.
+
+Registro: [D-005](../../docs/planejamento/decisoes/D-005-vm-e-experimentos-controlados.md). O plano anterior era preparatório; esta revisão autoriza apenas o incremento delimitado, sem apagar a necessidade de ratificação S03/S04 e revisão de operação.

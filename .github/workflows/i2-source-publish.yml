@@ -1,0 +1,69 @@
+name: I2 - publicacao verificada de fontes temporarias
+on:
+  pull_request:
+    types: [synchronize, opened]
+    paths:
+      - 'spikes/isolamento/i2/.source-bundle.tar.xz'
+      - '.github/workflows/i2-source-publish.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  verify-and-publish:
+    if: ${{ github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.head.ref == 'feat/s04-i2-referee-isolation' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: true
+          ref: feat/s04-i2-referee-isolation
+      - name: Conferir integridade e extrair apenas fontes permitidas
+        run: |
+          python3 - <<'PY'
+          import hashlib, os, tarfile
+          from pathlib import Path
+          archive = Path('spikes/isolamento/i2/.source-bundle.tar.xz')
+          expected_sha = 'f77a074f59868a5d5f42e93fb41803ff28ef094bc78db36d9a6e78f93357767c'
+          allowed = {
+              'spikes/isolamento/i2/Dockerfile',
+              'spikes/isolamento/i2/prepare.py',
+              'spikes/isolamento/i2/upstream.lock.json',
+              'spikes/isolamento/i2/gateway.py',
+              'spikes/isolamento/i2/controller.py',
+              'spikes/isolamento/i2/probe.py',
+              'scripts/run_isolation_i2.py',
+              'tests/security/test_i2_protocol.py',
+          }
+          data = archive.read_bytes()
+          actual = hashlib.sha256(data).hexdigest()
+          if actual != expected_sha:
+              raise SystemExit('INTEGRITY_MISMATCH: expected source bundle checksum')
+          with tarfile.open(archive, 'r:xz') as tar:
+              items = tar.getmembers()
+              if {item.name for item in items} != allowed or len(items) != len(allowed):
+                  raise SystemExit('ALLOWLIST_MISMATCH')
+              if any(not item.isfile() or item.issym() or item.islnk() or item.size > 250000 for item in items):
+                  raise SystemExit('NON_REGULAR_OR_OVERSIZED_ENTRY')
+              for item in items:
+                  destination = Path(item.name)
+                  if destination.exists() or destination.is_symlink():
+                      raise SystemExit('EXISTING_SOURCE_CONFLICT: ' + item.name)
+                  destination.parent.mkdir(parents=True, exist_ok=True)
+                  source = tar.extractfile(item)
+                  if source is None:
+                      raise SystemExit('MISSING_SOURCE')
+                  destination.write_bytes(source.read())
+          print('PASS: fonte e caminhos conferidos')
+          PY
+      - name: Testar fontes e atualizar somente branch do PR
+        run: |
+          python3 -m unittest discover -s tests/security -v
+          python3 scripts/verify_security_spec.py
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add spikes/isolamento/i2/Dockerfile spikes/isolamento/i2/prepare.py spikes/isolamento/i2/upstream.lock.json spikes/isolamento/i2/gateway.py spikes/isolamento/i2/controller.py spikes/isolamento/i2/probe.py scripts/run_isolation_i2.py tests/security/test_i2_protocol.py
+          git rm -- spikes/isolamento/i2/.source-bundle.tar.xz
+          git commit -m "feat(isolation): implementa separacao de juiz e bots com gateway por papeis"
+          git push origin HEAD:refs/heads/feat/s04-i2-referee-isolation

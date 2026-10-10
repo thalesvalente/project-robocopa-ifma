@@ -1,6 +1,6 @@
 # Estado atual — fundação, motor e laboratório de autoria
 
-**Plano operacional:** 0.1.1 · **Trabalho técnico corrente:** S04-T03, candidato de autoria com CI aprovado e aceite físico pendente. Evidências deste avanço são registradas na feature 003; os gates formais anteriores continuam abertos.
+**Plano operacional:** 0.1.1 · **Trabalho corrente:** preparação documental da S04-T04 em Spec Kit; autoria móvel S04-T03 tecnicamente testada no CI/PC, celular físico e aprovações pendentes. Nenhum gate de segurança operacional foi aprovado.
 
 ## Fundação e acompanhamento
 
@@ -33,6 +33,14 @@ Lote de referência https://github.com/thalesvalente/project-robocopa-ifma/actio
 Aprendiz/sentinela: 44 × Walls 449, velocidade média 0. Aprendiz/explorador: 124 × Walls 243, velocidade média 5,7989. Cada treino teve três rounds. Artifact baixado e conferido quanto a hashes, replay oficial, placar final e métricas; screenshots reais desktop/móvel inspecionados. Evidência estruturada `docs/qualidade/evidencias/AUTORIA-MOBILE-CI.json`; análise `docs/arquitetura/spike-autoria.md`.
 
 A execução em Chromium emulado **não é teste em telefone físico**. O responsável compartilhou posteriormente uma captura da interface funcionando no PC, com Sentinela e resultado exibido de **Aprendiz 536 × Walls 226** em três rounds, replay no último round e velocidade média 0. Evidência visual e ressalvas em `docs/qualidade/evidencias/AUTORIA-MOBILE-HOST.md`. Em segunda captura no PC, o **Explorador** também apresentou batalha concluída: Aprendiz 188 × Walls 188, velocidade média 5,47, movimento em 94,3% dos turnos; painel mostra Walls 1º e Aprendiz 2º apesar do empate nos pontos exibidos. É uma questão de classificação a investigar antes da S03-T03. Ambas as capturas foram resumidas em `docs/qualidade/evidencias/AUTORIA-MOBILE-HOST.md`; replay/manifesto locais não foram anexados nem auditados independentemente. O serviço permanece em `127.0.0.1:18081`; não modifica o Compose existente. Manual: `spikes/autoria-mobile/README.md`.
+
+## Planejamento de segurança S04-T04 — sem execução de sandbox
+
+A pedido do responsável, a segurança será **especificada antes de ser implementada**: feature `specs/004-isolamento-execucao/` na branch `docs/s04-t04-isolamento-speckit`, PR próprio empilhado após a autoria. Foram preparados requisitos FR, critérios SC, cenários de ameaça TH, perguntas Q, ADR-004 candidata, contratos, plano, tarefas, checklists e análise de consistência. Registro de autorização: `docs/planejamento/decisoes/D-003-preparacao-isolamento.md`.
+
+A direção proposta separa plano de controle e worker: VM Linux dedicada com daemon próprio (não instalada), comunicação mínima com o árbitro a provar e execução da RoboDSL T1 restrita; Java/JS livres T2 continuam fora do MVP inicial. O servidor atual `127.0.0.1:18081` **não é seguro para LAN/público**, pois seu processo Python acessa a CLI Docker do host.
+
+As decisões D1–D5, testes negativos em ambiente descartável autorizado, isolamento bot/árbitro, backup, limites e ratificação da arquitetura permanecem pendentes. **S04-T04 continua A_FAZER** no backlog macro; esta preparação documental não conclui dependências S03/S04-T01/T02/T03. Validação estática por GitHub Actions documenta apenas qualidade dos artefatos, não segurança de código não confiável.
 
 ## Limites e próximos aceites
 

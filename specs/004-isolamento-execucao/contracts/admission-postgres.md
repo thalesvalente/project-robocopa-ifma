@@ -1,31 +1,35 @@
 # I3-03B — Contrato interno de admissão e persistência
 
-**Data:** 2026-10-10. **Estado:** especificado antes do código. [Plano AD-01..06](../i3-03-admission-plan.md). Este contrato NÃO é rota pública nem prova de autenticação.
+**Data:** 2026-10-10. **Especificação inicial:** commit aedbd379, antes do código. **Estado atual:** implementado/testado apenas em CI, [plano AD-01..06](../i3-03-admission-plan.md), [evidências](../../../docs/qualidade/evidencias/S04-T04-I3-03B.md). NÃO é rota pública nem prova de autenticação.
 
 ## Entradas e identidades
 
-`AdmissionService.submit(raw: bytes, source: str, actor: ServiceActor)` recebe JSON de até 1024 bytes: `{"schema_version":1,"version_id":"demo-v1","idempotency_key":"request-1","rounds":3}`. Rejeitar extras, duplicatas, bool em campos numéricos, NaN, UTF-8 inválido e identificadores fora do contrato. Fonte permanece limitada pelo compilador básico já existente.
+`AdmissionService.submit(raw: bytes, source: str, actor: ServiceActor)` recebe JSON até1024bytes: `{"schema_version":1,"version_id":"demo-v1","idempotency_key":"request-1","rounds":3}`. Rejeitar extras/duplicatas/bool numérico/NaN/UTF-8 inválido/identificadores fora do contrato. Fonte limitada pelo compilador básico existente.
 
-`ServiceActor(owner_id: UUID canônico, scope_id: str)` é criado exclusivamente pelo chamador de serviço confiável depois de autenticação/autorização (ainda não implementadas nesta entrega). Não aceitar owner, scope, role, worker, job/attempt, gate ou deadline dentro do JSON. A presença do dataclass não autentica ninguém. Nenhuma função desta entrega é exposta via HTTP.
+`ServiceActor(owner_id: UUID canônico, scope_id: str)` só pode ser construído por chamador de serviço confiável depois de autenticação/autorização **ainda não implementadas aqui**. Nenhuma autoridade owner/scope/role/worker/job/attempt/gate/deadline vem do JSON. Dataclass não autentica. Não há listenerHTTP.
 
-## Dados de controle e transações
+## Dados e transações
 
-`approved_versions(owner_id, scope_id, version_id)` guarda source_sha256/program_sha256/java_sha256, active=false por padrão e revision. Não guarda fonte, email, nome ou segredo. Identidade/hashes são imutáveis por trigger; alteração de active incrementa revision. Sem API de registro: o teste cadastra fixture administrativa, e a aplicação futura deverá popular uma projeção autorizada de versões imutáveis.
+`approved_versions(owner_id,scope_id,version_id)` guarda hashes fonte/programa/Java, active=false por padrão e revision. Sem fonte/email/nome/segredo. Trigger torna identidade/hashes imutáveis e aumenta revisão a cada UPDATE. O teste cadastra fixture administrativa; API de autoria futura deve manter essa projeção autorizada.
 
-`admission_snapshot(owner, scope, version)` retorna hashes, revisão e política ativa, ou VERSION_UNAUTHORIZED (sem diferenciar alheia, inexistente e revogada). O gate desligado não fornece snapshot. Privilégios EXECUTE apenas ao novo papel NOLOGIN rc_admission.
+`admission_snapshot(owner,scope,version)` devolve hashes/revisão/política quando gate e versão estão ativos. VERSION_UNAUTHORIZED não distingue alheia/inexistente/revogada. Somente rc_admission recebe EXECUTE. A compilação fica fora da transação.
 
-O serviço passa a fonte e hashes ao admit do I1. IDs temporários internos usados somente para satisfazer o envelope legado são descartados; não são job/attempt persistidos. Confere ainda o java_sha256 compilado contra o catálogo. Nenhuma invocação de motor/Docker.
+O serviço reutiliza admitI1 com fonte/hashes e UUIDs temporários internos exigidos pelo envelope legado, descartados antes da gravação. Confere ainda Java gerado contra o catálogo; sem motor/Docker. PostgreSQL gera IDs de job/tentativa canônicos.
 
-`enqueue_admitted(owner, scope, key, descriptor, revision)` obtém lock settings -> versão, valida novamente active/revision/owner/escopo/hashes/política, usa enqueue interno existente e retorna job_id/state/duplicate. Na primeira gravação, deadline de execução vem do relógio do banco; em retry idêntico, o prazo original é mantido, não prolongado. Repetição após revogação de versão/política pode ser recusada deliberadamente. Revogar EXECUTE do enqueue bruto de rc_broker e deixar a chamada interna ao owner; preservar demais funções de PG-01..06. Não acrescentar conclusão de partida/score.
+`enqueue_admitted(owner,scope,key,descriptor,revision)` trava settings -> versão, reconfere active/revision/owner/escopo/hashes/política, usa enqueue interno e devolve job_id/state/duplicate. Primeiro deadline vem do banco; retryidêntico conserva prazo original. Repetição após revogação/política pode ser recusada. Após migration002, **rc_broker perde enqueue bruto**; chamada interna pertence ao owner, entrada externa ao papel rc_admission. Outras operações PG-01..06 permanecem; não existe COMPLETED/score.
 
-O runtime abre transações curtas, parametriza valores separadamente e confirma commit antes de responder. Snapshot e compilação não mantêm uma transação longa; o segundo exame da versão evita confiar em autorização desatualizada. Falha de commit é STORAGE_UNAVAILABLE com resultado possivelmente desconhecido, nunca sucesso antecipado; o chamador deverá reconciliar com a mesma chave. Nenhum retry automático com nova chave.
+**Semântica da revogação:** bloqueia novas admissões e snapshots antigos; não implica cancelamento automático das tentativas já aceitas. Política de cancelamento em massa/ciclo de vida ainda precisa ser definida antes da operação cloud.
 
-## Banco/driver e fronteiras
+Adaptador parametriza valores e confirma commit antes de sucesso. Se commitfalhar, STORAGE_UNAVAILABLE pode representar resultado desconhecido; reconciliar com mesma chave, nunca retry automático comnova chave. Resposta de banco fora do contrato provoca rollback, não sucesso.
 
-O adaptador recebe factory de conexão confiável, nunca DSN do payload, aplica timeouts locais e prepare_threshold=None, não recebe privilégio de registrar versões ou alterar settings. Psycopg é dependência somente do adaptador/CI, não do parser I1. Driver real testado com login sintético restrito; SET ROLE de fixture não será chamado de autenticação de usuário. Produção depende de conexão TLS/pooler do provedor e API que valide identidades; isso permanece pendente.
+## Driver e fronteiras
 
-Erros são códigos enumerados sanitizados; não divulgar SQL, source, DSN, path, parâmetros ou mensagens de driver. SQLSTATE apenas interno se necessário. RLS impede acesso direto inclusive após SELECT indevido acrescentado na fixture. Não confundir schema privado de controle com RLS da futura aplicação de estudantes.
+Factory de conexão vem da configuração confiável do serviço, não do payload. Conexão nova semautocommit; timeouts de statement/lock/idle locais e prepare_threshold=None. `psycopg==3.3.6`/typing_extensions fixados porhash. Não garante conexãoTLS/pooler Supabase remotos, que ainda dependem de teste. AdaptadorPython não é runtimeDeno.
 
-## Casos de aceite
+LoginSCRAM sintético restrito via Unixsocket testado emPostgreSQL real. Bootstrap administrativo foi separado; SETROLE de outras fixtures não é chamado de autenticação de aluno. O catálogo privado não substitui RLS da aplicação. Erros são enums sanitizados, não source/DSN/SQL/path/mensagem de driver.
 
-Fluxo real compilador I1 -> Psycopg -> Postgres -> fila/claim/start; identidade de usuário separada; versão alheia/escopo/revogação/Java adulterado; concorrência e idempotência; rechecagem após mudança entre snapshot e gravação; gate desligado; privilégio mínimo; tentativa de SQL injection com parâmetros; erro de commit/rollback sem sucesso; migration reaplicada falha sem perda; ausência de campo fonte na persistência. Catálogo e driver não fecham I3-03 integral ou G-PROD.
+## Aceite observado e pendências
+
+Run38079697510:22 integrações reais de I1/Psycopg/PostgreSQL;25 unidades explícitas comdoubles, incluídas em407 regressões locais. Owner/escopo/revisão/revogação/Java/política, duplicação concorrente, parâmetros, roles/RLS e migrationnondestrutiva comprovados no limite. Artifact de relatório/hash/CRC auditado fora do runner; não revisão independente.
+
+I3-03 integral continua aberto: JWT, identidade operacional, API/clientes cloud, RLS dos usuários, Supabase real e workeroutbound. Nenhuma conta, deploy, aluno, VM doresponsável, cobrança ou gateG-PROD foi habilitado.

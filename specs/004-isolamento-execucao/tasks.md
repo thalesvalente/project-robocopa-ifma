@@ -1,11 +1,11 @@
 # Tasks: Segurança e isolamento da execução (S04-T04)
 
-**Input:** [spec.md](spec.md), [plan.md](plan.md), [clarifications.md](clarifications.md), [research.md](research.md), [data-model.md](data-model.md), [contracts/job-protocol.md](contracts/job-protocol.md).  
-**Status:** catálogo de 39 entregas amplas. O incremento I1 já implementa subconjuntos de contratos/política/limites, com provas reais no CI; as caixas amplas permanecem `[ ]` até atender todo seu aceite. Progresso/evidência: [iteration-1.md](iteration-1.md).  
-**Macro:** S04-T04 em `EM_EXECUCAO` após D-005 e I1; estado histórico `A_FAZER` preservado no Git, sem fechamento dos gates S03/S04.  
-**Regra de execução:** G-EXP autoriza o incremento I1 em CI descartável; G-PROD continua bloqueado. Antes de alterações/VM no host é necessário plano e autorização próprios. Não executar cargas adversariais no computador pessoal.
+**Input:** [spec.md](spec.md), [plan.md](plan.md), [clarifications.md](clarifications.md), [research.md](research.md), [data-model.md](data-model.md), [contracts/job-protocol.md](contracts/job-protocol.md).
+**Status:** catálogo de 39 entregas amplas. I1/I2 e recortes I3 possuem provas, mas as caixas amplas permanecem `[ ]` até todo o aceite. Detalhes dos incrementos e evidências abaixo.
+**Macro:** S04-T04 `EM_EXECUCAO`; estado histórico `A_FAZER` preservado no Git, sem fechamento de S03/S04.
+**Regra:** G-EXP autoriza implementação/testes sintéticos delimitados, G-PROD continua bloqueado. Mudanças na VM/host precisam de plano e autorização específicos. Não executar cargas adversariais no computador pessoal.
 
-Formato: `- [ ] T### [P?] [US#] objetivo, caminho(s), requisitos (FR/SC), ameaças (TH)`. `[P]` indica independência de escrita, **não** autorização para burlar gates.
+Formato: `- [ ] T### [P?] [US#] objetivo, caminho(s), requisitos (FR/SC), ameaças (TH)`. `[P]` indica independência de escrita, não autorização para burlar gates. Linhas das 39 tarefas macro preservadas; caminhos candidatos com hífen não implicam módulos Python publicados nesses caminhos.
 
 ## Phase 1 — Governança e preparação (gate G0)
 
@@ -13,8 +13,8 @@ Formato: `- [ ] T### [P?] [US#] objetivo, caminho(s), requisitos (FR/SC), ameaç
 - [ ] T002 [P] [US1] Submeter D1–D5 de `specs/004-isolamento-execucao/clarifications.md` ao responsável; registrar decisões, donos e limites sem pressupor aprovação. FR-001, FR-020; SC-008; TH-01.
 - [ ] T003 [P] [US2] Revisar riscos e fronteiras em `docs/arquitetura/ameacas-sandbox.md`, incluindo ativo pessoal, bot/árbitro, segredos e replay. FR-003, FR-005, FR-007; SC-002; TH-02, TH-03, TH-05, TH-15.
 - [ ] T004 [P] [US3] Definir cenário estritamente sintético, ambiente descartável, plano de limpeza e inventário *antes/depois* para `tests/security/fixtures/` e `docs/qualidade/evidencias/S04-T04-testplan.md`. FR-019; SC-004, SC-007; TH-07, TH-08.
-  
-**Checkpoint G0:** decisões aprovadas, riscos avaliados e *proibição de executar testes adversariais no computador pessoal* respeitada. Se bloqueado, não seguir.
+
+**Checkpoint G0:** decisões aprovadas, riscos avaliados e proibição de testes adversariais no PC pessoal. Gate bloqueado não autoriza implantação.
 
 ## Phase 2 — Provas de viabilidade de fronteira (gate G1)
 
@@ -22,7 +22,7 @@ Formato: `- [ ] T### [P?] [US#] objetivo, caminho(s), requisitos (FR/SC), ameaç
 - [ ] T006 [US2] Demonstrar ausência de drives/volumes pessoais e fronteira de administração independente em VM/runner efêmero; evidenciar em `spikes/isolamento/host-boundary.md`. FR-005, FR-007, FR-019; SC-002; TH-02, TH-03.
 - [ ] T007 [US2] Prototipar **apenas com bots oficiais confiáveis** a comunicação árbitro↔bot sem internet/LAN, avaliando external server/booter do Tank Royale; registrar em `spikes/isolamento/engine-separation.md`. FR-005, FR-006, FR-012; SC-002; TH-04, TH-15.
 
-**Checkpoint G1:** evidência real de separação e compatibilidade. Se falhar, estudar worker externo; não fazer fallback ao Docker Desktop compartilhado.
+**Checkpoint G1:** evidência real de separação e compatibilidade; não usar Docker Desktop compartilhado como fallback.
 
 ## Phase 3 — Fundações do plano de controle (gate G2)
 
@@ -32,7 +32,7 @@ Formato: `- [ ] T### [P?] [US#] objetivo, caminho(s), requisitos (FR/SC), ameaç
 - [ ] T011 [US2] Implementar agente de worker com credencial escopada, canal controlado e política de rede efetiva em `services/worker-agent/`, após a prova T007. FR-005, FR-006, FR-014; SC-002, SC-007; TH-04, TH-05.
 - [ ] T012 [US1] Estabelecer controle de habilitação **desligado por padrão** e recusa segura de jobs se política/worker indisponível em `services/execution-control/`. FR-016, FR-020; SC-008; TH-14.
 
-**Checkpoint G2:** toda tentativa pública é negada enquanto a política não estiver validada; broker não invoca diretamente host Docker.
+**Checkpoint G2:** tentativas públicas negadas até validar política; broker não administra Docker do host.
 
 ## Phase 4 — User Story 1 / autorização e linguagem (P0)
 
@@ -41,7 +41,7 @@ Formato: `- [ ] T### [P?] [US#] objetivo, caminho(s), requisitos (FR/SC), ameaç
 - [ ] T015 [US1] Provar, em runner descartável, que requisição recusada não cria job nem chama Docker no host em `tests/security/test_no_host_daemon.py`. FR-003, FR-004, FR-019; SC-001; TH-01, TH-14.
 - [ ] T016 [US1] Verificar invariantes fail-closed na fronteira HTTP e broker por testes de contrato em `tests/security/test_fail_closed.py`. FR-016, FR-020; SC-008; TH-01, TH-14.
 
-**Checkpoint US1:** todos os negativos rejeitados antes de execução; não há endpoint público ativado.
+**Checkpoint US1:** negativos recusados antes da execução; nenhum endpoint público ativado por este catálogo.
 
 ## Phase 5 — User Story 2 / sandbox por job (P1)
 
@@ -52,7 +52,7 @@ Formato: `- [ ] T### [P?] [US#] objetivo, caminho(s), requisitos (FR/SC), ameaç
 - [ ] T021 [US2] Rodar testes negativos de filesystem, socket, segredos e isolamento entre jobs **somente na VM/runner descartável** em `tests/security/test_boundary.py`. FR-005, FR-007, FR-018; SC-002; TH-02, TH-03, TH-05, TH-09.
 - [ ] T022 [US2] Inspecionar política **efetiva**, kernel/runtime e recursos na VM, falhando se divergirem do contrato, em `tests/security/test_runtime_attestation.py`. FR-007, FR-018; SC-002, SC-003; TH-02, TH-04.
 
-**Checkpoint US2:** negar todos os acessos indevidos observáveis; resultado inconclusivo bloqueia release.
+**Checkpoint US2:** negar acessos indevidos observáveis; resultado inconclusivo bloqueia release.
 
 ## Phase 6 — User Story 3 / recursos, falhas e limpeza (P1)
 
@@ -62,7 +62,7 @@ Formato: `- [ ] T### [P?] [US#] objetivo, caminho(s), requisitos (FR/SC), ameaç
 - [ ] T026 [US3] Executar 20 ciclos sintéticos com timeout/crash/cancelamento, coletando quotas efetivas e zero órfãos em `tests/security/test_resource_recovery.py`. FR-008, FR-009, FR-010, FR-018; SC-003, SC-004; TH-07, TH-08.
 - [ ] T027 [US3] Exercitar concorrência, idempotency key, rejeição de overflow de fila e rate-limit em `tests/security/test_queue_abuse.py`. FR-013, FR-017; SC-006; TH-11, TH-16.
 
-**Checkpoint US3:** recursos medidos e limpos; nenhuma modificação em contêineres fora do worker.
+**Checkpoint US3:** recursos medidos/limpos; sem modificar contêineres alheios.
 
 ## Phase 7 — User Story 4 / integridade e evidências (P1)
 
@@ -72,7 +72,7 @@ Formato: `- [ ] T### [P?] [US#] objetivo, caminho(s), requisitos (FR/SC), ameaç
 - [ ] T031 [US4] Implementar manifesto/logs sanitizados e varredura de dados sintéticos sensíveis em `packages/result-validation/redaction/`. FR-014; SC-007; TH-12.
 - [ ] T032 [US4] Validar hashes/digests de motor e política em cada artefato e em `tests/security/test_supply_chain.py`. FR-011, FR-015, FR-018; SC-005, SC-007; TH-10, TH-13.
 
-**Checkpoint US4:** somente resultados consistentes, únicos e não adulterados podem integrar o ledger.
+**Checkpoint US4:** somente resultados únicos, consistentes e não adulterados integram ledger.
 
 ## Phase 8 — User Story 5 / suspensão e operação (P2)
 
@@ -89,36 +89,25 @@ Formato: `- [ ] T### [P?] [US#] objetivo, caminho(s), requisitos (FR/SC), ameaç
 
 ## Dependencies & Execution Order
 
-- **G0** (T001–T004) depende da ratificação e dos limites de autorização.
-- **G1** (T005–T007) depende de G0. Se compatibilidade e separação do árbitro falharem, parar.
-- **G2** (T008–T012) depende de G1 e da baseline S03 para comunicação/autorização.
-- **US1** (T013–T016) depende de G2; valida a admissão antes de aceitar qualquer bot de estudante.
-- **US2** (T017–T022) depende de G1/G2 e do canal do árbitro; somente testes descartáveis.
-- **US3** (T023–T027) depende de G2/US2 para métricas reais.
-- **US4** (T028–T032) depende de G2 e do motor/árbitro; pode preparar esquemas enquanto US2/US3 são testados.
-- **US5** (T033–T035) depende de G2; a suspensão deve existir antes de habilitar qualquer ambiente.
-- **Fechamento** (T036–T039) depende de US1..US5 e de aceites formais; não autoriza automaticamente S08.
+G0 (T001–T004) depende de ratificação e limites de autorização; G1 (T005–T007) de G0; G2 (T008–T012) de G1 e baselineS03 para comunicação/autorização. US1 depende de G2, US2 de G1/G2, US3 de G2/US2, US4 de G2 e motor/árbitro; preparar esquema não homologa segurança. US5 depende de G2 e suspensão antes da habilitação. T036–T039 exigem US1..US5 e aceites formais, sem autorização automática de S08.
 
 **Caminho crítico:** T001 → T002 → T005 → T007 → T010 → T011 → T018 → T020 → T021 → T026 → T029 → T033 → T036 → T039.
 
 ## Implementation Strategy & Codex handoff
 
-ChatGPT Pro prepara, revisa e executa mudanças delimitadas. **Codex apenas para implementação pesada**, por exemplo separação de booter/árbitro, worker, testes intensivos e operações de concorrência, e somente após G0/G1. O handoff deve registrar branch/commit, arquivos permitidos, sandbox estritamente descartável, limites de recursos, testes esperados, riscos e como não afetar Docker Desktop existente.
+ChatGPT Pro prepara/revisa/executa mudanças delimitadas. Codex somente para implementação pesada justificada após gates, com branch/commit, arquivos permitidos, sandbox descartável, limites, riscos e testes explícitos. Nenhum item amplo vira [x] só por haver design, mock, checklist ou subconjunto experimental aprovado.
 
-**Regra irrevogável para este documento:** nenhum item marcado [x] apenas por existir um design, mock ou checklist; status de implementação inicia totalmente pendente.
+## Controle consolidado dos recortes e evidências (2026-10-10)
 
-## Controle da reconciliação do recorte I2
+| Recorte | Resultado no limite definido | Planejamento/evidência |
+|---|---|---|
+| I1 | Contratos/limites/sondas CI | [Plano](iteration-1.md), [relatório](../../docs/qualidade/evidencias/S04-T04-I1.md) |
+| I2 | Separação/arena/limpeza e reconciliação | [R01–R10](i2-reconciliation-plan.md), [C01–C05](i2-reconciliation-decision.md), [relatório](../../docs/qualidade/evidencias/S04-T04-I2-RECONCILIACAO.md) |
+| I3-01 | SQLite/broker interno experimental | [Iteração](iteration-3.md), [evidências](../../docs/qualidade/evidencias/S04-T04-I3-01.md) |
+| I3-02 | Probe mTLS real de laboratório, não serviço cloud | [Plano](i3-02-auth-plan.md), [evidências](../../docs/qualidade/evidencias/S04-T04-I3-02.md) |
+| I3-03 PG | Migration001 e30 testes PostgreSQL reais | [PG-01..06](i3-03-postgres-plan.md), [evidências](../../docs/qualidade/evidencias/S04-T04-I3-03.md) |
+| I3-03B AD | Migration002, I1 ligado por driver ao banco;22 integrações reais/25 unidades novas | [AD-01..06](i3-03-admission-plan.md), [contrato](contracts/admission-postgres.md), [relatório](../../docs/qualidade/evidencias/S04-T04-I3-03B.md) |
 
-Subtarefas [R01–R10 concluídas](i2-reconciliation-plan.md), com decisão [C01–C05 fechada](i2-reconciliation-decision.md), [evidências técnicas](../../docs/qualidade/evidencias/S04-T04-I2-RECONCILIACAO.md) e [manifesto legível por máquina](../../docs/qualidade/evidencias/S04-T04-I2-RECONCILIACAO.json). O encerramento é **somente experimental**; as 39 caixas amplas permanecem abertas até seus critérios integrais, inclusive I3/I4/I5 e revisão independente. Não liberar submissões de estudantes.
+**I3-03 integral continua EM_EXECUCAO.** AD-01..06 fecham apenas a ponte de serviço interno/CI, mapeada a T008..T016/T028/T030/T037 e HYB-01..03. `ServiceActor` não valida JWT; SCRAM do banco não autentica participante/worker por HTTP. Após002, rc_admission enfileira, rc_broker não usa enqueue bruto. Faltam cliente/API cloud, papéis/identidades operacionais, catálogo/RLS da aplicação, Supabase real e worker outbound; I3-04..07/I4/I5 permanecem abertos.
 
-## Subtarefas do I3 — refinamento antes do código
-
-[Plano I3 por entregas](iteration-3.md) e [decisões](i3-design-decisions.md) são a decomposição autorizada experimental para subconjuntos de T008–T016/T023–T025/T027–T030/T033–T035/T037. O check de cada I3-01a..I3-01e só muda com evidência; **as caixas T001–T039 acima seguem abertas** até o aceite macro. I3-01 não implementa API, worker ou autenticação, nem satisfaz o gate G2 em produção. Os próximos I3-02..I3-07 dependem de decisões/testes próprios antes de execução de código de estudantes.
-
-**Estado do recorte I3-01 (2026-10-10):** [I3-01a..e concluídos experimentalmente](iteration-3.md), [relatório CI/negativos](../../docs/qualidade/evidencias/S04-T04-I3-01.md). Permanecem **todas as 39 T001–T039 amplas como abertas**: o protótipo offline NÃO entrega broker de produção, autenticação worker, fila Postgres, ledger, VM nem liberação. I3-02..I3-07 [ ] exigem desenho e implementação próprios.
-
-## Decomposição I3-02 (não altera as 39 caixas amplas)
-
-O [plano I3-02a..f](i3-02-auth-plan.md) cobre T008/T010/T011/T012/T015/T016/T027/T037 em contexto estritamente G-EXP, com provas mTLS e autorização por certificado/escopo. As caixas T001..T039 seguem abertas: não existe worker remoto apto a receber job, PKI operacional ou homologação de produção.
-
-**Controle experimental I3-02 (2026-10-10):** [I3-02a..f concluídas no escopo G-EXP](i3-02-auth-plan.md), 33 testes TLS reais e regressões I1/I2/autoria/Spec Kit PASS; [evidência](../../docs/qualidade/evidencias/S04-T04-I3-02.md). A conclusão NÃO marca quaisquer T001–T039 amplas como [x]. A autenticação e revogação em produção, jobs reais e I3-03..07 permanecem pendentes.
+A revisão de [CI AD](i3-03-admission-ci-fix.md) precedeu a correção do workflow. O estado e os contratos acompanham o código, mas **todas as 39 caixas amplas acima continuam abertas**, assim como os18 gates e G-PROD. Os relatórios históricos conservam seus lotes; os marcos experimentais não liberam estudantes.

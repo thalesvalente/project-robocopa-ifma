@@ -12,6 +12,7 @@
   "attempt_id": "eacdd8d4-7a24-4070-91c8-d6bdc58c223b",
   "version_id": "demo-version-001",
   "program_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "source_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
   "language_id": "robodsl/0.1",
   "trust_class": "T1",
   "engine_ref": "tank-royale/1.4.0",
@@ -70,3 +71,7 @@ O payload de RoboDSL trafega em canal separado com tamanho limitado e hash compa
 ## Transporte e autenticação
 
 Um canal autenticado worker↔broker, sem exposição de Docker remoto, é candidato (pull com escopo e expiração curta ou método equivalente). **Não fixar mTLS, fila ou configuração de rede antes de verificar compatibilidade, uso local e requisitos S03/S04.** Não há implementação pública nesta feature.
+
+## Alinhamento I1/I3 e status do canal (2026-10-10)
+
+O envelope implementado no I1 exige adicionalmente **`source_sha256`**, vinculado ao conteúdo imutável e ao `program_sha256`; o exemplo acima foi corrigido. O contrato continua PROPOSTA para transporte remoto: [I3-01](../iteration-3.md) só implementa fila interna/offline. Não existe handshake autenticado, token de aluno, endpoint público, claim remoto ou ledger oficial. Autenticidade da identidade `owner_ref` dependerá de Q-07/I3-02. Os campos de lease/resultado demonstrados acima NÃO foram implementados por efeito dessa correção documental.

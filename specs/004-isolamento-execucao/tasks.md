@@ -110,3 +110,7 @@ ChatGPT Pro prepara, revisa e executa mudanças delimitadas. **Codex apenas para
 ## Controle da reconciliação do recorte I2
 
 Subtarefas [R01–R10 concluídas](i2-reconciliation-plan.md), com decisão [C01–C05 fechada](i2-reconciliation-decision.md), [evidências técnicas](../../docs/qualidade/evidencias/S04-T04-I2-RECONCILIACAO.md) e [manifesto legível por máquina](../../docs/qualidade/evidencias/S04-T04-I2-RECONCILIACAO.json). O encerramento é **somente experimental**; as 39 caixas amplas permanecem abertas até seus critérios integrais, inclusive I3/I4/I5 e revisão independente. Não liberar submissões de estudantes.
+
+## Subtarefas do I3 — refinamento antes do código
+
+[Plano I3 por entregas](iteration-3.md) e [decisões](i3-design-decisions.md) são a decomposição autorizada experimental para subconjuntos de T008–T016/T023–T025/T027–T030/T033–T035/T037. O check de cada I3-01a..I3-01e só muda com evidência; **as caixas T001–T039 acima seguem abertas** até o aceite macro. I3-01 não implementa API, worker ou autenticação, nem satisfaz o gate G2 em produção. Os próximos I3-02..I3-07 dependem de decisões/testes próprios antes de execução de código de estudantes.

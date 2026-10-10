@@ -12,7 +12,7 @@
 | Q-04 | WebSocket sem expor host/LAN? | I2 demonstrou bridge owned + ACLs dentro dos namespaces, gateway7654 permitido e acesso a host/peer/7655/DNS/IPv6 negado nos dois bots. Prova no runner não valida a rede da VM real. | VERIFICADO_NO_CI | I2; T007/T011/T019; I4 pendente |
 | Q-05 | Separar bot e árbitro? | Duas batalhas reais com três contêineres e namespaces distintos. Cliente oficial de protocolo evita BooterManager local; filtro de mensagens protege comandos após handshake. Nenhum bot no árbitro. Falta reproduzir na VM alvo e revisar produção. | VERIFICADO_NO_CI | I2/N5; T007/T020 |
 | Q-06 | CPU/RAM/swap/PIDs/tmpfs/tempo? | I1 usa perfil pequeno; I2 usa1CPU por papel, árbitro1GiB/bots512MiB/128PIDs/tmpfs128MiB e quotas de sessão. São orçamentos de experimento, não capacidade aprovada. | CANDIDATO | T023–T027; I5 |
-| Q-07 | Como pedir execução? | Contrato puro existe no I1; futuro broker autenticado deverá entregar versão aprovada, sem shell/Dockerflags/socket. Transporte, identidade, fila e ledger continuam pendentes. | ABERTO | I3; T008–T012 |
+| Q-07 | Como pedir execução? | Contrato puro existe no I1; futuro broker autenticado deverá entregar versão aprovada, sem shell/Dockerflags/socket. Transporte, identidade e ledger completo continuam pendentes. Há plano I3-01 para fila local experimental, sem autenticação, HTTP ou worker remoto. | ABERTO | I3; T008–T012 |
 | Q-08 | Retenção de dados/logs? | Apenas dados sintéticos no CI; retenção institucional/dados de alunos a definir antes do piloto. | ABERTO | FR-014; S03/S08 |
 | Q-09 | Resultado honesto? | I2 confirma fronteira e consistência de eventos/replay/identidades/tipos/hashes. Não autentica árbitro comprometido; ledger e autoria do pedido ainda faltam. Empate segue issue15. | CANDIDATO | I2/I3; T020/T028–T032 |
 | Q-10 | Rootless/userns/gVisor? | Camadas opcionais a medir na VM; não ampliar complexidade do MVP automaticamente; digest não elimina revisão de vulnerabilidades. | ABERTO | T005/T017/T032 |
@@ -28,3 +28,5 @@
 5. **D5:** produção e alunos bloqueados; nenhum aceite institucional inferido.
 
 **G-EXP** permite engenharia para produzir evidência; **G-PROD** exige a arquitetura alvo validada antes de alunos. I2 não homologa S00/S03 nem o laboratório público. [D-005](../../docs/planejamento/decisoes/D-005-vm-e-experimentos-controlados.md).
+
+**Complemento Q-07 (2026-10-10):** o [plano I3](iteration-3.md) e [decisões G-EXP](i3-design-decisions.md) autorizam SOMENTE implementação offline de fila de laboratório com gate desligado. Isso não resolve a decisão sobre identidade mútua, credenciais de serviço e transporte do broker↔worker. I3-02 deve resolver e testar Q-07 ANTES da primeira entrega de jobs remota; nenhuma autenticação de estudantes é presumida.

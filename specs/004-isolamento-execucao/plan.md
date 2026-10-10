@@ -81,3 +81,7 @@ Em falha, negar execução e registrar incerteza, sem fallback ao Docker pessoal
 ## Reconciliação de I2 encerrada no recorte (2026-10-10)
 
 O plano [R01–R10](i2-reconciliation-plan.md) e a [matriz C01–C05](i2-reconciliation-decision.md) antecederam o código corretivo. PR #19 permaneceu como única implementação canônica; PRs #18 e #21 encerrados sem merge e com históricos preservados. [Relatório final](../../docs/qualidade/evidencias/S04-T04-I2-RECONCILIACAO.md): quatro workflows PASS, duas batalhas reais, dois abortos, timeout efetivo com cleanup, 320 regressões reproduzidas, 12 arquivos auditados fora do runner. Zero lacunas I2 abertas no recorte experimental. Isso **não conclui** T001–T039, G-PROD, I3, I4 ou I5; requisitos amplos continuam abertos.
+
+## I3 — preparação documental antes do primeiro código (2026-10-10)
+
+O [plano I3](iteration-3.md) decompõe a execução em I3-01..I3-07, com [decisões e bloqueios](i3-design-decisions.md) e testes/aceites por subincremento. A modelagem anterior não resolvia autenticação do worker Q-07; por segurança I3-01 usa SOMENTE SQLite em arquivo temporário do CI, sem interface HTTP/worker e desligado por padrão. A arquitetura Postgres, auth, leases, ledger de resultado e recovery ainda exigem planejamento e comprovação próprios. Macro S04-T04 e G-PROD mantêm os estados. Branch de engenharia: `feat/s04-i3-control-plane`.

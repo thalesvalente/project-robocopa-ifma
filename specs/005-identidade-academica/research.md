@@ -1,16 +1,15 @@
-# Pesquisa inicial — Google acadêmico IFMA
+# Pesquisa — Google OAuth misto: acadêmico Workspace e Gmail pessoal
 
-**Data:** 2026-10-10. Esta pesquisa orienta o planejamento; não comprova uma conexão real à conta IFMA Google Workspace.
+**Data:** 2026-10-10. **Decisão:** D-011 amplia a D-010 para múltiplas escolas. Nenhum Google OAuth real conectado/validado por esta pesquisa.
 
-| Tema | Evidência | Implicação |
+| Tema | Fonte primária | Consequência para o MVP |
 |---|---|---|
-| Domínio acadêmico do IFMA | Produto educacional depositado no eduCAPES descreve e-mail discente no formato `nome@acad.ifma.edu.br`. https://educapes.capes.gov.br/bitstream/capes/743121/2/Produto%20educacional%20-%20Magalh%C3%A3es%20e%20Pedrosa.%202024.pdf | **Candidato**, confirmar se é Google Workspace/SSO, não hardcode do token ainda. |
-| Campo Google Sala de Aula no SUAP | Extratos SUAP públicos distinguem "E-mail Acadêmico" e "E-mail Google Sala de Aula"; entrada Google for Education pode usar link SSO dentro do SUAP, não senha autônoma. | Necessária conta de teste autorizada e confirmação do fluxo; não inferir `hd` do formato do e-mail. |
-| Supabase Google | https://supabase.com/docs/guides/auth/social-login/auth-google | Google OAuth pelo Supabase, scopes mínimos, client ID/secret e callback. |
-| Validação Google | https://developers.google.com/identity/openid-connect/openid-connect | Google `sub` identifica conta, `hd` assinado prova Workspace; hint de request não restringe servidor. |
-| Hook de criação | https://supabase.com/docs/guides/auth/auth-hooks/before-user-created-hook | Gatilho para barrar novos cadastros por provider/domínio. Não cobre contas antigas nem substitui autorização. |
-| Menores/Google Education | https://support.google.com/edu/classroom/answer/15163043?hl=pt-BR | Admin do Google Workspace precisa liberar apps terceiros não configurados para menores de 18; risco institucional real. |
-| Acesso a apps terceiros | https://support.google.com/a/answer/7281227 | Administrador pode configurar apps OAuth; app externo pode ser bloqueado. |
+| Google OIDC | https://developers.google.com/identity/openid-connect/reference | `sub` é ID estável; e-mail não é chave; `hd` só aparece para usuários de domínio hospedado e deve ser conferido **se** o sistema afirma vínculo Workspace. Não exigir `hd` em Gmail pessoal |
+| Google Auth/Supabase | https://supabase.com/docs/guides/auth/social-login/auth-google | Um provedor Google atende pessoal e Workspace; frontend único sem `hd` obrigatório; credenciais Google ficam no provedor/backend |
+| Supabase Auth Hook | https://supabase.com/docs/guides/auth/auth-hooks/before-user-created-hook | Hook permite restringir provedor e dados no cadastro, mas não deve bloquear Gmail pessoal nem conceder escola/role; contas antigas exigem autorização contínua |
+| RLS PostgreSQL | https://supabase.com/docs/guides/database/postgres/row-level-security | Vínculo autorizado por school_id e owner, não por e-mail ou domínio; isolamento tenant cruzado |
+| Workspace for Education para menores | https://knowledge.workspace.google.com/admin/getting-started/editions/manage-access-to-unconfigured-third-party-apps-for-users-designated-as-under-18 | Contas escolares de menores podem estar sujeitas a app terceiro bloqueado; há exceções conforme configuração de scopes básicos, por isso testar a conta real com admin |
+| Google de outra escola | https://knowledge.workspace.google.com/admin/apps/control-which-apps-access-google-workspace-data | Cada escola pode ter domínios/controles próprios. Não equiparar Google login a matrícula |
+| IFMA academia/SUAP | Histórico [D-010](../../docs/planejamento/decisoes/D-010-login-google-academico-ifma.md) | `acad.ifma.edu.br` é domínio de e-mail acadêmico **candidato**, não evidência definitiva de `hd` |
 
-**Conclusão de pesquisa:** a solução é tecnicamente viável **se** a conta escolar for uma identidade Google OAuth acessível; a política para menores e o domínio real ainda precisam ser provados. É inadequado liberar cadastro apenas comparando `email.endsWith('@acad.ifma.edu.br')`. Priorizar confirmação admin/campus antes de programar o fluxo dependente do domínio.
-
+**Conclusão de engenharia:** preservar a implementação Google OAuth do Supabase, retirar exclusividade Workspace e tratar a autorização por **vínculo escolar verificável** como independente. O risco principal ao abrir contas Gmail é autoinscrição indevida: manter PENDING sem acesso, convite administrativo e RLS. Não é necessário adicionar provedor de identidade ou serviço pago.

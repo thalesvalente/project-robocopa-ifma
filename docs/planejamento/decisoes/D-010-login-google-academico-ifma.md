@@ -1,4 +1,6 @@
-# D-010 — Entrada de estudantes com conta Google acadêmica do IFMA
+# D-010 — Entrada de estudantes com conta Google acadêmica do IFMA (histórico)
+
+**SUPERADA PARCIALMENTE POR [D-011](D-011-google-pessoal-multiescolas.md) EM 2026-10-10:** a regra antiga de conta acadêmica **exclusiva**, proibição de Gmail pessoal, rejeição de `hd` ausente para todo login e adiamento de escolas externas **não vigora mais**. Login Google passa a aceitar **Workspace acadêmico OU Gmail pessoal**, com vínculo escolar aprovado. Este arquivo é preservado como histórico da decisão anterior; para o escopo atual seguir D-011, [ADR-008](../../arquitetura/ADR-008-google-multiescolas.md) e [Spec Kit 005](../../../specs/005-identidade-academica/spec.md).
 
 **Data:** 2026-10-10. **Origem:** decisão explícita do responsável: "Quero que [os estudantes] usem a acadêmica do Google". **Estado:** REQUISITO APROVADO, ainda **não implementado nem integrado a uma conta do Google/Supabase**. **Rastreabilidade:** S03 identidade/perfis, S04 autorização do plano de controle, HYB-01/02/09, I3-03 e [feature 005](../../../specs/005-identidade-academica/spec.md). G-PROD BLOQUEADO.
 

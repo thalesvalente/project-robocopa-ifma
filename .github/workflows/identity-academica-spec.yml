@@ -1,4 +1,4 @@
-name: Feature 005 - Google academico IFMA (planejamento)
+name: Feature 005 - Google Workspace e Gmail pessoal (politica e Spec Kit)
 
 on:
   pull_request:
@@ -6,7 +6,12 @@ on:
       - 'specs/005-identidade-academica/**'
       - 'specs/README.md'
       - 'docs/arquitetura/ADR-007-autenticacao-google-academica.md'
+      - 'docs/arquitetura/ADR-008-google-multiescolas.md'
       - 'docs/planejamento/decisoes/D-010-login-google-academico-ifma.md'
+      - 'docs/planejamento/decisoes/D-011-google-pessoal-multiescolas.md'
+      - 'services/identity/**'
+      - 'tests/identity/**'
+      - 'docs/qualidade/evidencias/S03-ID-010*'
       - 'docs/planejamento/ESTADO-ATUAL.md'
       - '.github/workflows/identity-academica-spec.yml'
   workflow_dispatch:
@@ -34,5 +39,6 @@ jobs:
           python3 scripts/verify_planning.py
           python3 scripts/verify_deliverables.py
           python3 -m unittest discover -s tests/planning -v
+          python3 -m unittest discover -s tests/identity -v
           git diff --exit-code
 # Documentação apenas: não faz login no Google, importa alunos nem emite tokens.

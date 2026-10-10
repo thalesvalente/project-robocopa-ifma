@@ -1,14 +1,20 @@
-# Tarefas da feature 005 — Identidade acadêmica com Google
+# Tarefas — Feature 005 (Google Workspace e Gmail pessoal)
 
-**Estado:** tarefas PLANEJADAS, não executadas. Tudo deve entrar em commits de planejamento antes de código ou configuração real. O backlog canônico não deve ser marcado como concluído por esta feature, e não autoriza liberação de alunos.
+**Data:** 2026-10-10. **Estado:** D-011 aprovada e plano Spec Kit atualizado ANTES de qualquer implementação. Histórico D-010/ID-001..09 é preservado em Git, porém as tarefas abaixo substituem versões que proibiam Gmail. S03/S04/S08 e G-PROD não são fechadas por documentação.
 
-- [ ] **ID-001** [US-ID1/5] Confirmar com administrador IFMA Google Workspace o domínio efetivo da conta Google dos estudantes e fluxo SUAP/Google Sala de Aula com uma conta de teste autorizada. Registrar valores de configuração sem nomes/PII/tokens. Resolver Q-ID01.
-- [ ] **ID-002** [US-ID1/5] Confirmar política para aplicativos OAuth externos e menores de 18, responsável pelo Google Cloud OAuth Client, consent screen, escopos mínimos, callback e app approval. Resolver Q-ID02.
-- [ ] **ID-003** [US-ID1/3] Validar tecnicamente o `hd` confiável na identidade Google emitida pelo fluxo Supabase; não aceitar `hd` de URL/request ou metadata user-editable. Se não disponível, planejar método seguro antes da implementação. Resolver Q-ID03.
-- [ ] **ID-004** [US-ID2/3] Especificar e implementar (CI PostgreSQL) perfis, vínculo campus/turma/participação, status e papéis com RLS/deny-by-default. Não transformar qualquer `@acad.ifma.edu.br` em aluno autorizado sem vínculo. Resolver Q-ID04.
-- [ ] **ID-005** [US-ID4] Implementar e testar Before User Created Hook restritivo (Google/provider/domínio), sem confundi-lo com barreira para usuário já existente; testes de troca de papel/vínculo e token antigo.
-- [ ] **ID-006** [US-ID1/6] Implementar PWA "Entrar com Google acadêmico" em projeto de teste com Supabase Auth e fluxo OIDC controlado. Sem senha local/refresh tokens Google desnecessários ou segredos no JS.
-- [ ] **ID-007** [US-ID2/3/4] Testes negativos: Gmail pessoal, domínio sósia, sem `hd`, token ausente/expirado/audience divergente, sem vínculo, suspenso, cross-campus, cliente fingindo professor, callback adulterado e RLS.
-- [ ] **ID-008** [US-ID5/6] Executar E2E com conta Google acadêmica **de teste** e telefone físico, sujeito a autorizações/Google admin, confirmar resultado sanitizado; nenhuma pessoa real no CI público.
-- [ ] **ID-009** [US-ID1..6] Reconciliar Spec Kit, decisões, documentação, CI e evidências por SHA; não declarar autenticado se só foram executados mocks e não habilitar G-PROD.
+- [ ] **ID-001** Confirmar domínio real/Google Workspace IFMA e eventual integração SUAP com conta de teste autorizada; não presumir `acad.ifma.edu.br` como claim `hd` efetivo.
+- [ ] **ID-002** Confirmar regras Google Workspace for Education para app terceiro e menores; registrar também política de Gmail pessoal/consentimento e aprovação institucional antes do piloto.
+- [ ] **ID-003** Verificar token Google/Supabase real: `sub`, `email_verified`, `iss/aud/exp`, `hd` assinado quando Workspace; **ausência de hd no Gmail é válida**. Não confiar em parâmetro `hd` de request.
+- [ ] **ID-004** Desenhar e testar PostgreSQL/RLS com `schools`, `school_memberships`, status, papéis e contextos de competição, para contas acadêmicas e Gmail sem distinção indevida de direitos.
+- [ ] **ID-005** Configurar e testar hook de criação que permita **Gmail pessoal e Workspace verificados por Google** e rejeite outros provedores indevidos; não usar hook como substituto de autorização.
+- [ ] **ID-006** Implementar frontend Vercel com "Continuar com Google" sem forçar Workspace global, em ambiente de teste autorizado; sem senhas próprias.
+- [ ] **ID-007** Testes negativos de autenticação/autorização: `hd` falso ou ausente de Workspace, Gmail não verificado, papel autoatribuído, entrada de escola falsa, convite repetido, PENDING/SUSPENDED, tenant cruzado, JWT inválido, acesso entre turmas.
+- [ ] **ID-008** E2E em celular e OAuth real com contas **de teste** (Gmail e Workspace quando disponível), com proteção de menores e dados minimizados, sem PII em Git/artefatos.
+- [ ] **ID-009** Sincronizar Spec Kit, decisões, índice, evidências/CI e gates reais a cada incremento.
+- [x] **ID-010** [recorte CI inicial] Implementar política pura de classificação de identidades **já verificadas**, com Gmail `@gmail.com` sem `hd` e Workspace com `hd` autenticado; sempre iniciar PENDING sem derivar escola/papel. Testar provider, sub, email_verified, hd textual forjado, dados malformados. **Não é login OAuth real.**
+- [ ] **ID-011** [posterior] Planejar e implementar convites/aprovação multiescola no servidor e RLS de vínculos ACTIVE por escola/turma, com TTL, rate limit, auditoria e suspensão.
+- [ ] **ID-012** [posterior] Exercitar casos multi-escola e onboarding externo sob revisão institucional; não confundir conta permitida com torneio publicamente aberto.
 
+**Regra de execução:** incluir lacuna no plano ANTES de qualquer patch de código; só marcar checkbox quando houver relatório e testes no SHA correto.
+
+**Evidência ID-010:** plano publicado primeiro no commit `4f4b911` e política offline implementada depois no commit `2dcea3c`. [Relatório S03-ID-010](../../docs/qualidade/evidencias/S03-ID-010.md) confirma **20 casos sintéticos PASS** no CI, além do planejamento e autoria. Os testes não representam login Google real nem autorização escolar; ID-001..009, ID-011/012, S03 e G-PROD permanecem abertos.

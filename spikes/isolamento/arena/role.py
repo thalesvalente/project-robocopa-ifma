@@ -1,5 +1,6 @@
 """Fixed I2 actions inside role-specific containers, credentials only from stdin."""
 from __future__ import annotations
+import errno
 import base64,gzip,hashlib,io,json,os,secrets,socket,subprocess,sys,time
 from pathlib import Path
 from websockets.sync.client import connect
@@ -75,12 +76,10 @@ def referee(cfg):
         stage='gateway_ready'
         gateway.start()
         Path('/tmp/ready').touch()
-        # Orchestrator performs negative tests then authorizes this known reference battle.
         until=time.monotonic()+90
         while not Path('/tmp/start').exists():
             if time.monotonic()>until:raise RuntimeError('START_SIGNAL_TIMEOUT')
             time.sleep(.05)
-        # All blocked gateway messages were TPS=23; verify none reached the engine.
         blocked_control_unchanged=True
         stage='await_reference_bots'
         bots=[];until=time.monotonic()+45
@@ -146,7 +145,6 @@ def referee(cfg):
             export(name,data)
         stage='completed'
     finally:
-        # Fixed stage names and enumerated counters only; never log a frame/token.
         print('I2_DIAGNOSTIC '+json.dumps({'stage':stage,'gateway':gateway.report()}),flush=True)
         gateway.close()
         if ctrl:ctrl.close()
@@ -163,27 +161,30 @@ def bot(cfg):
 def probe(cfg):
     url=cfg['url'];checks={}
     ref=cfg['referee_ip']
-    # Positive TCP control: gateway must be reachable.
     with socket.create_connection((ref,7654),timeout=2):checks['gateway_tcp_reachable']=True
     targets={'raw_engine_denied':(ref,7655),'wrong_port_denied':(ref,7653),
              'host_canary_denied':(cfg['host_gateway'],cfg['host_port']),
              'peer_canary_denied':(cfg['peer_ip'],8766),'testnet_denied':('192.0.2.1',80),
              'docker_dns_denied':('127.0.0.11',53)}
     errors={}
+    refused={errno.ECONNREFUSED,errno.ENETUNREACH,errno.EHOSTUNREACH,errno.EACCES,errno.EPERM}
     for label,target in targets.items():
         sock=socket.socket();sock.settimeout(1)
         try:code=sock.connect_ex(target)
         finally:sock.close()
-        checks[label]=code!=0;errors[label]=code
-    # UDP DNS denial is checked as well; .11 is deliberately not in loopback ACL.
+        checks[label]=code in refused;errors[label]=code
     udp=socket.socket(socket.AF_INET,socket.SOCK_DGRAM);udp.settimeout(1)
     try:
         udp.connect(('127.0.0.11',53));udp.send(b'\0'*12);udp.recv(16)
         checks['udp_dns_denied']=False
-    except OSError:checks['udp_dns_denied']=True
+    except OSError as error:
+        errors['udp_dns_denied']=error.errno
+        checks['udp_dns_denied']=error.errno in refused
     finally:udp.close()
     v6=socket.socket(socket.AF_INET6);v6.settimeout(1)
-    try:checks['ipv6_denied']=v6.connect_ex(('2001:db8::1',80))!=0
+    try:
+        code=v6.connect_ex(('2001:db8::1',80));errors['ipv6_denied']=code
+        checks['ipv6_denied']=code in refused
     finally:v6.close()
     checks['referee_file_invisible']=not Path('/tmp/referee-canary').exists()
     checks['controller_file_invisible']=not Path('/tmp/control-secret').exists()
@@ -237,7 +238,6 @@ def main():
 if __name__=='__main__':
     try:main()
     except Exception as exc:
-        # No raw upstream frames, tokens, tracebacks or input echoed.
         reason=str(exc) if type(exc) is RuntimeError and str(exc).replace('_','').isupper() else type(exc).__name__
         print('I2_FAILURE '+reason,flush=True)
         raise SystemExit(1)

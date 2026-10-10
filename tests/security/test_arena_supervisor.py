@@ -1,4 +1,4 @@
-"""Regression for constructing supervisor utility argv; no Docker or sudo called."""
+"""Regression for supervisor arguments and cleanup; no Docker/sudo called."""
 import importlib.util,unittest
 from pathlib import Path
 from types import SimpleNamespace
@@ -33,3 +33,31 @@ class SupervisorVectorTests(unittest.TestCase):
         self.assertTrue(result['verified'])
         self.assertTrue(any(args[-2:]==['iptables','-S'] for args in calls))
         self.assertTrue(any(args[-2:]==['ip6tables','-S'] for args in calls))
+
+class CleanupTests(unittest.TestCase):
+    def test_unknown_abort_stage_does_not_call_docker(self):
+        with patch.object(M,'docker') as mocked:
+            with self.assertRaises(ValueError):M.one_battle({},Path('/not-used'),abort_at='arbitrary')
+            mocked.assert_not_called()
+    def test_tag_reassigned_is_not_removed(self):
+        calls=[]
+        def fake(*args,**kwargs):
+            calls.append(args)
+            return SimpleNamespace(returncode=0,output=b'sha256:'+b'b'*64)
+        with patch.object(M,'docker',side_effect=fake):
+            self.assertFalse(M.cleanup_images({'walls':'robocopa-i2-'+'a'*12+':walls'}, {'walls':'sha256:'+'a'*64}))
+        self.assertFalse(any('rm' in args for args in calls))
+    def test_invalid_tag_not_touched(self):
+        with patch.object(M,'docker') as mocked:
+            self.assertFalse(M.cleanup_images({'walls':'other-project'},{}));mocked.assert_not_called()
+    def test_partial_failed_build_records_tags(self):
+        import tempfile
+        tags={};images={}
+        def fake(*args,**kwargs):
+            if args[0]=='build':
+                return SimpleNamespace(returncode=1 if 'walls' in args else 0,output=b'fixed build output')
+            if '--format' in args:return SimpleNamespace(returncode=0,output=b'sha256:'+b'a'*64)
+            return SimpleNamespace(returncode=1,output=b'')
+        with tempfile.TemporaryDirectory() as tmp,patch.object(M,'docker',side_effect=fake):
+            with self.assertRaisesRegex(RuntimeError,'BUILD_FAILED_walls'):M.build_images(Path(tmp),images,tags)
+        self.assertEqual(set(tags),{'referee','walls'});self.assertEqual(set(images),{'referee'})

@@ -5,10 +5,12 @@ on:
       - '.github/workflows/separated-arena.yml'
       - 'specs/004-isolamento-execucao/iteration-2.md'
       - 'specs/004-isolamento-execucao/i2-protocol-guard.md'
+      - 'specs/004-isolamento-execucao/i2-audit-plan.md'
       - 'spikes/isolamento/arena/**'
       - 'services/worker_agent/arena*'
       - 'services/worker_agent/bounded.py'
       - 'scripts/run_separated_arena.py'
+      - 'scripts/verify_arena_evidence.py'
       - 'tests/security/**'
       - 'tests/arena/**'
   workflow_dispatch:
@@ -62,6 +64,17 @@ jobs:
           sudo -n nsenter --version
       - name: Duas batalhas oficiais e negativas de rede/papéis no runner descartável
         run: python3 scripts/run_separated_arena.py
+      - name: Auditoria independente somente leitura do lote produzido
+        run: |
+          python3 - <<'PYCODE'
+          from pathlib import Path
+          from services.worker_agent.arena_evidence import validate_batch
+          batches=list(Path('.local/security-i2').glob('*/batch.json'))
+          assert len(batches)==1, 'Exactly one batch from this invocation required'
+          report=validate_batch(batches[0].parent)
+          assert report['status']=='PASS' and report['abort_checks_passed']==2
+          print('PASS: two real battles and two finite abort cleanups; not a production gate')
+          PYCODE
       - name: Guardar apenas evidências verificadas ou diagnósticos sintéticos sanitizados
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
@@ -71,5 +84,5 @@ jobs:
           include-hidden-files: true
           retention-days: 30
           if-no-files-found: warn
-# As regras são instaladas APENAS nos namespaces de contêineres próprios do runner.
-# Nenhuma VM/Windows do responsável, endpoint público ou código de alunos é usado.
+# ACLs only in owned container namespaces of a disposable GitHub runner.
+# Not the operator Windows/VM, production, student code or public networking.

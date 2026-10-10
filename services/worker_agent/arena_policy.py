@@ -35,6 +35,13 @@ class ArenaPolicy:
     def verify(self, info, image, run_id, network):
         if info.get('HostConfig',{}).get('NetworkMode')!=network:
             raise PolicyError('NETWORK_MISMATCH')
+        attached=info.get('NetworkSettings',{}).get('Networks')
+        if not isinstance(attached,dict) or set(attached)!={network} or not isinstance(attached[network],dict):
+            raise PolicyError('ATTACHED_NETWORKS_MISMATCH')
+        endpoint=attached[network]
+        if (endpoint.get('GlobalIPv6Address') or endpoint.get('IPv6Gateway')
+                or endpoint.get('GlobalIPv6PrefixLen',0) != 0):
+            raise PolicyError('IPV6_ENDPOINT_DENIED')
         cfg=info.get('Config',{}); host=info.get('HostConfig',{})
         if cfg.get('Labels',{}).get('org.robocopa.arena-role')!=self.role:
             raise PolicyError('ROLE_MISMATCH')
@@ -46,7 +53,8 @@ class ArenaPolicy:
         copy=deepcopy(info);copy['HostConfig']['NetworkMode']='none'
         result=self.limits().verify(copy,image,run_id)
         result.pop('network_none')
-        result.update(private_bridge=True,role=True,separate_pid_ipc=True,no_metadata_secrets=True)
+        result.update(private_bridge=True,role=True,separate_pid_ipc=True,no_metadata_secrets=True,
+                      attached_networks_exact=True)
         return result
 
 def ipv4(value):

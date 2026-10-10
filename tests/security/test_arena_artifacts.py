@@ -6,19 +6,11 @@ ROOT=Path(__file__).resolve().parents[2]
 spec=importlib.util.spec_from_file_location('separated_arena',ROOT/'scripts/run_separated_arena.py')
 M=importlib.util.module_from_spec(spec);spec.loader.exec_module(M)
 
-
 def fixture():
-    rows=[{'name':'Walls','version':'1.0','totalScore':50},{'name':'Spin Bot','version':'1.0','totalScore':20}]
-    final={'type':'GameEndedEventForObserver','numberOfRounds':3,'results':rows}
-    events=[{'type':'GameStartedEventForObserver'}]
-    for r in (1,2,3):
-        events += [{'type':'TickEventForObserver','roundNumber':r},
-                   {'type':'RoundEndedEventForObserver','roundNumber':r}]
-    events.append(final)
-    return {'results.json':json.dumps({'source':'GameEndedEventForObserver','engine_version':'1.4.0',
-                'completed':True,'numberOfRounds':3,'ticks':3,'results':rows}).encode(),
-            'referee-report.json':b'{}','recordings.battle.gz':gzip.compress(
-                b'\n'.join(json.dumps(e).encode() for e in events))}
+    from test_arena_evidence import fixture as full_fixture, payload
+    result,events=full_fixture();files=payload(result,events)
+    files['referee-report.json']=b'{}'
+    return files
 
 def frames(files):
     return b'\n'.join(b'RC_I2_ARTIFACT '+n.encode()+b' '+base64.b64encode(v) for n,v in files.items())
@@ -43,7 +35,7 @@ class ArtifactTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError,'SECRET'):M.validate_replay(files,['SECRET_CANARY_123'])
     def test_no_compressed_replay(self):
         files=fixture();files['recordings.battle.gz']=b'bad'
-        with self.assertRaises(OSError):M.validate_replay(files)
+        with self.assertRaises(ValueError):M.validate_replay(files)
     def test_wrong_score(self):
         files=fixture();r=json.loads(files['results.json']);r['results'][0]['totalScore']=51
         files['results.json']=json.dumps(r).encode()

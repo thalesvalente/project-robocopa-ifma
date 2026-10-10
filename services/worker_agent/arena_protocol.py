@@ -66,7 +66,6 @@ def handshake(raw: str, *, session: str, identities: dict[str, tuple[str,str]],
     name, version = identities[match]
     if data.get('name') != name or data.get('version') != version:
         raise ProtocolDenied('IDENTITY_MISMATCH')
-    # Only known public metadata are sent; no caller text beyond verified identity.
     return name, {'type':'BotHandshake','sessionId':session,'name':name,
                  'version':version,'authors':['RoboCopa I2 reference'],
                  'secret':upstream_secret}
@@ -77,8 +76,7 @@ def intent(raw: str) -> dict:
         return data
     if data['type'] != 'BotIntent':
         raise ProtocolDenied('BOT_MESSAGE_ONLY')
-    # The SDK serializes an empty team list on every intent. It has no action.
-    # Actual team messaging remains rejected rather than expanding the scope.
+    # The SDK's empty list has no action; actual team messaging stays denied.
     if 'teamMessages' in data:
         if type(data['teamMessages']) is not list or data['teamMessages']:
             raise ProtocolDenied('TEAM_MESSAGES_DENIED')
@@ -96,3 +94,54 @@ def intent(raw: str) -> dict:
         elif key in TEXT and (not isinstance(value,str) or len(value)>2048):
             raise ProtocolDenied('INTENT_TEXT')
     return data
+
+
+# Diagnostic budgets for three-round reference games, not production SLAs.
+from dataclasses import dataclass
+import time
+
+@dataclass(frozen=True)
+class BudgetLimits:
+    messages: int = 20000
+    input_bytes: int = 16 * 1024**2
+    output_bytes: int = 64 * 1024**2
+    lifetime_seconds: float = 150
+    idle_seconds: float = 30
+
+    def __post_init__(self):
+        for value in (self.messages,self.input_bytes,self.output_bytes):
+            if type(value) is not int or not 0 < value <= 64 * 1024**2:
+                raise ValueError('INVALID_CONNECTION_BUDGET')
+        for value in (self.lifetime_seconds,self.idle_seconds):
+            if type(value) not in (int,float) or not math.isfinite(value) or not 0 < value <= 240:
+                raise ValueError('INVALID_CONNECTION_DEADLINE')
+
+class SessionBudget:
+    """One client reader and one engine reader; counters never contain payloads."""
+    def __init__(self,limits=None,*,clock=time.monotonic):
+        self.limits=limits if limits is not None else BudgetLimits()
+        self.clock=clock;self.start=self.last=clock()
+        self.messages=0;self.input_bytes=0;self.output_bytes=0
+    @staticmethod
+    def size(raw):
+        if type(raw) is not str:raise ProtocolDenied('TEXT_ONLY')
+        try:return len(raw.encode('utf-8'))
+        except UnicodeError:raise ProtocolDenied('INVALID_TEXT') from None
+    def wait_timeout(self):
+        now=self.clock()
+        lifetime=self.limits.lifetime_seconds-(now-self.start)
+        idle=self.limits.idle_seconds-(now-self.last)
+        if lifetime<=0:raise ProtocolDenied('SESSION_LIMIT')
+        if idle<=0:raise ProtocolDenied('IDLE_LIMIT')
+        return min(lifetime,idle)
+    def accept(self,raw):
+        self.wait_timeout()
+        size=self.size(raw)
+        if self.messages>=self.limits.messages:raise ProtocolDenied('MESSAGE_BUDGET')
+        if self.input_bytes+size>self.limits.input_bytes:raise ProtocolDenied('INPUT_BUDGET')
+        self.messages+=1;self.input_bytes+=size;self.last=self.clock()
+    def accept_output(self,raw):
+        if self.clock()-self.start>=self.limits.lifetime_seconds:raise ProtocolDenied('SESSION_LIMIT')
+        size=self.size(raw)
+        if self.output_bytes+size>self.limits.output_bytes:raise ProtocolDenied('OUTPUT_BUDGET')
+        self.output_bytes+=size

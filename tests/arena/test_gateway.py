@@ -4,6 +4,7 @@ from pathlib import Path
 ROOT=Path(__file__).resolve().parents[2]
 sys.path[:0]=[str(ROOT/'spikes/isolamento/arena'),str(ROOT/'services/worker_agent')]
 from gateway import BotGateway,QUIET
+from arena_protocol import BudgetLimits
 from websockets.sync.server import serve
 from websockets.sync.client import connect
 from websockets.exceptions import ConnectionClosed
@@ -78,5 +79,26 @@ class GatewayTests(unittest.TestCase):
             self.valid_handshake(ws);self.received.get(timeout=2)
             ws.send('{"type":"BotIntent","command":"shell"}');self.assert_denied(ws)
         self.assertTrue(self.received.empty())
+    def test_message_budget_transport(self):
+        self.gateway.limits=BudgetLimits(messages=2)
+        with self.connect() as ws:
+            self.valid_handshake(ws);self.received.get(timeout=2)
+            ws.send('{"type":"BotReady"}');ws.recv(timeout=2);self.received.get(timeout=2)
+            ws.send('{"type":"BotIntent","targetSpeed":6}');self.assert_denied(ws)
+        self.assertTrue(self.received.empty())
+        self.assertEqual(self.gateway.report()['MESSAGE_BUDGET'],1)
+    def test_idle_budget_transport(self):
+        self.gateway.limits=BudgetLimits(idle_seconds=.15,lifetime_seconds=3)
+        with self.connect() as ws:
+            self.valid_handshake(ws);self.received.get(timeout=2)
+            self.assert_denied(ws)
+        self.assertTrue(self.received.empty())
+        self.assertEqual(self.gateway.report()['IDLE_LIMIT'],1)
+    def test_output_budget_transport(self):
+        self.gateway.limits=BudgetLimits(output_bytes=10)
+        with connect(f'ws://127.0.0.1:{self.port}',proxy=None,compression=None,close_timeout=1,logger=QUIET) as ws:
+            self.assert_denied(ws)
+        self.assertTrue(self.received.empty())
+        self.assertEqual(self.gateway.report()['OUTPUT_BUDGET'],1)
 
 if __name__=='__main__':unittest.main()

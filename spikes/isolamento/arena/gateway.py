@@ -10,12 +10,13 @@ import threading
 from websockets.sync.client import connect
 from websockets.sync.server import serve
 from websockets.exceptions import ConnectionClosed
-from arena_protocol import decode,handshake,intent,BOT_OUTPUT_TYPES,ProtocolDenied,MAX_MESSAGE
+from arena_protocol import decode,handshake,intent,BOT_OUTPUT_TYPES,ProtocolDenied,MAX_MESSAGE,SessionBudget,BudgetLimits
 
 QUIET=logging.getLogger('robocopa.i2.ws');QUIET.disabled=True
 
 class BotGateway:
-    def __init__(self,identities,upstream_secret,port=7654,upstream='ws://127.0.0.1:7655'):
+    def __init__(self,identities,upstream_secret,port=7654,upstream='ws://127.0.0.1:7655',limits=None):
+        self.limits=limits if limits is not None else BudgetLimits()
         self.identities=identities
         self.secret=upstream_secret
         self.port=port
@@ -32,6 +33,7 @@ class BotGateway:
         if not self.budget.acquire(blocking=False):
             client.close(1008,'CAPACITY');return
         identity=None
+        session_budget=SessionBudget(self.limits)
         try:
             with self.lock:self.connections.add(client)
             if client.request.path!='/':raise ProtocolDenied('PATH_DENIED')
@@ -39,8 +41,11 @@ class BotGateway:
                          max_queue=16,compression=None,proxy=None,logger=QUIET) as upstream:
                 greeting=decode(upstream.recv(timeout=3),limit=2*1024**2)
                 if greeting['type']!='ServerHandshake':raise ProtocolDenied('SERVER_HANDSHAKE_REQUIRED')
-                client.send(json.dumps(greeting))
-                identity,body=handshake(client.recv(timeout=4),session=greeting['sessionId'],
+                greeting_text=json.dumps(greeting)
+                session_budget.accept_output(greeting_text);client.send(greeting_text)
+                first=client.recv(timeout=min(4,session_budget.wait_timeout()))
+                session_budget.accept(first)
+                identity,body=handshake(first,session=greeting['sessionId'],
                     identities=self.identities,upstream_secret=self.secret)
                 with self.lock:
                     if identity in self.active:
@@ -55,6 +60,7 @@ class BotGateway:
                             item=decode(raw,limit=2*1024**2)
                             if item['type'] not in BOT_OUTPUT_TYPES:
                                 raise ProtocolDenied('ENGINE_EVENT_DENIED')
+                            session_budget.accept_output(raw)
                             client.send(raw)
                     except ProtocolDenied as e:
                         self.count(str(e));client.close(1008,str(e))
@@ -63,13 +69,16 @@ class BotGateway:
                 thread=threading.Thread(target=forward_engine,daemon=True)
                 thread.start()
                 try:
-                    for raw in client:
+                    while True:
+                        try:raw=client.recv(timeout=session_budget.wait_timeout())
+                        except TimeoutError:
+                            session_budget.wait_timeout()
+                            raise ProtocolDenied('IDLE_LIMIT') from None
+                        session_budget.accept(raw)
                         message=intent(raw)
                         upstream.send(json.dumps(message,allow_nan=False))
                         self.count(message['type'])
                 except ProtocolDenied as e:
-                    # Send the denial before closing upstream; otherwise the forwarding
-                    # thread may close this socket normally before policy close 1008.
                     self.count(str(e));client.close(1008,str(e))
                 finally:
                     upstream.close();thread.join(timeout=3)

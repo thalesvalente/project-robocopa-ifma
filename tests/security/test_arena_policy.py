@@ -12,6 +12,7 @@ def sample(role='walls'):
     return {'Image':IMAGE,'Config':{'User':'10001:10001','Env':['HOME=/tmp'],
        'Labels':{'org.robocopa.isolation-run':RUN,'org.robocopa.arena-role':role}},
        'State':{'Pid':1234,'Running':True},
+       'NetworkSettings':{'Networks':{NET:{'GlobalIPv6Address':'','GlobalIPv6PrefixLen':0,'IPv6Gateway':''}}},
        'HostConfig':{'NetworkMode':NET,'ReadonlyRootfs':True,'Privileged':False,
         'CapDrop':['ALL'],'SecurityOpt':['no-new-privileges'],
         'CgroupnsMode':'private','Memory':limits.memory_bytes,'MemorySwap':limits.memory_bytes,
@@ -33,6 +34,18 @@ class ArenaPolicyTests(unittest.TestCase):
         with self.assertRaises(PolicyError):ArenaPolicy('walls').verify(obj,IMAGE,RUN,NET)
     def test_role_mismatch(self):
         with self.assertRaises(PolicyError):ArenaPolicy('referee').verify(sample(),IMAGE,RUN,NET)
+    def test_effective_extra_network_denied(self):
+        obj=sample();obj['NetworkSettings']['Networks']['unrelated-network']={}
+        with self.assertRaises(PolicyError):ArenaPolicy('walls').verify(obj,IMAGE,RUN,NET)
+    def test_effective_missing_network_denied(self):
+        obj=sample();obj.pop('NetworkSettings')
+        with self.assertRaises(PolicyError):ArenaPolicy('walls').verify(obj,IMAGE,RUN,NET)
+    def test_ipv6_endpoint_denied(self):
+        for field,value in [('GlobalIPv6Address','2001:db8::2'),('IPv6Gateway','fe80::1'),('GlobalIPv6PrefixLen',64)]:
+            obj=sample();obj['NetworkSettings']['Networks'][NET][field]=value
+            with self.subTest(field=field),self.assertRaises(PolicyError):ArenaPolicy('walls').verify(obj,IMAGE,RUN,NET)
+    def test_effective_network_boolean_verified(self):
+        self.assertIs(ArenaPolicy('walls').verify(sample(),IMAGE,RUN,NET)['attached_networks_exact'],True)
     def test_create_command_scope(self):
         args=ArenaPolicy('walls').create_args('rc-isolation-'+'c'*24,IMAGE,RUN,NET)
         self.assertEqual(args[args.index('--network')+1],NET)

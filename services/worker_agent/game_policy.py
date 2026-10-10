@@ -17,12 +17,19 @@ ROLE_ENV = {'judge': {'ADMIN_SECRET', 'BACKEND_SECRET'},
             'gateway': {'BIND_A', 'BIND_B', 'FRONT_A', 'FRONT_B', 'BACKEND_SECRET', 'BACKEND_URL'},
             'walls': {'BOT_NAME', 'BOT_SECRET', 'BOT_SERVER_URL'},
             'spin': {'BOT_NAME', 'BOT_SECRET', 'BOT_SERVER_URL'}}
+# Tiny fixed diagnostic ranges in a fresh hosted runner only. Docker rejects
+# overlap: no deletion, retry on another host, or fallback to shared networks.
+CI_SUBNETS = {'a': '172.31.248.0/28', 'b': '172.31.248.16/28', 'back': '172.31.248.32/28'}
 
 
 def network_args(name: str, run_id: str) -> list[str]:
-    if not re.fullmatch(r'rc-i2-[0-9a-f]{24}-(?:a|b|back)', name) or run_id not in name:
+    if not re.fullmatch(r'[0-9a-f]{24}', run_id):
+        raise PolicyError('RUN')
+    suffix = name.rsplit('-', 1)[-1]
+    if suffix not in CI_SUBNETS or name != f'rc-i2-{run_id}-{suffix}':
         raise PolicyError('NETWORK_NAME')
-    return ['network', 'create', '--driver', 'bridge', '--internal', '--label', LABEL+'='+run_id,
+    return ['network', 'create', '--driver', 'bridge', '--internal',
+            '--subnet', CI_SUBNETS[suffix], '--label', LABEL+'='+run_id,
             '--opt', 'com.docker.network.bridge.gateway_mode_ipv4=isolated', name]
 
 

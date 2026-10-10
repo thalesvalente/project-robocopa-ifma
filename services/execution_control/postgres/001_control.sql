@@ -132,7 +132,7 @@ END $$;
 -- Reap bounded batches; no retry after deadline or beyond attempt_limit.
 CREATE FUNCTION rc_control.reap() RETURNS integer LANGUAGE plpgsql
 SECURITY DEFINER SET search_path=pg_catalog AS $$
-DECLARE j rc_control.jobs; t timestamptz; n integer:=0; reason text; next_state text;
+DECLARE j rc_control.jobs; t timestamptz; n integer:=0; v_reason text; next_state text;
 BEGIN
   FOR j IN SELECT q.* FROM rc_control.jobs q
     WHERE q.state IN ('QUEUED','LEASED','RUNNING') AND
@@ -142,12 +142,12 @@ BEGIN
     ORDER BY q.created_at,q.job_id LIMIT 256 FOR UPDATE OF q SKIP LOCKED
   LOOP
     t:=clock_timestamp();
-    reason:=CASE WHEN j.deadline_at<=t THEN 'DEADLINE'
+    v_reason:=CASE WHEN j.deadline_at<=t THEN 'DEADLINE'
                  WHEN NOT EXISTS(SELECT 1 FROM rc_control.workers w WHERE w.worker_id=j.worker_id AND w.active)
                       AND j.worker_id IS NOT NULL THEN 'WORKER_REVOKED' ELSE 'LEASE_EXPIRED' END;
     next_state:=CASE WHEN j.deadline_at<=t THEN 'EXPIRED'
                     WHEN j.attempt_count>=j.attempt_limit THEN 'FAILED' ELSE 'QUEUED' END;
-    UPDATE rc_control.attempts SET state='EXPIRED',finished_at=t,reason=reap.reason
+    UPDATE rc_control.attempts SET state='EXPIRED',finished_at=t,reason=v_reason
       WHERE attempt_id=j.attempt_id AND state IN ('LEASED','RUNNING');
     UPDATE rc_control.jobs SET state=next_state,fence=fence+1,attempt_id=NULL,
       worker_id=NULL,lease_until=NULL,available_at=t WHERE job_id=j.job_id;

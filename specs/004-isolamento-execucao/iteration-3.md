@@ -51,3 +51,7 @@ O catálogo macro define objetivos de broker, credenciais, fila, idempotência e
 - [Python sqlite3 3.13 — transações explícitas](https://docs.python.org/3.13/library/sqlite3.html).
 - [OWASP API5:2023 — negar privilégios por padrão](https://owasp.org/API-Security/editions/2023/en/0xa5-broken-function-level-authorization/).
 - [OWASP API2:2023 — não improvisar autenticação](https://owasp.org/API-Security/editions/2023/en/0xa2-broken-authentication/).
+
+## Adendo I3-01/F01 — correção planejada antes do patch (2026-10-10)
+
+O primeiro CI `38064725976` reprovou 24 testes I3-01 no `setUp`: `type(path) is not Path` rejeitava `PosixPath` no runner Linux. O problema é de contrato do caminho local no novo `SQLiteQueue`, não é evidência de 24 falhas independentes nem de execução indevida. **Correção necessária antes do patch:** substituir essa comparação exata por `isinstance(path, Path)` mantendo os demais requisitos (caminho absoluto, pai existente, não-symlink e capacity inteira), acrescentar teste específico de `PosixPath` e executar novamente todos os gates. O aceite I3-01 continua BLOQUEADO até CI verde e verificação de regressão.

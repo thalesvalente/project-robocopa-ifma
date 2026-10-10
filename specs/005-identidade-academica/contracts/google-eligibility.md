@@ -1,6 +1,6 @@
 # Contrato ID-010 — Classificação local de identidade Google já verificada
 
-**Status:** planejado antes da implementação; não substitui verificação OIDC, login Supabase ou autorização SQL. **Fontes:** D-011 e ADR-008.
+**Status:** classificador offline ID-010 implementado e validado no CI conforme [evidência S03-ID-010](../../../docs/qualidade/evidencias/S03-ID-010.md); **não** substitui verificação OIDC, login Supabase ou autorização SQL. **Fontes:** D-011 e ADR-008.
 
 ## Entrada de fronteira confiável
 

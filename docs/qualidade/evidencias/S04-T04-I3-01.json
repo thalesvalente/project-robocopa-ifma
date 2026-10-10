@@ -1,0 +1,73 @@
+{
+  "schema_version": 1,
+  "record": "S04-T04-I3-01",
+  "date": "2026-10-10",
+  "status": "PASS_EXPERIMENTAL_ONLY",
+  "source_commit": "4d89fc5bbbb99ae15d689698e184bfdd164aacb4",
+  "source_checkout_commit": "4ff2a06a62eb6cf6263318e1ab01707a024e7d4e",
+  "source_artifact_id": 11675225994,
+  "branch": "feat/s04-i3-control-plane",
+  "pr": 23,
+  "workflow_runs": {
+    "i3": 38064949786,
+    "planning": 38064949811,
+    "speckit": 38064949800,
+    "i1": 38064949804,
+    "i2": 38064949756,
+    "mobile": 38064949758
+  },
+  "workflow_conclusions": {
+    "i3": "success",
+    "planning": "success",
+    "speckit": "success",
+    "i1": "success",
+    "i2": "success",
+    "mobile": "success"
+  },
+  "offline_tests": {
+    "python": "3.13.5",
+    "planning": 41,
+    "infra": 13,
+    "tank_royale": 23,
+    "mobile": 35,
+    "security": 213,
+    "arena": 21,
+    "total": 346,
+    "new_i3_tests": 26,
+    "passed": true
+  },
+  "i2_recheck": {
+    "artifact_id": 11675176332,
+    "zip_size_bytes": 508078,
+    "zip_sha256": "6fcbbd9fdff56bbfbdea36c2aff2127485beaea4d9efff9cb43484d3a679f58b",
+    "zip_entries": 16,
+    "manifest_file_hashes_verified": 12,
+    "real_battles": 2,
+    "controlled_aborts": 2,
+    "timeout_cleanup": 1,
+    "outside_runner_self_audit": "PASS"
+  },
+  "checks": {
+    "i3_01a": "PASS",
+    "i3_01b": "PASS",
+    "i3_01c": "PASS",
+    "i3_01d": "PASS",
+    "i3_01e": "PASS",
+    "f01": "FIXED",
+    "f02": "FIXED",
+    "open_scope_blockers": 0
+  },
+  "limits": {
+    "lab_only": true,
+    "real_worker_authenticated": false,
+    "student_submissions": false,
+    "real_vm_tested": false,
+    "public_api_enabled": false,
+    "worker_connected": false,
+    "official_ledger": false,
+    "postgres_integrated": false,
+    "production_gate": "BLOCKED",
+    "i3_complete": false
+  },
+  "summary": "I3-01 offline durable queue proof only; no worker or scoring."
+}

@@ -85,3 +85,7 @@ O plano [R01–R10](i2-reconciliation-plan.md) e a [matriz C01–C05](i2-reconci
 ## I3 — preparação documental antes do primeiro código (2026-10-10)
 
 O [plano I3](iteration-3.md) decompõe a execução em I3-01..I3-07, com [decisões e bloqueios](i3-design-decisions.md) e testes/aceites por subincremento. A modelagem anterior não resolvia autenticação do worker Q-07; por segurança I3-01 usa SOMENTE SQLite em arquivo temporário do CI, sem interface HTTP/worker e desligado por padrão. A arquitetura Postgres, auth, leases, ledger de resultado e recovery ainda exigem planejamento e comprovação próprios. Macro S04-T04 e G-PROD mantêm os estados. Branch de engenharia: `feat/s04-i3-control-plane`.
+
+## I3-01 implementado e testado no recorte G-EXP (2026-10-10)
+
+`services/execution_control/{broker.py,store.py}` implementa broker interno e armazenamento SQLite em arquivo de laboratório, sem endpoint, sem worker, sem Docker, sem código de estudante. Gate padrão OFF, `owner_ref` confiável apenas em fixture, versão T1 aprovada por I1, transações `BEGIN IMMEDIATE`, unicidade/idempotência, schema 2/capacidade persistida. F01/F02 corrigidos após registro no [plano I3](iteration-3.md). CI `4d89fc5` com seis workflows PASS e 346 testes de regressão reexecutados offline, sendo 26 I3-01. [Relatório](../../docs/qualidade/evidencias/S04-T04-I3-01.md). I3-02 autenticação real, I3-03 leases, I3-04 ledger, I3-05 quotas operacionais, I3-06 recuperação e I3-07 integração seguem pendentes; G-PROD BLOQUEADO.

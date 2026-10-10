@@ -25,3 +25,7 @@ Erros devem ser estáveis e sem interpolação de conteúdo. O isolamento de can
 ## Critério para alteração dessas decisões
 
 Mudanças nos estados, armazenamento, formato de fingerprint e autorização exigem registrar ADR/adendo, teste de regressão e evidências antes de tocar a interface real. Q-07 continua formalmente aberta: as decisões de experimentação acima não a resolvem para produção.
+
+## Resultado da avaliação de I3-01
+
+Protótipo `SQLiteQueue` com schema **2** e capacidade imutável armazenada atomicamente por arquivo; reabertura divergente gera `STORE_CONFIG_MISMATCH`. Persistência, duplicidade, concorrência e recusa segura foram comprovadas por 26 testes locais/CI da fonte `4d89fc5`. Os problemas F01/F02 foram registrados ANTES dos respectivos patches no [plano](iteration-3.md). **Q-07 ainda ABERTO:** nenhum token real, serviço remoto ou reivindicação de identidade verificada foi implementado; `LabGate` é somente fixture que autoriza enfileirar dados sintéticos em CI. Sem leaser/worker, `QUEUED` não indica execução. [Evidência](../../docs/qualidade/evidencias/S04-T04-I3-01.md).

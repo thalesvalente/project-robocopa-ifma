@@ -16,7 +16,8 @@ Isso não significa homologar código hostil de alunos: isolamento entre Linux c
 - O `BattleRunner.startBattleAsync` 1.4.0 aciona `BooterManager.boot` local mesmo com `externalServer()`, logo **não** usar esse método como falsa separação. Fontes: `runner/internal/ServerConnection.kt` e `BattleRunner.kt` do upstream v1.4.0.
 - Usar **servidor standalone oficial** `robocode-tankroyale-server-1.4.0.jar` com SHA-256 do asset da release; clientes WebSocket oficiais por papel: observador, controlador e bot, com `bot-secret` distinto do `controller-secret`.
 - Implementar **controlador independente e restrito** via WebSocket (mensagens `ServerHandshake`, `ControllerHandshake`, `ObserverHandshake`, `BotListUpdate`, `StartGame` e `GameEndedEventForObserver`), sem executar Booter no controlador.
-- Rede de teste: dois segmentos Docker descartáveis `game` (server + 2 bots) e `control` (server + controlador), sem publicar portas no host, sem socket, bind mount nem acesso a segredos do banco. Servidor tem duas interfaces de rede para aceitar clientes de ambos os papéis.
+- **Achado de análise de código:** em `ClientWebSocketsHandler.kt` 1.4.0, o despacho de `StartGame` e outros comandos administrativos não verifica explicitamente `controllerSockets` antes de acionar o listener. **Risco TH-15 e TH-01:** um cliente bot conectado não deve alcançar diretamente o servidor. Regra fail-closed obrigatória: gateway de protocolo valida o tipo de mensagem e encaminha somente `BotHandshake`, `BotReady`, `BotIntent` e `TeamMessage`. Bloquear `ControllerHandshake`, `ObserverHandshake`, `StartGame`, `StopGame`, `ChangeTps`, `PauseGame` e quaisquer tipos não explicitamente permitidos.
+- Rede de teste: dois segmentos Docker descartáveis **`bot` (2 bots + gateway)** e **`trusted` (gateway + servidor árbitro + controlador)**, sem publicar portas no host, sem socket, bind mount nem acesso a segredos do banco. Somente o gateway tem duas interfaces; **bots não compartilham rede com o servidor/árbitro**. Esse modelo ainda é um experimento no mesmo daemon Docker de CI, não uma VM isolada do host.
 - Autenticação por segredo no servidor ativa **explicitamente**; sem isso, o protocolo não comprova autorização.
 - O servidor é árbitro confiável do experimento e recebe segredos transitórios de teste. Registro `BattleResults` será obtido pela mensagem de árbitro `GameEndedEventForObserver`; logs de bots **não definem pontuação**.
 - Prova negativa: `bot-secret` não autoriza iniciar partida pelo papel `ControllerHandshake` e rede `control` não é acessível ao bot. Não afirmar robustez contra comprometimento do kernel/host.
@@ -29,9 +30,10 @@ Isso não significa homologar código hostil de alunos: isolamento entre Linux c
 | I2-01 | Confirmar release 1.4.0, CLI, schema WebSocket, hashes e autenticação; `spikes/isolamento/i2/upstream.lock.json` e fontes | Fonte e digest fixados | I1 |
 | I2-02 | Build verificado de imagem standalone servidor e bots oficiais; `spikes/isolamento/i2/Dockerfile` e `prepare.py` | CI constrói imagem sem `latest` | I2-01 |
 | I2-03 | Controlador WebSocket restrito independente do Booter; `spikes/isolamento/i2/controller.mjs` | handshake, start-game, três rounds, resultado íntegro | I2-01 |
-| I2-04 | Orquestração Docker com dois segmentos efêmeros e limpeza por ownership; `scripts/run_isolation_i2.py` | inspecionar topologia, sem portas/mount/segredos de terceiros | I2-02/03 |
-| I2-05 | Testes de casos negativos e falha fechada; `tests/security/test_i2_*.py` | papéis, portas, timeout, hash, plano de limpeza | I2-03/04 |
-| I2-06 | Executar batalha real oficial com contêineres distintos em GitHub-hosted Ubuntu | Resultado do árbitro, rounds e vencedores documentados; não fixture | I2-04/05 |
+| I2-04 | **Gateway WebSocket de mensagens por papel** em `spikes/isolamento/i2/gateway.py`; topologia `bot`/`trusted`, negar comandos do controlador antes do servidor | testes unitários e prova negativa de `StartGame` encaminhado pelo lado bot; ausência de controller secret no gateway/bots | I2-02/03 |
+| I2-04b | Orquestração Docker com dois segmentos efêmeros e limpeza por ownership; `scripts/run_isolation_i2.py` | inspecionar topologia e política efetiva, sem portas/mount/segredos de terceiros | I2-04 |
+| I2-05 | Testes de casos negativos e falha fechada; `tests/security/test_i2_*.py` | comando `StartGame` vindo do bot bloqueado **antes de chegar ao servidor**; papéis, portas, timeout, hash, rede e limpeza | I2-03/04b |
+| I2-06 | Executar batalha real oficial com **servidor e bots em contêineres/rede distintos**, passando apenas pelo gateway, em GitHub-hosted Ubuntu | Resultado do árbitro, rounds e vencedores documentados; não fixture | I2-04b/05 |
 | I2-07 | Regressão I1/Spec Kit/planejamento, logs/evidências sintetizados | CI PASS; nenhum recurso residual do experimento | I2-06 |
 | I2-08 | Atualizar documentação de segurança, `iteration-2.md`, PR e issue mantendo gates | S04-T04 continua EM_EXECUCAO | I2-07 |
 
@@ -39,7 +41,7 @@ Isso não significa homologar código hostil de alunos: isolamento entre Linux c
 
 **G-EXP:** somente Ubuntu GitHub-hosted efêmero, credenciais fictícias geradas por execução, contêineres referenciados exclusivamente por IDs criados pelo harness; nenhum `docker system prune`, alterações de firewall, mounts do host, `.env`, VM do responsável, runner self-hosted, publicação web ou contato com alunos.
 
-**G-I2:** só aprovar experimento se o servidor e bots executarem em **contêineres diferentes**, os segredos forem distintos, o bot não conseguir invocar controlador e o resultado oficial registrar todos os rounds. Falhas reais ficam como FAIL/inconclusivas, não substituir por mocks.
+**G-I2:** só aprovar experimento se o servidor e bots executarem em **contêineres e redes diferentes**, com gateway que **nega mensagens administrativas** antes de chegar ao servidor, os segredos forem distintos, e o resultado oficial registrar todos os rounds. O servidor 1.4.0 não é tratado como um gateway de autorização por tipo de mensagem. Falhas reais ficam como FAIL/inconclusivas, não substituir por mocks.
 
 **G-PROD:** continua BLOQUEADO, independentemente do êxito do I2. Ainda faltam broker, segurança de API, árbitro/protocolo sob abuso, isolamento em VM própria, recuperação/backup, 20 ciclos e avaliação independente.
 

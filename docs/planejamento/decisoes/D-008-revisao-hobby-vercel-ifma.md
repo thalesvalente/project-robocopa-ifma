@@ -24,6 +24,7 @@
 - [ ] Registrar se desenvolvimento/manutenção se enquadram como atividade profissional remunerada para fins das Guidelines, sem publicar informações pessoais.
 - [ ] Obter resposta escrita da Vercel descrevendo projeto público, educacional gratuito, participantes e relação de remuneração, **ou** avaliação formal institucional suficiente para decidir elegibilidade antes de uso oficial com estudantes.
 - [ ] Conferir integração Git, tipo da conta/repositório, colaboração, quotas, retenção, disponibilidade e ausência de segredos/PII no build.
+- [ ] Revisar a cláusula de uso de conteúdo para treinamento de IA dos Terms §3 e, quando aplicável, **desabilitar Model Training nas Team Settings**; não enviar códigos/dados pessoais de alunos para o deployment/telemetria Vercel.
 - [ ] Se confirmação for negativa/inconclusiva, manter PWA portável e optar por Cloudflare Pages ou outro provedor autorizado; não contratar Pro sem decisão humana.
 - [ ] Registrar a decisão operacional definitiva nos HYB-09/S08, após evidência, e realizar demonstração técnica autorizada.
 

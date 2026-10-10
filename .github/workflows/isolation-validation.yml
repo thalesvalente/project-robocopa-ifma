@@ -23,11 +23,20 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           persist-credentials: false
-      - name: Conferir baseline documental
+      - name: Regressao e contratos sem Docker
         run: |
           python3 scripts/verify_security_spec.py
           python3 -m unittest discover -s tests/planning -v
-      - name: Preparar fonte rastreada para revisão offline
+          python3 -m unittest discover -s tests/infra -v
+          python3 -m unittest discover -s tests/tank_royale -v
+          python3 -m unittest discover -s tests/mobile -v
+          python3 -m unittest discover -s tests/security -v
+      - name: Spec Kit nativo da feature 004
+        env:
+          SPECIFY_FEATURE_DIRECTORY: specs/004-isolamento-execucao
+          SPECIFY_FEATURE_NO_PERSIST: '1'
+        run: python3 .specify/scripts/python/check_prerequisites.py --json --require-spec --require-tasks --include-tasks
+      - name: Preparar fonte rastreada para revisao offline
         run: |
           mkdir -p "$RUNNER_TEMP/robocopa-source"
           git archive --format=tar.gz HEAD -o "$RUNNER_TEMP/robocopa-source/source.tar.gz"
@@ -39,5 +48,26 @@ jobs:
           retention-days: 7
           if-no-files-found: error
 
-# Somente fontes Git rastreadas; nunca .env, .local, .git ou segredos de runtime.
-# As sondas e os contratos serão adicionados após revisão de pesquisa/plano.
+  bounded-runtime-probes:
+    needs: source-and-contracts
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Nove provas sinteticas de contencao no runner descartavel
+        run: python3 scripts/run_isolation_checks.py
+      - name: Preservar somente relatorio sintetico limitado
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: isolation-runtime-evidence
+          path: .local/security-i1/**/report.json
+          include-hidden-files: true
+          retention-days: 30
+          if-no-files-found: warn
+
+# Nao usa self-hosted, nao recebe codigo de aluno, nao monta paths do host.
+# Somente codigo de sondas conhecido; sem pull_request_target ou segredos.
+# PASS desta bateria nao homologa Hyper-V, host pessoal ou acesso publico.

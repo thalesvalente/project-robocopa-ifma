@@ -8,7 +8,7 @@ Regra: `RESOLVIDO_PELA_FONTE` significa que o projeto já estabelece o limite; `
 | ID | Questão | Proposta ou evidência | Estado | Responsável / gate |
 |---|---|---|---|---|
 | Q-01 | Podemos expor o servidor de laboratório Python aos alunos? | **Não**: porta 127.0.0.1, processo do host com acesso à CLI Docker; não é autenticação pública. | RESOLVIDO_PELA_FONTE | Constituição III e ADR-002 |
-| Q-02 | Qual código de estudante é autorizado no primeiro MVP? | RoboDSL restrita é **candidata**; Java/JS livre deve continuar bloqueado, sujeito à ratificação pedagógica. | CANDIDATO | Responsável; S03, S04-T03 |
+| Q-02 | Qual código de estudante é autorizado no primeiro MVP? | **Decisão de escopo:** somente RoboDSL básica; níveis intermediário/avançado e linguagens gerais ficam após o MVP. Detalhes pedagógicos/gramática permanecem sujeitos à baseline S03. | DECIDIDO_ESCOPO | Responsável; D-004; S03, S04-T03 |
 | Q-03 | Docker Desktop/WSL 2 compartilhado pode ser fronteira final? | **Não assumir**. Propor VM Linux exclusiva do executor, com daemon e credenciais independentes; avaliar alternativa externa caso falhe. | CANDIDATO | Responsável; S04-T01/T05 |
 | Q-04 | Como executar Tank Royale com tráfego WebSocket sem rede externa? | Medir comunicação árbitro↔bot em rede isolada do worker, com regras de saída estritas. O `--network none` do spike não comprova essa nova topologia. | ABERTO | Equipe técnica; T011 |
 | Q-05 | Engine e bot podem compartilhar a mesma fronteira? | Risco à integridade do árbitro. Preferir processos/contêineres distintos dentro da VM; verificar possibilidade de usar servidor externo e controlar inicialização dos bots. | ABERTO | Equipe técnica; T010–T012 |
@@ -22,10 +22,10 @@ Regra: `RESOLVIDO_PELA_FONTE` significa que o projeto já estabelece o limite; `
 
 ## Decisões que bloqueiam implementação
 
-1. **D1:** aceitar/ajustar o modelo de confiança T0/T1/T2 e escopo da RoboDSL.
+1. **D1:** escopo da linguagem básica no MVP **decidido** em `docs/planejamento/decisoes/D-004-escopo-mvp-seguranca.md`; detalhamento da gramática, aceites pedagógicos e testes ainda pendentes.
 2. **D2:** aprovar a fronteira de isolamento (VM exclusiva, worker externo ou alternativa comprovada).
 3. **D3:** decidir a separação efetiva bot/árbitro e o canal WebSocket permitido.
 4. **D4:** validar limites, testes de abuso autorizados e plano de recuperação.
 5. **D5:** ratificar critérios para liberar produção com estudantes — após S03 e revisão independente.
 
-**Estado:** nenhuma dessas decisões foi tomada automaticamente em nome do responsável. A documentação é útil para revisão; a implementação de executor para entradas não confiáveis continua bloqueada.
+**Estado:** o responsável decidiu o recorte inicial D1 e a prioridade de segurança. **D2–D5 ainda não foram aprovadas**, e os detalhes pedagógicos de D1 continuam dependentes da baseline; a implementação de executor para entradas não confiáveis continua bloqueada.

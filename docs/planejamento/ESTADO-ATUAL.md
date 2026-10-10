@@ -1,6 +1,6 @@
-# Estado atual — pesquisa, autoria e primeiro incremento de isolamento
+# Estado atual — pesquisa, autoria e incrementos I1/I2 de isolamento
 
-**Atualizado:** 2026-10-10. **Trabalho corrente:** S04-T04, incremento I1 implementado e testado em ambiente descartável. VM dedicada aprovada como direção, ainda não instalada. Não há liberação para alunos.
+**Atualizado:** 2026-10-10. **Trabalho corrente:** S04-T04, incrementos I1 e I2 implementados e testados em ambientes descartáveis, com bots de referência. VM dedicada aprovada como direção, ainda não instalada. Não há liberação para alunos.
 
 ## Repositório e decisões
 
@@ -34,9 +34,19 @@ Lote conferido: [run38021817642](https://github.com/thalesvalente/project-roboco
 
 A bateria roda em GitHub-hosted Ubuntu e recusa execução local/WSL/Desktop. Não valida a VM, rede ou Hyper-V do Windows. Os limites pequenos das sondas não são limites aprovados de partidas. A reconciliação de progresso possui três testes adicionais aos164 do lote histórico.
 
+## S04-T04 / I2 — árbitro, bots e gateway isolados (CI)
+
+O PR #21 (`feat/s04-i2-referee-isolation`, baseado no PR #17) nasceu de [`iteration-2.md`](../../specs/004-isolamento-execucao/iteration-2.md), publicado **antes da implementação**. A auditoria do Tank Royale v1.4.0 detectou ausência de guarda explícita por papel na rotina upstream que despacha comandos `StartGame`, tornando obrigatória uma filtragem externa de protocolo.
+
+Implementados: servidor árbitro standalone, controlador próprio separado do `BooterManager`, gateway WebSocket com whitelist de mensagens de bots, duas redes Docker internas por papel e scripts/testes reprodutíveis em CI descartável. Todos usam bots oficiais confiáveis; não executam Java/JS livre de estudantes.
+
+[Evidência técnica 38051902244](https://github.com/thalesvalente/project-robocopa-ifma/actions/runs/38051902244): **PASS**, 3 rounds Walls 330 × Spin Bot 1, 2.734 ticks de eventos do árbitro; negativos de comandos de controle e de acesso direto ao árbitro por nome/IP; seis contêineres com configurações inspecionadas e limpeza verificada. O ZIP de evidências foi baixado e conferido por hash/CRC/gzip e comparação com o evento final. Relatório `docs/qualidade/evidencias/S04-T04-I2.md`.
+
+**Limites explícitos:** não há VM do responsável instalada, não houve teste de código hostil, não existe isolamento de kernel separado na máquina pessoal nem validação do produto para alunos. O gateway protege a fronteira ensaiada; a segurança do protocolo/árbitro exige análise e testes adicionais. Próximo incremento I3: broker, identidade/autorizações, fila/ledger duráveis e recuperação.
+
 ## O que permanece pendente
 
-**Próxima prioridade técnica:** separação real bot/árbitro e canal WebSocket mínimo com papéis/segredos distintos. Depois: broker autenticado, fila durável, ledger/idempotência, política de imagens/patches, limites do motor, rate-limit, vinte ciclos de falha/limpeza, inventário/provisionamento da VM, backup/restore, revisão e aceite.
+**Próxima prioridade técnica:** broker autenticado, fila durável, ledger/idempotência, política de imagens/patches, limites do motor, rate-limit, vinte ciclos de falha/limpeza, inventário/provisionamento da VM, backup/restore, revisão e aceite.
 
 S04-T03 ainda requer uso em telefone físico e revisão pedagógica. Sem contas, inscrições/competição completas, piloto ou MVP homologado. A segurança é prioridade antes dessas expansões; níveis intermediário/avançado não entram agora.
 

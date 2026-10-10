@@ -47,6 +47,12 @@ flowchart LR
 6. Worker ausente, violação ou política inválida → **execução negada**. Nunca migrar automaticamente para execução na API/host.
 7. Em laboratório, preservar isolamento total de internet; futura conexão com frontend requer autorização, TLS e identidade própria, e não é objeto desta ADR.
 
+## Evidência posterior da separação (I2, não ratificação da ADR)
+
+Em [GitHub Actions 38051902244](https://github.com/thalesvalente/project-robocopa-ifma/actions/runs/38051902244), o Tank Royale 1.4.0 executou **três rounds reais** com robôs oficiais e árbitro em contêineres e segmentos internos separados. Um gateway restringiu as mensagens WebSocket dos bots; testes negativos bloquearam comandos administrativos e conexão direta por DNS/IP no runner descartável. O resultado e o gzip de eventos do observador foram verificados. Relatório: `docs/qualidade/evidencias/S04-T04-I2.md`.
+
+Esta prova **não é implementação da VM dedicada**, não contém submissões reais, não garante isolamento entre kernels, não valida completamente o protocolo nem habilita rede externa. A ADR permanece PROPOSTA até os gates de produção.
+
 ## Pontos em aberto que impedem aprovação
 
 - Viabilidade de VM no Windows com proteção efetiva de arquivos/VM disks e separação de rede.

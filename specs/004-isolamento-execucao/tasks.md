@@ -1,11 +1,15 @@
 # Tasks: Segurança e isolamento da execução (S04-T04)
 
 **Input:** [spec.md](spec.md), [plan.md](plan.md), [clarifications.md](clarifications.md), [research.md](research.md), [data-model.md](data-model.md), [contracts/job-protocol.md](contracts/job-protocol.md).  
-**Status:** catálogo de 39 entregas amplas. O incremento I1 já implementa subconjuntos de contratos/política/limites, com provas reais no CI; as caixas amplas permanecem `[ ]` até atender todo seu aceite. Progresso/evidência: [iteration-1.md](iteration-1.md).  
+**Status:** catálogo de 39 entregas amplas. O incremento I1 já implementa subconjuntos de contratos/política/limites, com provas reais no CI; as caixas amplas permanecem `[ ]` até atender todo seu aceite. Progresso/evidência: [iteration-1.md](iteration-1.md) e [iteration-2.md](iteration-2.md).  
 **Macro:** S04-T04 em `EM_EXECUCAO` após D-005 e I1; estado histórico `A_FAZER` preservado no Git, sem fechamento dos gates S03/S04.  
 **Regra de execução:** G-EXP autoriza o incremento I1 em CI descartável; G-PROD continua bloqueado. Antes de alterações/VM no host é necessário plano e autorização próprios. Não executar cargas adversariais no computador pessoal.
 
 Formato: `- [ ] T### [P?] [US#] objetivo, caminho(s), requisitos (FR/SC), ameaças (TH)`. `[P]` indica independência de escrita, **não** autorização para burlar gates.
+
+## Progresso técnico demonstrado no I2 (não fecha tarefas macro)
+
+O experimento [I2](iteration-2.md) implementou **apenas a prova** de separação de dois bots oficiais do árbitro por redes internas e gateway de tipos WebSocket. O [run 38051902244](https://github.com/thalesvalente/project-robocopa-ifma/actions/runs/38051902244) comprovou a batalha de três rounds e negativas de controle/rede no CI, sem executar código de estudantes e sem instalar a VM. As tarefas T007/T011/T019/T020/T021/T029/T032/T037 permanecem abertas porque exigem validação de produção mais ampla. A próxima fronteira, broker/ledger e VM dedicada, está prevista no roadmap, sem implementação presumida.
 
 ## Phase 1 — Governança e preparação (gate G0)
 

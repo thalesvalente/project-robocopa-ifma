@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "engine_version": "1.4.0",
+  "upstream_commit": "c8ad3a8d19a843f6258d6f6f9db7f29229963903",
+  "server": {
+    "url": "https://github.com/robocode-dev/tank-royale/releases/download/v1.4.0/robocode-tankroyale-server-1.4.0.jar",
+    "sha256": "16c277795bd823c9eda0b650f1d09a418ff35cfe43d59b820c52d5e6816f905c",
+    "size": 6144180
+  },
+  "bot_archive": {
+    "url": "https://github.com/robocode-dev/tank-royale/releases/download/v1.4.0/sample-bots-Java-1.4.0.zip",
+    "sha256": "1707c1011a37c6b854fc79d68549ab204007bac6d33d803fa254152ac0765fe2",
+    "size": 733575
+  },
+  "bots": {"Walls": "Walls", "SpinBot": "Spin Bot"},
+  "sources": [
+    "https://github.com/robocode-dev/tank-royale/blob/v1.4.0/server/src/main/kotlin/dev/robocode/tankroyale/server/cli/ServerCli.kt",
+    "https://github.com/robocode-dev/tank-royale/blob/v1.4.0/server/src/main/kotlin/dev/robocode/tankroyale/server/connection/ClientWebSocketsHandler.kt",
+    "https://github.com/robocode-dev/tank-royale/blob/v1.4.0/schema/schemas/start-game.schema.yaml"
+  ]
+}

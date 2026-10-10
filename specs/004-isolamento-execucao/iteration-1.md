@@ -39,3 +39,7 @@ Os 39 IDs T001–T039 permanecem o catálogo de entregas amplas da feature 004. 
 | I5 | Calibrar quotas de jogos, provar 20 ciclos/falhas, backup/restore, rastreabilidade, revisão de riscos e aceite | T026,T036–T039; sem liberar dados de alunos enquanto controles críticos pendentes |
 
 A ordem I2/I3 pode usar CI descartável antes da instalação da VM. I4 não é substituído por resultados de contêiner no GitHub. Teste de telefone físico e requisitos pedagógicos continuam em S04-T03/S03. O intermediário/avançado não entra nesses incrementos do MVP.
+
+## Nota posterior à execução do I1 — 2026-10-10
+
+Esta página conserva o estado histórico da rodada I1; os incrementos indicados como futuros acima referem-se àquele momento. I2 foi posteriormente concluído **somente no escopo experimental**, reconciliado e integrado por meio do PR #19 na `main` (merge `dfd9148d`). [Evidências I2](../../docs/qualidade/evidencias/S04-T04-I2-RECONCILIACAO.md) e [integração](../../docs/qualidade/evidencias/INTEGRACAO-PRs-2026-10-10.md). I3, I4, I5 e o aceite completo S04-T04 seguem pendentes.

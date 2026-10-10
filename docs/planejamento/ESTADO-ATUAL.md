@@ -1,12 +1,12 @@
 # Estado atual — pesquisa, autoria e isolamento de robôs/árbitro
 
-**Atualizado:** 2026-10-10. **Trabalho corrente:** S04-T04 em EM_EXECUCAO; I1 e o recorte I2 possuem código e provas em CI descartável. VM dedicada aprovada como direção, mas não instalada/testada no host. Sem liberação para alunos.
+**Atualizado:** 2026-10-10, após integração dos PRs até o I2 na `main`. **Trabalho corrente:** S04-T04 em EM_EXECUCAO; I1 e o recorte I2 possuem código e provas em CI descartável. VM dedicada aprovada como direção, mas não instalada/testada no host. Sem liberação para alunos.
 
 ## Repositório e decisões
 
-PRs empilhados: #11 fundação/Spec Kit; #12 Compose; #13 motor de referência; #14 autoria; #16 especificação; #17 pesquisa/I1; **#19 I2 com árbitro e bots separados**, branch `feat/s04-i2-separated-arena`, base #17. Não houve merge na main.
+PRs **#11, #12, #13, #14, #16, #17 e #19 integrados em `main`** por merge commits, no estado final `dfd9148d`. A cadeia de branches empilhadas foi preservada no histórico; **#18, #20 e #21 encerrados sem merge** como alternativas I2. Ver [plano e trilha de integração](INTEGRACAO-PRs-2026-10-10.md) e [relatório de integração](../qualidade/evidencias/INTEGRACAO-PRs-2026-10-10.md).
 
-A revisão ampliada encontrou rascunhos I2 prévios em #18 e #19. A continuação reaproveitou #19 e auditou o que já existia. #18 foi preservado sem alteração. #20, criado apenas com plano/coleta de fonte antes de detectar a sobreposição, foi encerrado sem merge para não manter terceira implementação concorrente.
+A revisão de I2 comparou as fontes dos PRs #18/#19/#21, escolheu #19 e manteve a trilha de auditoria. #18/#20/#21 foram encerrados **sem merge**; suas branches não foram apagadas.
 
 Spec Kit v1.1.2 permanece fixado em `959e866caa3618bf3dc290d5dca33394365af9c6`. Estrutura, comandos versionados e verificador nativo são usados; não há conexão MCP nativa ou invocação fictícia de slash commands.
 
@@ -51,3 +51,7 @@ G-EXP permitiu engenharia/experimentos sintéticos no CI; G-PROD continua bloque
 Plano de reconciliação R01–R10 versionado antes dos patches; análise comparou PRs #18/#19/#21. PR #19 (`e7afd8a2ac7cb1ab45eeec2146ae828e56f93e0a`) é a única base executável I2; #18 e #21 encerrados sem merge, branches preservadas. C01–C05 fechados no escopo experimental, incluindo timeout REAL, verificação de processos e manifesto de evidências associado à fonte/run. Quatro workflows PASS: [arena I2](https://github.com/thalesvalente/project-robocopa-ifma/actions/runs/38059207968), [Spec Kit](https://github.com/thalesvalente/project-robocopa-ifma/actions/runs/38059207983), [I1](https://github.com/thalesvalente/project-robocopa-ifma/actions/runs/38059207938), [editor e motor](https://github.com/thalesvalente/project-robocopa-ifma/actions/runs/38059207943). Offline: 320 testes PASS; artefato I2 baixado, hash/CRC, 12 arquivos e conteúdo conferidos; nenhuma revisão independente por terceiro foi alegada. [Relatório](../qualidade/evidencias/S04-T04-I2-RECONCILIACAO.md).
 
 **Zero pendências I2 abertas dentro do recorte experimental planejado; S04-T04 continua EM_EXECUCAO, G-PROD BLOQUEADO.** I3 não iniciado. VM pessoal/host não testados, código de alunos e serviços públicos não habilitados. O termo “I2 concluído” nunca deve ser usado como aprovação de produção.
+
+## Integração em main — verificação pós-I2 (2026-10-10)
+
+A cadeia #11→#12→#13→#14→#16→#17→#19 foi incorporada em `main` sem squash ou force push. SHA do merge final `dfd9148d104bb016b5ee4082ef59849afc3109e9` e árvore conferida idêntica à fonte final do PR #19. Os dez PRs históricos têm estado `closed`: sete `merged`, três alternativas `not merged`. Planejamento em `main` passou no run [38060749180](https://github.com/thalesvalente/project-robocopa-ifma/actions/runs/38060749180). Subtarefas experimentais I1 e I2 permanecem fechadas no recorte; S04-T04 permanece EM_EXECUCAO e S00-T06 BLOQUEADA. Nenhum teste no host pessoal ou liberação de estudantes foi alegado. [Relatório de integração](../qualidade/evidencias/INTEGRACAO-PRs-2026-10-10.md).

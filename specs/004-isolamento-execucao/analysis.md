@@ -1,7 +1,7 @@
 # Specification Analysis Report — Feature 004 (pré-implementação)
 
 **Data:** 2026-10-09 · **Análise:** leitura crítica cruzada de `spec.md`, `clarifications.md`, `research.md`, `plan.md`, `tasks.md`, modelo de dados, contrato, ADR-004 e constituição.  
-**Estado:** análise documental equivalente ao fluxo `speckit.analyze`. **Não afirma invocação interativa nativa dos comandos slash nesta conversa.** A checagem automática dos IDs/cobertura será executada no CI; não confundir análise sintática com aprovação.
+**Estado:** análise documental equivalente ao fluxo `speckit.analyze`. **Não afirma invocação interativa nativa dos comandos slash nesta conversa.** A verificação automática estrutural foi executada no GitHub Actions 38019520410 (38 testes PASS e verificação de pré-requisitos do Spec Kit PASS), sem avaliar segurança real.
 
 ## Findings
 
@@ -17,13 +17,13 @@
 | A-008 | Escopo | MÉDIA | FR-001; T2 | Linguagens gerais permanecem excluídas do primeiro MVP, evitando falsa equivalência entre DSL e código hostil; ratificar pedagógica e tecnicamente. |
 | A-009 | Risco de evidência | MÉDIA | SC-002, SC-004 | Simulações com fixtures devem ser separadas de testes reais e da inspeção efetiva do kernel/runtime; nenhum PASS de ataque está declarado. |
 
-## Coverage Summary (a ser verificado por validador automatizado)
+## Coverage Summary — validado estruturalmente pelo CI
 
 - **Requisitos:** FR-001..FR-020 (**20** IDs distintos).
 - **Critérios mensuráveis propostos:** SC-001..SC-008 (**8** IDs).
 - **Ameaças do modelo:** TH-01..TH-16 (**16** IDs).
 - **Tarefas futuras:** T001..T039 (**39**, todas não iniciadas).
-- A redação das 39 tarefas referencia explicitamente FR/SC/TH e uma user story; verificador `scripts/verify_security_spec.py` deve falhar se qualquer ID ficar sem tarefa, se houver ID inexistente, checkbox prematuro ou se uma decisão crítica for apresentada como aprovada.
+- A redação das 39 tarefas referencia explicitamente FR/SC/TH e uma user story; o verificador `scripts/verify_security_spec.py` **passou no run 38019520410**, incluindo cobertura de 100% dos IDs FR/SC/TH por tarefas específicas (exclui a tarefa transversal T036 para evitar falsa cobertura) e rejeição de marcações de conclusão prematuras. Isso valida o catálogo documental, não os controles.
 - **Constituição:** nenhum princípio é flexibilizado pelo plano. **Aprovação de segurança:** **BLOQUEADA** até resolução de A-001–A-006.
 - **Repetição:** entradas/saídas/quotas citadas em vários documentos representam *camadas de especificação*, não um segundo catálogo de RF/RNF; S03 ainda precisa consolidar a baseline.
 
@@ -33,7 +33,7 @@ Nenhuma tarefa intencionalmente fora de US1..US5. Uma tarefa transversal de cobe
 
 ## Next Actions
 
-1. Executar o validador estático e o **check-prerequisites** nativo da feature 004 em CI, registrando resultado real (sem inventar PASS).
+1. Validação estática e **check_prerequisites** nativo da feature 004 foram executados em CI com sucesso: [run 38019520410](https://github.com/thalesvalente/project-robocopa-ifma/actions/runs/38019520410).
 2. Revisar D1–D5 com o responsável e resolver o plano de separação árbitro/worker.
 3. Não executar `/speckit.implement` nem testes de abuso na máquina pessoal antes de aprovar G0/G1.
 4. Após aprovação, testar primeiro em infraestrutura descartável e reconciliar evidências com a S03 e a S04.

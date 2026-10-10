@@ -11,6 +11,7 @@ import json
 import os
 from pathlib import Path
 import shutil
+import socket
 import ssl
 import stat
 import subprocess
@@ -52,6 +53,7 @@ class I3MutualTLSLabTests(unittest.TestCase):
         for name, role, dns, ca in [
             ("server", "broker", channel.BROKER_DNS, "primary"),
             ("bad-server", "broker", "fake.robocopa.invalid", "primary"),
+            ("server-untrusted", "broker", channel.BROKER_DNS, "other"),
             ("worker-a", "worker", None, "primary"),
             ("worker-a-next", "worker", None, "primary"),
             ("worker-b", "worker", None, "primary"),
@@ -65,7 +67,7 @@ class I3MutualTLSLabTests(unittest.TestCase):
         cls.clients = {key:cls._client_context(key) for key in (
             "worker-a", "worker-a-next", "worker-b", "stranger", "wrong-role"
         )}
-        cls.clients["wrong-ca"] = cls._client_context("wrong-ca", issuer="other")
+        cls.clients["wrong-ca"] = cls._client_context("wrong-ca", issuer="primary")
         cls.worker_a = cls._worker_grant("worker-a")
         cls.worker_next = cls._worker_grant("worker-a-next", uri="urn:robocopa:worker:worker-a")
         cls.broker = cls._broker_grant("server")
@@ -216,6 +218,51 @@ class I3MutualTLSLabTests(unittest.TestCase):
 
     def test_wrong_ca_rejected(self):
         self.assert_denied(client="wrong-ca")
+
+    def test_real_tls12_negotiation_denied_by_server(self):
+        # A client-side guard alone does not prove a TLS1.2 handshake fails.
+        downgrade = ssl.create_default_context(
+            ssl.Purpose.SERVER_AUTH, cafile=str(self.root/"primary.crt"))
+        downgrade.load_cert_chain(certfile=str(self.root/"worker-a.crt"),
+                                  keyfile=str(self.root/"worker-a.key"))
+        downgrade.minimum_version = ssl.TLSVersion.TLSv1_2
+        downgrade.maximum_version = ssl.TLSVersion.TLSv1_2
+        with patch.dict(os.environ, {"GITHUB_ACTIONS":"true",
+                                     "RUNNER_ENVIRONMENT":"github-hosted"}):
+            with closing(channel.lab_listener(gate=channel.LabChannelGate(True))) as listener:
+                with ThreadPoolExecutor(max_workers=1) as pool:
+                    future = pool.submit(
+                        channel.serve_probe_once, listener,
+                        context=self.server_context, authorized_workers=self.allowed_workers,
+                    )
+                    with socket.create_connection(
+                        ("127.0.0.1", listener.getsockname()[1]), timeout=3) as raw:
+                        raw.settimeout(3)
+                        with self.assertRaises(ssl.SSLError):
+                            downgrade.wrap_socket(raw, server_hostname=channel.BROKER_DNS)
+                    self.assertEqual(future.result(timeout=10), "REQUEST_DENIED")
+
+    def test_wrong_broker_issuer_rejected(self):
+        self.assert_denied(server="server-untrusted")
+
+    def test_private_key_permissions_rejected(self):
+        insecure = self.root / "world-readable.key"
+        shutil.copyfile(self.root / "worker-a.key", insecure)
+        insecure.chmod(0o644)
+        with self.assertRaisesRegex(channel.ChannelError, "TLS_KEY_PERMISSIONS"):
+            channel.worker_tls_context(
+                cafile=self.root/"primary.crt", certfile=self.root/"worker-a.crt",
+                keyfile=insecure,
+            )
+
+    def test_symlink_key_path_rejected(self):
+        link = self.root / "alias.key"
+        link.symlink_to(self.root / "worker-a.key")
+        with self.assertRaisesRegex(channel.ChannelError, "TLS_CONFIG_INVALID"):
+            channel.worker_tls_context(
+                cafile=self.root/"primary.crt", certfile=self.root/"worker-a.crt",
+                keyfile=link,
+            )
 
     def test_wrong_broker_hostname_rejected(self):
         self.assert_denied(server="bad-server")

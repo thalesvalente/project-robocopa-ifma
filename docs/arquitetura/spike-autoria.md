@@ -41,7 +41,7 @@ Evidência estruturada: [AUTORIA-MOBILE-CI.json](../qualidade/evidencias/AUTORIA
 
 ## Pendências para concluir a tarefa macro
 
-A reprodução do novo editor no Windows, a avaliação em aparelho físico e a ratificação pedagógica continuam pendentes. A tarefa S04-T03 não está concluída. O backlog macro não é fechado por esta evidência; os avanços técnicos são detalhados em `specs/003-autoria-mobile/tasks.md`. Os gates S03/S04-T01 e a validação de isolamento S04-T04 não foram aprovados por inferência.
+A reprodução visual inicial do editor no PC foi informada pelo responsável e registrada em `docs/qualidade/evidencias/AUTORIA-MOBILE-HOST.md`: Sentinela, três rounds, Aprendiz 536 × Walls 226, velocidade média 0. Não houve inspeção independente dos arquivos locais. Ainda faltam execução comparativa do Explorador no PC, avaliação em aparelho físico e ratificação pedagógica. A tarefa S04-T03 não está concluída. O backlog macro não é fechado por esta evidência; os avanços técnicos são detalhados em `specs/003-autoria-mobile/tasks.md`. Os gates S03/S04-T01 e a validação de isolamento S04-T04 não foram aprovados por inferência.
 
 Nenhum túnel, firewall, roteador, VHDX ou conta foi alterado. O servidor local tem acesso à CLI Docker e não pode ser disponibilizado ao público como está. O telefone não acessa o PC usando seu próprio 127.0.0.1: a conexão controlada para teste físico precisa de definição separada.
 
